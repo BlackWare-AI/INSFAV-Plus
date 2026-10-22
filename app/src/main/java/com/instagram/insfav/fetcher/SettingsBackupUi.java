@@ -72,7 +72,7 @@ public final class SettingsBackupUi {
                                             .addCategory(Intent.CATEGORY_OPENABLE)
                                             .putExtra(
                                                 Intent.EXTRA_TITLE,
-                                                "INSFAV-settings-encrypted.json"),
+                                                "INSFAV-Plus-settings-encrypted.json"),
                                         SAVE));
                           } catch (Exception e) {
                             host.message(
@@ -213,8 +213,9 @@ public final class SettingsBackupUi {
                     } catch (Exception e) {
                       host.message(
                           t(
-                              "Settings import failed: wrong password, incompatible backup or"
-                                  + " active retrieval. Existing settings were preserved."));
+                              "Settings import failed: wrong password, incompatible backup, active"
+                                  + " retrieval, or storage error. Review settings and"
+                                  + " diagnostics."));
                     } finally {
                       Arrays.fill(pass, '\0');
                     }

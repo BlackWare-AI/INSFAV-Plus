@@ -43,6 +43,7 @@ public class IndexWriteBenchmarkTest {
     } catch (NoSuchMethodException original) {
     }
     JSONObject initial = metrics == null ? new JSONObject() : (JSONObject) metrics.invoke(store);
+    JSONObject ioBefore = processIo();
     long started = System.nanoTime(), written = 0;
     int snapshots = 0;
     for (int i = 0; i < 64; i++) {
@@ -59,6 +60,10 @@ public class IndexWriteBenchmarkTest {
     }
     if (flush != null) flush.invoke(store);
     long elapsed = System.nanoTime() - started;
+    JSONObject ioAfter = processIo();
+    for (String key : new String[] {"wchar", "syscw", "write_bytes"})
+      if (ioAfter.has(key) && ioBefore.has(key))
+        ioAfter.put(key, ioAfter.getLong(key) - ioBefore.getLong(key));
     assertEquals(15064, store.index.getJSONObject("profiles").length());
     assertEquals(15064, store.index.getInt("files"));
     JSONObject measured =
@@ -80,7 +85,25 @@ public class IndexWriteBenchmarkTest {
                 .put("updates", 64)
                 .put("elapsedNanos", elapsed)
                 .put("incremental", incremental != null)
-                .put("writes", measured));
+                .put("writes", measured)
+                .put("linuxProcessIoDelta", ioAfter));
+  }
+
+  private JSONObject processIo() {
+    JSONObject out = new JSONObject();
+    try {
+      for (String line :
+          new String(
+                  java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("/proc/self/io")),
+                  java.nio.charset.StandardCharsets.UTF_8)
+              .split("\n")) {
+        String[] part = line.split(":\s*");
+        if (java.util.Arrays.asList("wchar", "syscw", "write_bytes").contains(part[0]))
+          out.put(part[0], Long.parseLong(part[1]));
+      }
+    } catch (Exception ignored) {
+    }
+    return out;
   }
 
   private JSONObject profile(String user) throws Exception {

@@ -19,7 +19,7 @@ android {
         }
     }
     buildTypes {
-        debug { versionNameSuffix '-debug'; enableUnitTestCoverage true }
+        debug { versionNameSuffix '-debug'; enableUnitTestCoverage !project.hasProperty('benchmark') }
         release { if (System.getenv('INSFAV_KEYSTORE')) signingConfig signingConfigs.release; minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
@@ -38,9 +38,9 @@ tasks.register('jacocoDebugReport', JacocoReport) {
     reports { xml.required = true; html.required = true }
     sourceDirectories.setFrom(files('src/main/java'))
     classDirectories.setFrom(fileTree(layout.buildDirectory.dir('intermediates/javac/debug/compileDebugJavaWithJavac/classes')) { exclude '**/R.class', '**/R$*.class', '**/BuildConfig.*' })
-    executionData.setFrom(fileTree(layout.buildDirectory) { include '**/testDebugUnitTest.exec', '**/debugUnitTest/**/*.exec', '**/debugUnitTest/**/*.ec' })
+    executionData.setFrom(files(layout.buildDirectory.file('outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec')))
 }
 // Coverage measures our code; instrumenting the Android/Robolectric frameworks adds no app coverage.
 tasks.withType(Test).configureEach {
-    jacoco { includes = ['com.instagram.insfav.*']; excludes = ['com.instagram.insfav.R', 'com.instagram.insfav.R$*', 'com.instagram.insfav.BuildConfig'] }
+    jacoco { enabled = !project.hasProperty('benchmark'); includeNoLocationClasses = true; includes = ['com.instagram.insfav.*']; excludes = ['com.instagram.insfav.R', 'com.instagram.insfav.R$*', 'com.instagram.insfav.BuildConfig'] }
 }

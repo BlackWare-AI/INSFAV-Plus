@@ -242,4 +242,37 @@
     <string name="ui_1121b3591cf3" formatted="false">Rate Limited</string>
     <string name="ui_d528b8e106ea" formatted="false">{count} usernames copied.</string>
     <string name="ui_4e1af7c74096" formatted="false">Operation failed</string>
+    <string name="ui_8876aba3314e" formatted="false">Android background restrictions are active. Try again in the next working window.</string>
+    <string name="ui_201fc457d46e" formatted="false">Settings import failed: wrong password, incompatible backup, active retrieval, or storage error. Review settings and diagnostics.</string>
+    <string name="ui_56ed4459c30e" formatted="false">INSFAV Plus is an independent Instagram account collection manager and is not affiliated with Meta or Instagram.</string>
+    <string name="ui_1e48c3501bb0" formatted="false">Instagram image</string>
+    <string name="ui_8aac189afc32" formatted="false">Local image</string>
+    <string name="ui_006edcfc4a24" formatted="false">Preview up to 2048 px</string>
+    <string name="ui_8c34b8e31fbb" formatted="false">Online image unavailable; local image retained</string>
+    <string name="ui_cbc3a800344a" formatted="false">unknown sizes</string>
+    <string name="ui_98f0c3e4330b" formatted="false">Folder permission was lost. Select the thumbnail folder again.</string>
+    <string name="ui_7e3ef40525ea" formatted="false">Thumbnail folder is unavailable. Check its location or select it again.</string>
+    <string name="ui_a390a70e88b4" formatted="false">Select a thumbnail folder first.</string>
+    <string name="ui_99046bdd8d6b" formatted="false">Pause retrieval before changing the schedule or worker count.</string>
+    <string name="ui_d46c733f3a0e" formatted="false">Pause retrieval and close the viewer before importing settings.</string>
+    <string name="ui_11af4d234d68" formatted="false">Paste and save Instagram cookies first.</string>
+    <string name="ui_450fa9547e3e" formatted="false">Select the thumbnail folder in Profile Images first.</string>
+    <string name="ui_16808651cbe9" formatted="false">Grant write access to the selected thumbnail folder first.</string>
+    <string name="ui_9ab656eafa8e" formatted="false">Retry cooldown is still active.</string>
+    <string name="ui_55df2ca5c331" formatted="false">Starting — Loading persistent index</string>
+    <string name="ui_3409582ebdbc" formatted="false">Starting — Verifying thumbnail index</string>
+    <string name="ui_a2bcee37d283" formatted="false">Checking existing thumbnails</string>
+    <string name="ui_0473bd22ce8c" formatted="false">Paused — Fetcher index verified</string>
+    <string name="ui_def3c47495c0" formatted="false">Paused: folder write permission required</string>
+    <string name="ui_4f3e880702b5" formatted="false">Paused: database error; queue preserved</string>
+    <string name="ui_3282a4c230ba" formatted="false">Paused: storage access error; queue preserved</string>
+    <string name="ui_2cd248addb4e" formatted="false">Paused: memory limit; queue preserved</string>
+    <string name="ui_11ea4d898d46" formatted="false">Paused: processing error; queue preserved</string>
+    <string name="ui_52b32f9a24be" formatted="false">Paused: session not verified</string>
+    <string name="ui_698360589400" formatted="false">Paused: Android service time limit; queue preserved</string>
+    <string name="ui_bb7c6e4b05a8" formatted="false">Finished: previous failures saved; use Retry to try again</string>
+    <string name="ui_ffaf4a1ce8b3" formatted="false">Waiting: session verification retry</string>
+    <string name="ui_732c5220f394" formatted="false">Authentication Required</string>
+    <string name="ui_3ee1e3292f27" formatted="false">Completed with failures</string>
+    <string name="ui_41f55ca840f7" formatted="false">Completed — Retry available</string>
 </resources>

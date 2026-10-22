@@ -188,19 +188,31 @@ public final class SettingsArchive {
     }
   }
 
+  public static final class RestoreFailure extends IOException {
+    public final boolean restored;
+
+    RestoreFailure(boolean restored) {
+      super(
+          restored
+              ? "Settings import failed; previous settings restored."
+              : "Settings import failed; rollback could not be confirmed.");
+      this.restored = restored;
+    }
+  }
+
   private static void applyLocked(Context c, JSONObject data, CookieVault vault, Extras extras)
       throws Exception {
     SharedPreferences prefs = SessionState.prefs(c);
     Map<String, ?> before = new HashMap<>(prefs.getAll());
     String old = vault.configured() ? vault.stored() : null;
+    boolean cookieTouched = false, extrasTouched = false;
     try {
-      if (data.isNull("cookies")) vault.remove();
-      else vault.save(CookieJar.decode(data.getString("cookies")));
       JSONObject p = data.getJSONObject("preferences");
       SharedPreferences.Editor e = prefs.edit();
       for (String n : INTS) e.putInt(n, p.getInt(n));
       e.putBoolean("background", p.getBoolean("background"));
-      // A backup is configuration, not authorization to resume a queue on another device.
+      // Persist the stopped state before replacing any credential. An interrupted import cannot arm
+      // work.
       e.putBoolean("armed", false)
           .putBoolean("userPaused", true)
           .putString("cookieGeneration", UUID.randomUUID().toString())
@@ -208,29 +220,63 @@ public final class SettingsArchive {
           .putString("state", "Stopped — User Disabled")
           .remove("refreshLegacy");
       if (!e.commit()) throw new IOException("Settings could not be saved.");
+      cookieTouched = true;
+      if (data.isNull("cookies")) vault.remove();
+      else vault.save(CookieJar.decode(data.getString("cookies")));
+      extrasTouched = true;
       extras.apply();
       WorkScheduler.cancel(c);
       WorkScheduler.recovery(c);
       WorkScheduler.plan(c, false);
     } catch (Exception error) {
-      try {
-        extras.rollback();
-      } catch (Exception rollback) {
-        new Diagnostics(c).unexpected("SETTINGS", rollback);
+      boolean restored = true;
+      if (extrasTouched)
+        try {
+          extras.rollback();
+        } catch (Exception failure) {
+          restored = false;
+          new Diagnostics(c).unexpected("SETTINGS", failure);
+        }
+      if (cookieTouched)
+        try {
+          if (old == null) vault.remove();
+          else vault.save(CookieJar.decode(old));
+          if (old == null ? vault.configured() : !old.equals(vault.stored())) restored = false;
+        } catch (Exception failure) {
+          restored = false;
+          new Diagnostics(c).unexpected("SETTINGS", failure);
+        }
+      if (restored) {
+        SharedPreferences.Editor e = prefs.edit().clear();
+        for (Map.Entry<String, ?> entry : before.entrySet()) {
+          Object v = entry.getValue();
+          String n = entry.getKey();
+          if (v instanceof Integer) e.putInt(n, (Integer) v);
+          else if (v instanceof Long) e.putLong(n, (Long) v);
+          else if (v instanceof Boolean) e.putBoolean(n, (Boolean) v);
+          else if (v instanceof String) e.putString(n, (String) v);
+          else if (v instanceof Float) e.putFloat(n, (Float) v);
+          else if (v instanceof Set) {
+            Set<String> strings = new HashSet<>();
+            for (Object item : (Set<?>) v) strings.add((String) item);
+            e.putStringSet(n, strings);
+          }
+        }
+        restored = e.commit();
       }
-      if (old == null) vault.remove();
-      else vault.save(CookieJar.decode(old));
-      SharedPreferences.Editor e = prefs.edit().clear();
-      for (Map.Entry<String, ?> entry : before.entrySet()) {
-        Object v = entry.getValue();
-        String n = entry.getKey();
-        if (v instanceof Integer) e.putInt(n, (Integer) v);
-        else if (v instanceof Long) e.putLong(n, (Long) v);
-        else if (v instanceof Boolean) e.putBoolean(n, (Boolean) v);
-        else if (v instanceof String) e.putString(n, (String) v);
+      if (!restored) {
+        prefs
+            .edit()
+            .putBoolean("armed", false)
+            .putBoolean("userPaused", true)
+            .putString("blocked", "SETTINGS_IMPORT_FAILED")
+            .putString("state", "Paused: settings rollback could not be confirmed")
+            .commit();
+        WorkScheduler.cancel(c);
+        new Diagnostics(c).log("SETTINGS", "ROLLBACK_UNCONFIRMED", 0);
+        Fetcher.publish(true);
       }
-      e.commit();
-      throw new IOException("Settings import failed; previous settings restored.");
+      throw new RestoreFailure(restored);
     }
   }
 

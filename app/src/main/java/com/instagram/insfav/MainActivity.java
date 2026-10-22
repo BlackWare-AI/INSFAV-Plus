@@ -358,7 +358,9 @@ public final class MainActivity extends Activity {
                       + "\nAndroid SDK "
                       + Build.VERSION.SDK_INT
                       + "\n"
-                      + "BOOTSTRAP INITIALIZATION_FAILED\n"
+                      + "BOOTSTRAP "
+                      + ((InsfavApplication) getApplication()).bootstrapFailure()
+                      + "\n"
                       + "No account identifiers or credentials included.",
                   "INSFAV-Plus-bootstrap.txt",
                   "text/plain");
@@ -375,6 +377,11 @@ public final class MainActivity extends Activity {
     if (images == null) return;
     io.execute(
         () -> {
+          try {
+            Fetcher.watchSource();
+          } catch (RuntimeException unavailable) {
+            store.log("source_observer", "UNAVAILABLE");
+          }
           images.checkAccess();
           try {
             send(
@@ -647,7 +654,7 @@ public final class MainActivity extends Activity {
                   case "export":
                     if (store.original().isEmpty())
                       throw new IOException("No collections to export");
-                    export(store.original(), "INSFAV-backup.json", "application/json");
+                    export(store.original(), "INSFAV-Plus-backup.json", "application/json");
                     break;
                   case "settings-export":
                     settingsBackup.start(true);

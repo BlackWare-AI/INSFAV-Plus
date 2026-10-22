@@ -242,6 +242,39 @@
     <item>Rate Limited</item>
     <item>{count} usernames copied.</item>
     <item>Operation failed</item>
+    <item>Android background restrictions are active. Try again in the next working window.</item>
+    <item>Settings import failed: wrong password, incompatible backup, active retrieval, or storage error. Review settings and diagnostics.</item>
+    <item>INSFAV Plus is an independent Instagram account collection manager and is not affiliated with Meta or Instagram.</item>
+    <item>Instagram image</item>
+    <item>Local image</item>
+    <item>Preview up to 2048 px</item>
+    <item>Online image unavailable; local image retained</item>
+    <item>unknown sizes</item>
+    <item>Folder permission was lost. Select the thumbnail folder again.</item>
+    <item>Thumbnail folder is unavailable. Check its location or select it again.</item>
+    <item>Select a thumbnail folder first.</item>
+    <item>Pause retrieval before changing the schedule or worker count.</item>
+    <item>Pause retrieval and close the viewer before importing settings.</item>
+    <item>Paste and save Instagram cookies first.</item>
+    <item>Select the thumbnail folder in Profile Images first.</item>
+    <item>Grant write access to the selected thumbnail folder first.</item>
+    <item>Retry cooldown is still active.</item>
+    <item>Starting — Loading persistent index</item>
+    <item>Starting — Verifying thumbnail index</item>
+    <item>Checking existing thumbnails</item>
+    <item>Paused — Fetcher index verified</item>
+    <item>Paused: folder write permission required</item>
+    <item>Paused: database error; queue preserved</item>
+    <item>Paused: storage access error; queue preserved</item>
+    <item>Paused: memory limit; queue preserved</item>
+    <item>Paused: processing error; queue preserved</item>
+    <item>Paused: session not verified</item>
+    <item>Paused: Android service time limit; queue preserved</item>
+    <item>Finished: previous failures saved; use Retry to try again</item>
+    <item>Waiting: session verification retry</item>
+    <item>Authentication Required</item>
+    <item>Completed with failures</item>
+    <item>Completed — Retry available</item>
   </string-array>
   <string-array name="ui_values">
     <item>@string/ui_74a883a037bc</item>
@@ -486,5 +519,38 @@
     <item>@string/ui_1121b3591cf3</item>
     <item>@string/ui_d528b8e106ea</item>
     <item>@string/ui_4e1af7c74096</item>
+    <item>@string/ui_8876aba3314e</item>
+    <item>@string/ui_201fc457d46e</item>
+    <item>@string/ui_56ed4459c30e</item>
+    <item>@string/ui_1e48c3501bb0</item>
+    <item>@string/ui_8aac189afc32</item>
+    <item>@string/ui_006edcfc4a24</item>
+    <item>@string/ui_8c34b8e31fbb</item>
+    <item>@string/ui_cbc3a800344a</item>
+    <item>@string/ui_98f0c3e4330b</item>
+    <item>@string/ui_7e3ef40525ea</item>
+    <item>@string/ui_a390a70e88b4</item>
+    <item>@string/ui_99046bdd8d6b</item>
+    <item>@string/ui_d46c733f3a0e</item>
+    <item>@string/ui_11af4d234d68</item>
+    <item>@string/ui_450fa9547e3e</item>
+    <item>@string/ui_16808651cbe9</item>
+    <item>@string/ui_9ab656eafa8e</item>
+    <item>@string/ui_55df2ca5c331</item>
+    <item>@string/ui_3409582ebdbc</item>
+    <item>@string/ui_a2bcee37d283</item>
+    <item>@string/ui_0473bd22ce8c</item>
+    <item>@string/ui_def3c47495c0</item>
+    <item>@string/ui_4f3e880702b5</item>
+    <item>@string/ui_3282a4c230ba</item>
+    <item>@string/ui_2cd248addb4e</item>
+    <item>@string/ui_11ea4d898d46</item>
+    <item>@string/ui_52b32f9a24be</item>
+    <item>@string/ui_698360589400</item>
+    <item>@string/ui_bb7c6e4b05a8</item>
+    <item>@string/ui_ffaf4a1ce8b3</item>
+    <item>@string/ui_732c5220f394</item>
+    <item>@string/ui_3ee1e3292f27</item>
+    <item>@string/ui_41f55ca840f7</item>
   </string-array>
 </resources>

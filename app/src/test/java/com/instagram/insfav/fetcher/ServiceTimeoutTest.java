@@ -38,4 +38,24 @@ public class ServiceTimeoutTest {
     assertTrue(n.extras.getCharSequence(Notification.EXTRA_TEXT).toString().startsWith("Paused"));
     assertEquals(0, n.flags & Notification.FLAG_ONGOING_EVENT);
   }
+
+  @Test
+  public void manualResumeHonorsPersistedSystemDeferral() throws Exception {
+    Context c = org.robolectric.RuntimeEnvironment.getApplication();
+    int minute =
+        java.time.ZonedDateTime.now().getHour() * 60 + java.time.ZonedDateTime.now().getMinute();
+    long until = System.currentTimeMillis() + 60000;
+    SessionState.prefs(c)
+        .edit()
+        .clear()
+        .putInt("startMinute", (minute + 1430) % 1440)
+        .putInt("endMinute", (minute + 10) % 1440)
+        .putLong("systemNotBefore", until)
+        .commit();
+    java.io.IOException error =
+        assertThrows(java.io.IOException.class, () -> Fetcher.action("resume"));
+    assertTrue(error.getMessage().contains("Android background restrictions"));
+    assertEquals(until, SessionState.prefs(c).getLong("systemNotBefore", 0));
+    assertFalse(SessionState.prefs(c).getBoolean("armed", false));
+  }
 }

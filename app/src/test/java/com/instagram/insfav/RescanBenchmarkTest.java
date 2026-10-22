@@ -101,6 +101,7 @@ public class RescanBenchmarkTest {
     long cold = (System.nanoTime() - start) / 1000000;
     assertEquals("completed", store.settings.optString("scanState"));
     assertEquals(15000, images.snapshot(false).getInt("matched"));
+    JSONObject coldIo = images.snapshot(false).getJSONObject("scan").getJSONObject("io");
     int coldOpens = provider.opens.get(), coldQueries = provider.queries.get() - queries;
     queries = provider.queries.get();
     int peak = provider.peak.get();
@@ -123,6 +124,8 @@ public class RescanBenchmarkTest {
                     "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF"
                         + " open latency")
                 .put("files", 15000)
+                .put("coldIo", coldIo)
+                .put("warmIo", images.snapshot(false).getJSONObject("scan").getJSONObject("io"))
                 .put("coldMs", cold)
                 .put("warmMs", warm)
                 .put("coldOpens", coldOpens)

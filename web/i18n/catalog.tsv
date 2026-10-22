@@ -240,3 +240,36 @@ Stopped	Durduruldu
 Rate Limited	İstek sınırı
 {count} usernames copied.	{count} kullanıcı adı kopyalandı.
 Operation failed	İşlem başarısız oldu
+Android background restrictions are active. Try again in the next working window.	Android arka plan kısıtları etkin. Sonraki çalışma penceresinde yeniden deneyin.
+Settings import failed: wrong password, incompatible backup, active retrieval, or storage error. Review settings and diagnostics.	Ayarlar içe aktarılamadı: yanlış parola, uyumsuz yedek, etkin indirme veya depolama hatası. Ayarları ve tanılamayı kontrol edin.
+INSFAV Plus is an independent Instagram account collection manager and is not affiliated with Meta or Instagram.	INSFAV Plus bağımsız bir Instagram hesap koleksiyonu yöneticisidir; Meta veya Instagram ile bağlantılı değildir.
+Instagram image	Instagram görseli
+Local image	Yerel görsel
+Preview up to 2048 px	En fazla 2048 piksel önizleme
+Online image unavailable; local image retained	Çevrimiçi görsele erişilemiyor; yerel görsel korundu
+unknown sizes	bilinmeyen boyutlar
+Folder permission was lost. Select the thumbnail folder again.	Klasör izni kayboldu. Küçük görsel klasörünü yeniden seçin.
+Thumbnail folder is unavailable. Check its location or select it again.	Küçük görsel klasörüne erişilemiyor. Konumunu kontrol edin veya yeniden seçin.
+Select a thumbnail folder first.	Önce küçük görsel klasörünü seçin.
+Pause retrieval before changing the schedule or worker count.	Çalışma saatlerini veya işçi sayısını değiştirmeden önce indirmeyi duraklatın.
+Pause retrieval and close the viewer before importing settings.	Ayarları içe aktarmadan önce indirmeyi duraklatın ve görüntüleyiciyi kapatın.
+Paste and save Instagram cookies first.	Önce Instagram çerezlerini yapıştırıp kaydedin.
+Select the thumbnail folder in Profile Images first.	Önce küçük görsel klasörünü seçin.
+Grant write access to the selected thumbnail folder first.	Önce seçili küçük görsel klasörüne yazma izni verin.
+Retry cooldown is still active.	Yeniden deneme bekleme süresi henüz bitmedi.
+Starting — Loading persistent index	Başlatılıyor — kayıtlı indeks yükleniyor
+Starting — Verifying thumbnail index	Başlatılıyor — küçük görsel indeksi doğrulanıyor
+Checking existing thumbnails	Mevcut küçük görseller kontrol ediliyor
+Paused — Fetcher index verified	Duraklatıldı — indirici indeksi doğrulandı
+Paused: folder write permission required	Duraklatıldı: klasöre yazma izni gerekiyor
+Paused: database error; queue preserved	Duraklatıldı: veritabanı hatası; kuyruk korundu
+Paused: storage access error; queue preserved	Duraklatıldı: depolama erişim hatası; kuyruk korundu
+Paused: memory limit; queue preserved	Duraklatıldı: bellek sınırı; kuyruk korundu
+Paused: processing error; queue preserved	Duraklatıldı: işlem hatası; kuyruk korundu
+Paused: session not verified	Duraklatıldı: oturum doğrulanmadı
+Paused: Android service time limit; queue preserved	Duraklatıldı: Android hizmet süre sınırı; kuyruk korundu
+Finished: previous failures saved; use Retry to try again	Bitti: önceki başarısız sonuçlar kaydedildi; yeniden denemeyi seçin
+Waiting: session verification retry	Bekleniyor: oturum doğrulaması yeniden denenecek
+Authentication Required	Oturum doğrulaması gerekiyor
+Completed with failures	Başarısız sonuçlarla tamamlandı
+Completed — Retry available	Tamamlandı — yeniden denenebilir

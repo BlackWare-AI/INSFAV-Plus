@@ -242,4 +242,37 @@
     <string name="ui_1121b3591cf3" formatted="false">İstek sınırı</string>
     <string name="ui_d528b8e106ea" formatted="false">{count} kullanıcı adı kopyalandı.</string>
     <string name="ui_4e1af7c74096" formatted="false">İşlem başarısız oldu</string>
+    <string name="ui_8876aba3314e" formatted="false">Android arka plan kısıtları etkin. Sonraki çalışma penceresinde yeniden deneyin.</string>
+    <string name="ui_201fc457d46e" formatted="false">Ayarlar içe aktarılamadı: yanlış parola, uyumsuz yedek, etkin indirme veya depolama hatası. Ayarları ve tanılamayı kontrol edin.</string>
+    <string name="ui_56ed4459c30e" formatted="false">INSFAV Plus bağımsız bir Instagram hesap koleksiyonu yöneticisidir; Meta veya Instagram ile bağlantılı değildir.</string>
+    <string name="ui_1e48c3501bb0" formatted="false">Instagram görseli</string>
+    <string name="ui_8aac189afc32" formatted="false">Yerel görsel</string>
+    <string name="ui_006edcfc4a24" formatted="false">En fazla 2048 piksel önizleme</string>
+    <string name="ui_8c34b8e31fbb" formatted="false">Çevrimiçi görsele erişilemiyor; yerel görsel korundu</string>
+    <string name="ui_cbc3a800344a" formatted="false">bilinmeyen boyutlar</string>
+    <string name="ui_98f0c3e4330b" formatted="false">Klasör izni kayboldu. Küçük görsel klasörünü yeniden seçin.</string>
+    <string name="ui_7e3ef40525ea" formatted="false">Küçük görsel klasörüne erişilemiyor. Konumunu kontrol edin veya yeniden seçin.</string>
+    <string name="ui_a390a70e88b4" formatted="false">Önce küçük görsel klasörünü seçin.</string>
+    <string name="ui_99046bdd8d6b" formatted="false">Çalışma saatlerini veya işçi sayısını değiştirmeden önce indirmeyi duraklatın.</string>
+    <string name="ui_d46c733f3a0e" formatted="false">Ayarları içe aktarmadan önce indirmeyi duraklatın ve görüntüleyiciyi kapatın.</string>
+    <string name="ui_11af4d234d68" formatted="false">Önce Instagram çerezlerini yapıştırıp kaydedin.</string>
+    <string name="ui_450fa9547e3e" formatted="false">Önce küçük görsel klasörünü seçin.</string>
+    <string name="ui_16808651cbe9" formatted="false">Önce seçili küçük görsel klasörüne yazma izni verin.</string>
+    <string name="ui_9ab656eafa8e" formatted="false">Yeniden deneme bekleme süresi henüz bitmedi.</string>
+    <string name="ui_55df2ca5c331" formatted="false">Başlatılıyor — kayıtlı indeks yükleniyor</string>
+    <string name="ui_3409582ebdbc" formatted="false">Başlatılıyor — küçük görsel indeksi doğrulanıyor</string>
+    <string name="ui_a2bcee37d283" formatted="false">Mevcut küçük görseller kontrol ediliyor</string>
+    <string name="ui_0473bd22ce8c" formatted="false">Duraklatıldı — indirici indeksi doğrulandı</string>
+    <string name="ui_def3c47495c0" formatted="false">Duraklatıldı: klasöre yazma izni gerekiyor</string>
+    <string name="ui_4f3e880702b5" formatted="false">Duraklatıldı: veritabanı hatası; kuyruk korundu</string>
+    <string name="ui_3282a4c230ba" formatted="false">Duraklatıldı: depolama erişim hatası; kuyruk korundu</string>
+    <string name="ui_2cd248addb4e" formatted="false">Duraklatıldı: bellek sınırı; kuyruk korundu</string>
+    <string name="ui_11ea4d898d46" formatted="false">Duraklatıldı: işlem hatası; kuyruk korundu</string>
+    <string name="ui_52b32f9a24be" formatted="false">Duraklatıldı: oturum doğrulanmadı</string>
+    <string name="ui_698360589400" formatted="false">Duraklatıldı: Android hizmet süre sınırı; kuyruk korundu</string>
+    <string name="ui_bb7c6e4b05a8" formatted="false">Bitti: önceki başarısız sonuçlar kaydedildi; yeniden denemeyi seçin</string>
+    <string name="ui_ffaf4a1ce8b3" formatted="false">Bekleniyor: oturum doğrulaması yeniden denenecek</string>
+    <string name="ui_732c5220f394" formatted="false">Oturum doğrulaması gerekiyor</string>
+    <string name="ui_3ee1e3292f27" formatted="false">Başarısız sonuçlarla tamamlandı</string>
+    <string name="ui_41f55ca840f7" formatted="false">Tamamlandı — yeniden denenebilir</string>
 </resources>

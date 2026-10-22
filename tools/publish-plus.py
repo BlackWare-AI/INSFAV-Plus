@@ -5,7 +5,10 @@ from pathlib import Path
 REPOSITORY='BlackWare-AI/INSFAV-Plus'
 assert os.environ['GITHUB_REPOSITORY']==REPOSITORY
 meta=json.loads(Path('artifacts/apk.json').read_text());assert meta['officialRelease'] and not meta['debuggable'] and meta['signatureVerified']
-def gh(*args):return subprocess.check_output(['gh',*args],text=True)
+def gh(*args):
+    result=subprocess.run(['gh',*args],text=True,capture_output=True)
+    if result.returncode:raise SystemExit('GitHub release API failed; no credentials exported')
+    return result.stdout
 pages=json.loads(gh('api','--paginate','--slurp','repos/'+REPOSITORY+'/releases?per_page=100'))
 for release in [r for page in pages for r in page]:
     assets=release.get('assets',[])

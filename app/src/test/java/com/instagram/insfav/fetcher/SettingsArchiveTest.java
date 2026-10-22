@@ -224,4 +224,59 @@ public class SettingsArchiveTest {
     assertEquals(9, SessionState.prefs(c).getInt("minimum", 0));
     assertFalse(QueueControl.lock.get());
   }
+
+  @Test
+  public void credentialsAreChangedOnlyAfterStoppedStateIsDurable() throws Exception {
+    char[] password = "offline recovery password".toCharArray();
+    JSONObject data =
+        SettingsArchive.inspect(c, SettingsArchive.export(c, password, new JSONObject()), password);
+    javax.crypto.SecretKey key = javax.crypto.KeyGenerator.getInstance("AES").generateKey();
+    CookieVault destination =
+        new CookieVault(
+            c,
+            () -> {
+              assertFalse(SessionState.prefs(c).getBoolean("armed", true));
+              assertTrue(SessionState.prefs(c).getBoolean("userPaused", false));
+              return key;
+            });
+    data.put(
+        "cookies",
+        CookieJar.parse(
+                "sessionid=SYNTHETIC_MIGRATION_SESSION; ds_user_id=123", System.currentTimeMillis())
+            .encode());
+    SessionState.prefs(c).edit().putBoolean("armed", true).putBoolean("userPaused", false).commit();
+    SettingsArchive.apply(c, data, destination);
+    assertTrue(destination.configured());
+    assertFalse(SessionState.prefs(c).getBoolean("armed", true));
+    destination.remove();
+  }
+
+  @Test
+  public void rollbackFailureIsReportedAndCannotRearmRetrieval() throws Exception {
+    char[] password = "offline recovery password".toCharArray();
+    JSONObject data =
+        SettingsArchive.inspect(c, SettingsArchive.export(c, password, new JSONObject()), password);
+    SessionState.prefs(c).edit().putBoolean("armed", true).putBoolean("userPaused", false).commit();
+    java.io.IOException failure =
+        assertThrows(
+            java.io.IOException.class,
+            () ->
+                SettingsArchive.apply(
+                    c,
+                    data,
+                    new SettingsArchive.Extras() {
+                      public void apply() throws Exception {
+                        throw new java.io.IOException("synthetic");
+                      }
+
+                      public void rollback() throws Exception {
+                        throw new java.io.IOException("synthetic");
+                      }
+                    }));
+    assertTrue(failure instanceof SettingsArchive.RestoreFailure);
+    assertFalse(((SettingsArchive.RestoreFailure) failure).restored);
+    assertFalse(SessionState.prefs(c).getBoolean("armed", true));
+    assertTrue(SessionState.prefs(c).getBoolean("userPaused", false));
+    assertFalse(QueueControl.lock.get());
+  }
 }

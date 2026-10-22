@@ -27,6 +27,10 @@ public final class Fetcher {
 
     boolean hasImage(String user);
 
+    default boolean catalogReadable(String user) {
+      return hasImage(user);
+    }
+
     void imageWritten(String user, Uri uri, String tree) throws Exception;
 
     default void imageWritten(ImageRecord image, String tree) throws Exception {
@@ -38,6 +42,10 @@ public final class Fetcher {
     }
 
     default void sourceChanged() {}
+
+    default long sourceRevision() {
+      return 0;
+    }
 
     default void flushImages() throws Exception {}
 
@@ -103,6 +111,11 @@ public final class Fetcher {
     host = h;
     lastSynced = null;
     try {
+      watchSource();
+    } catch (RuntimeException unavailable) {
+      new Diagnostics(context).log("INDEX", "OBSERVER_UNAVAILABLE", 0);
+    }
+    try {
       android.webkit.CookieManager.getInstance().removeAllCookies(null);
       android.webkit.WebStorage.getInstance().deleteAllData();
     } catch (RuntimeException | LinkageError ignored) {
@@ -157,6 +170,30 @@ public final class Fetcher {
               TimeUnit.NANOSECONDS);
   }
 
+  /** Re-register cheaply on cold launch/resume without cloning the catalog or seeding the queue. */
+  public static synchronized void watchSource() {
+    String tree = host().tree(), key = tree + "\n" + host().directory();
+    if (key.equals(observerTree)) return;
+    if (catalogObserver != null) {
+      context.getContentResolver().unregisterContentObserver(catalogObserver);
+      catalogObserver = null;
+    }
+    observerTree = "";
+    if (!tree.isEmpty()) {
+      android.database.ContentObserver next =
+          new android.database.ContentObserver(
+              new android.os.Handler(android.os.Looper.getMainLooper())) {
+            @Override
+            public void onChange(boolean self, Uri uri) {
+              CompletableFuture.runAsync(() -> FetcherCatalog.observe(context, uri));
+            }
+          };
+      context.getContentResolver().registerContentObserver(Uri.parse(tree), true, next);
+      catalogObserver = next;
+    }
+    observerTree = key;
+  }
+
   public static synchronized void sync() throws Exception {
     if (QueueControl.lock.get())
       throw new IOException("Pause the fetcher before changing collections or folder.");
@@ -169,24 +206,7 @@ public final class Fetcher {
       }
       lastSynced = users;
     }
-    if (!tree.equals(observerTree)) {
-      if (catalogObserver != null)
-        context.getContentResolver().unregisterContentObserver(catalogObserver);
-      observerTree = tree;
-      if (!tree.isEmpty()) {
-        catalogObserver =
-            new android.database.ContentObserver(
-                new android.os.Handler(android.os.Looper.getMainLooper())) {
-              @Override
-              public void onChange(boolean self, Uri uri) {
-                CompletableFuture.runAsync(() -> FetcherCatalog.observe(context, uri));
-              }
-            };
-        context
-            .getContentResolver()
-            .registerContentObserver(Uri.parse(tree), true, catalogObserver);
-      }
-    }
+    watchSource();
     try (QueueStore q = new QueueStore(context)) {
       FetcherCatalog.seed(q);
     }
@@ -318,6 +338,16 @@ public final class Fetcher {
           ScheduleStatus.outsideMessage(
               policy, System.currentTimeMillis(), java.time.ZoneId.systemDefault()));
     }
+    if (!action.equals("verify_index")
+        && SessionState.prefs(context).getLong("systemNotBefore", 0) > System.currentTimeMillis()) {
+      SessionState.prefs(context)
+          .edit()
+          .putString("state", "Waiting — Android Background Restrictions")
+          .commit();
+      publish(true);
+      throw new IOException(
+          "Android background restrictions are active. Try again in the next working window.");
+    }
     sync();
     if (!action.equals("verify_index") && !new CookieVault(context).configured())
       throw new IOException("Paste and save Instagram cookies first.");
@@ -387,7 +417,11 @@ public final class Fetcher {
     out.put("withinSchedule", r.contains(java.time.ZonedDateTime.now()))
         .put(
             "nextAllowedAt",
-            r.nextAllowed(System.currentTimeMillis(), java.time.ZoneId.systemDefault()))
+            r.nextAllowed(
+                Math.max(
+                    System.currentTimeMillis(),
+                    Math.max(p.getLong("retryAt", 0), p.getLong("systemNotBefore", 0))),
+                java.time.ZoneId.systemDefault()))
         .put(
             "outsideScheduleMessage",
             r.contains(java.time.ZonedDateTime.now())
@@ -427,6 +461,7 @@ public final class Fetcher {
         .put("elapsedSeconds", elapsed)
         .put("blocked", p.getString("blocked", ""))
         .put("imageRevision", host().revision())
+        .put("sourceRevision", host().sourceRevision())
         .put("requestedViews", p.getInt("concurrentWebViews", 1))
         .put(
             "effectiveViews",
@@ -566,7 +601,7 @@ public final class Fetcher {
             for (Listener l : listeners)
               if (id == generation.get())
                 l.fullReady(name, token, bounds.outWidth, bounds.outHeight);
-            if (id == generation.get() && writable()) {
+            if (id == generation.get() && writable() && !host().catalogReadable(name)) {
               String tree = host().tree();
               OutputFolder folder = new OutputFolder(context, tree);
               Uri uri = folder.commit(Identity.outputFilename(name), thumbnail, false);

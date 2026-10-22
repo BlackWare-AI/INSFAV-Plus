@@ -97,6 +97,16 @@ public final class InsfavApplication extends Application implements Fetcher.Host
     }
   }
 
+  public boolean catalogReadable(String user) {
+    synchronized (store) {
+      JSONObject profiles = store.index.optJSONObject("profiles"),
+          image = profiles == null ? null : profiles.optJSONObject(user);
+      return tree().equals(store.index.optString("treeUri", "invalid"))
+          && image != null
+          && image.optBoolean("readable");
+    }
+  }
+
   public boolean hasImage(String user) {
     String uri;
     synchronized (store) {
@@ -171,6 +181,12 @@ public final class InsfavApplication extends Application implements Fetcher.Host
 
   public void imageWritten(Fetcher.ImageRecord image, String tree) throws Exception {
     if (!catalogContains(image)) store.updateProfile(image.user, image.profile(), tree);
+  }
+
+  public long sourceRevision() {
+    synchronized (store) {
+      return store.externalRevision;
+    }
   }
 
   public void sourceChanged() {

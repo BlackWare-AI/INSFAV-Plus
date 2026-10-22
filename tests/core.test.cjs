@@ -23,3 +23,5 @@ test('Turkish display-name search preserves Instagram identity normalization and
  assert.deepEqual(C.filterCollections(d,'ışık').map(c=>c.items[0].user),['istanbul','istanbul']);
  assert.equal(C.filterCollections(d,'IŞIK').length,2);
 });
+
+test('Turkish display-name folding never substitutes Instagram username identity',()=>{const d=C.parseDocument(JSON.stringify([{name:'A',items:[{pageId:'Ipek'},{pageId:'other',name:'Ipek'}]}]));assert.deepEqual(C.filterCollections(d,'ıpek')[0].items.map(i=>i.user),['other']);assert.deepEqual(C.filterCollections(d,'İPEK')[0].items.map(i=>i.user),['other']);assert.equal(C.normalize('Ipek'),'ipek');});
