@@ -174,6 +174,8 @@ final class OutputFolder {
             if(valid(filename))return lookup(filename);
             String nonce=java.util.UUID.randomUUID().toString();String pendingName=".insfav-"+nonce+".part",backupName=".insfav-"+nonce+".bak";
             Uri pending=null,old=lookup(filename),backup=null,committed=null;boolean finalVerified=false;
+            // The shared source folder is not a replaceable cache. Preserve every existing file.
+            if(old!=null)throw new IOException("OUTPUT_EXISTING_PRESERVED");
             String writingUser=Identity.normalize(filename.substring(0,filename.length()-5));FetcherCatalog.writing.add(writingUser);
             try{
                 pending=DocumentsContract.createDocument(resolver,folder,"application/octet-stream",pendingName);if(pending==null)throw new IOException("OUTPUT_CREATE_FAILED");exactName(pending,pendingName);

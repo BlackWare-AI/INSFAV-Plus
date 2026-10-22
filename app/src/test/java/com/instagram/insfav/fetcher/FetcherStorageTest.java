@@ -57,6 +57,12 @@ public class FetcherStorageTest {
         context.getContentResolver().releasePersistableUriPermission(tree,Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         try{new OutputFolder(context,tree.toString());fail();}catch(SecurityException expected){}assertEquals(0,provider.writes);
     }
+    @Test public void corruptExistingSourceBytesAndDateArePreserved()throws Exception {
+        SessionState.prefs(context).edit().putString("directoryId","root/.thumbnails").commit();File folder=new File(provider.root,".thumbnails");folder.mkdir();
+        File existing=new File(folder,"example.webp");byte[] original={1,2,3,4};Files.write(existing.toPath(),original);assertTrue(existing.setLastModified(123450000L));long modified=existing.lastModified();
+        OutputFolder output=new OutputFolder(context,tree.toString());java.io.IOException error=assertThrows(java.io.IOException.class,()->output.commit("example.webp",ThumbnailCodec.convert(CodecTest.png(320,320)),false));
+        assertEquals("OUTPUT_EXISTING_PRESERVED",error.getMessage());assertArrayEquals(original,Files.readAllBytes(existing.toPath()));assertEquals(modified,existing.lastModified());assertEquals(0,provider.writes);assertEquals(1,folder.list().length);
+    }
     public static class Fixture extends DocumentsProvider {
         File root; int writes,opens,childQueries; boolean rejectRename;
         static final String[] DEFAULT = {DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE};

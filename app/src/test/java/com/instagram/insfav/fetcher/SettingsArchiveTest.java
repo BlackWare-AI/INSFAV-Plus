@@ -40,4 +40,33 @@ public class SettingsArchiveTest {
   char[] pass="portable test password".toCharArray();String raw=SettingsArchive.export(c,pass,new JSONObject());SessionState.prefs(c).edit().putInt("minimum",9).commit();
   QueueControl.lock.set(true);try{SettingsArchive.apply(c,SettingsArchive.inspect(c,raw,pass));fail();}catch(java.io.IOException expected){assertEquals(9,SessionState.prefs(c).getInt("minimum",0));assertTrue(QueueControl.lock.get());}finally{QueueControl.lock.set(false);}
  }
+
+ @Test public void originalPackageImportIsExplicitAndAuthenticatesTheExactOldApplication()throws Exception {
+  Context plus=new ContextWrapper(c){@Override public String getPackageName(){return "com.instagram.insfav.plus";}};
+  char[] password="offline migration password".toCharArray();
+  JSONObject data=SettingsArchive.inspect(c,SettingsArchive.export(c,password,new JSONObject()),password);
+  String old=SettingsArchive.encrypt("com.instagram.insfav",data,password);
+  assertThrows(java.io.IOException.class,()->SettingsArchive.inspect(plus,old,password));
+  assertEquals(data.toString(),SettingsArchive.inspectOriginal(plus,old,password).toString());
+  final String relabeled=new JSONObject(old).put("application","com.instagram.insfav.plus").toString();
+  assertThrows(java.io.IOException.class,()->SettingsArchive.inspectOriginal(plus,relabeled,password));
+  final String forged=new JSONObject(old).put("application","untrusted.application").toString();
+  assertThrows(java.io.IOException.class,()->SettingsArchive.inspectOriginal(plus,forged,password));
+  assertThrows(java.io.IOException.class,()->SettingsArchive.inspectOriginal(plus,old,"incorrect password".toCharArray()));
+  String normal=SettingsArchive.export(plus,password,new JSONObject());assertEquals("com.instagram.insfav.plus",new JSONObject(normal).getString("application"));
+  assertThrows(java.io.IOException.class,()->SettingsArchive.inspectOriginal(plus,normal,password));
+ }
+ @Test public void changingEnvelopeToTheExpectedOldApplicationStillFailsGcmAuthentication()throws Exception {
+  Context plus=new ContextWrapper(c){@Override public String getPackageName(){return "com.instagram.insfav.plus";}};
+  char[] password="offline migration password".toCharArray();JSONObject data=SettingsArchive.inspect(c,SettingsArchive.export(c,password,new JSONObject()),password);
+  String raw=SettingsArchive.encrypt("another.package",data,password);
+  String changed=new JSONObject(raw).put("application","com.instagram.insfav").toString();
+  assertThrows(java.io.IOException.class,()->SettingsArchive.inspectOriginal(plus,changed,password));
+ }
+ @Test public void extraSettingsFailureRollsBackFetcherConfigurationAndReleasesTheQueueLock()throws Exception {
+  char[] pass="offline migration password".toCharArray();JSONObject data=SettingsArchive.inspect(c,SettingsArchive.export(c,pass,new JSONObject()),pass);
+  SessionState.prefs(c).edit().putInt("minimum",9).commit();boolean[] rolled={false};
+  assertThrows(java.io.IOException.class,()->SettingsArchive.apply(c,data,new SettingsArchive.Extras(){public void apply()throws Exception{throw new java.io.IOException("synthetic");}public void rollback(){rolled[0]=true;}}));
+  assertTrue(rolled[0]);assertEquals(9,SessionState.prefs(c).getInt("minimum",0));assertFalse(QueueControl.lock.get());
+ }
 }

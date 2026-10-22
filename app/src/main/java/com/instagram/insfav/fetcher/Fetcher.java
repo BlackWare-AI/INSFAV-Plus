@@ -96,9 +96,11 @@ public final class Fetcher {
  public static JSONObject resolution(int offset)throws Exception {try(QueueStore q=new QueueStore(context)){if(!running())FetcherCatalog.seed(q);return FetcherCatalog.resolution(q,offset);}}
  public static String exportSettings(char[] password,JSONObject extra)throws Exception{return SettingsArchive.export(context,password,extra);}
  public static JSONObject inspectSettings(String data,char[] password)throws Exception{return SettingsArchive.inspect(context,data,password);}
- public static void restoreSettings(JSONObject data)throws Exception{
+ public static JSONObject inspectOriginalSettings(String data,char[] password)throws Exception{return SettingsArchive.inspectOriginal(context,data,password);}
+ public static void restoreSettings(JSONObject data)throws Exception{restoreSettings(data,null);}
+ public static void restoreSettings(JSONObject data,SettingsArchive.Extras extras)throws Exception{
   if(running()||!viewerToken.isEmpty())throw new IOException("Pause retrieval and close the viewer before importing settings.");
-  SettingsArchive.apply(context,data);WorkScheduler.cancel(context);WorkScheduler.recovery(context);WorkScheduler.plan(context,false);publish();
+  if(extras==null)SettingsArchive.apply(context,data);else SettingsArchive.apply(context,data,extras);WorkScheduler.cancel(context);WorkScheduler.recovery(context);WorkScheduler.plan(context,false);publish();
  }
  public static String diagnostics()throws IOException{try(ByteArrayOutputStream out=new ByteArrayOutputStream()){new Diagnostics(context).export(out);return out.toString("UTF-8");}}
  public static synchronized String fullMime(String token){return fullMime;}

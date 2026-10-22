@@ -161,4 +161,5 @@
     <string name="ui_d929bad69456" formatted="false">If Android requests permission, confirm the same folder already selected in Profile Images. No second output folder is used.</string>
     <string name="ui_211e5e68cd74" formatted="false">Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.</string>
     <string name="ui_a23b53d0f98e" formatted="false">Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.</string>
+    <string name="ui_d91280edbbba" formatted="false">Settings restored. Select the thumbnail folder again to grant access.</string>
 </resources>

@@ -1,9 +1,9 @@
 {
   "i18n-catalog.js": {
-    "sourceBytes": 11284,
-    "bundleBytes": 11185,
-    "sourceSha256": "2c7c305140cc0e494f99ea892989a80a63bf6c76ca2d4d3284ed50c2bfef1d88",
-    "bundleSha256": "4146db0bf885d5466831f669ee6dc2319a04069a4f4833b8710b1cb3dce08fb9"
+    "sourceBytes": 11454,
+    "bundleBytes": 11355,
+    "sourceSha256": "be0c24c8776f5a6b2ffc91be3ec3670fd7e33b811bf17a7be27663122f476115",
+    "bundleSha256": "c5bf39b280ac695564f0c14861530d53c9d398d96eb253496c93bc48ee4eac84"
   },
   "i18n.js": {
     "sourceBytes": 1110,

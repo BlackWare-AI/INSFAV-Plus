@@ -163,6 +163,7 @@ case "Each WebView has its own start-to-start delay. A waiting worker does not b
 case "If Android requests permission, confirm the same folder already selected in Profile Images. No second output folder is used.":id=R.string.ui_d929bad69456;break;
 case "Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.":id=R.string.ui_211e5e68cd74;break;
 case "Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.":id=R.string.ui_a23b53d0f98e;break;
+case "Settings restored. Select the thumbnail folder again to grant access.":id=R.string.ui_d91280edbbba;break;
 default:return source;}return UiLanguage.context(context).getString(id);}
  private UiText(){}
 }

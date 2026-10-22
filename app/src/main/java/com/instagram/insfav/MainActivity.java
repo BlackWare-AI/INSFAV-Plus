@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import org.json.*;
 import com.instagram.insfav.fetcher.Fetcher;
 import com.instagram.insfav.fetcher.SettingsBackupUi;
+import com.instagram.insfav.fetcher.SettingsArchive;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
@@ -42,21 +43,35 @@ public final class MainActivity extends Activity {
         super.onCreate(state); Fetcher.addListener(fetchListener); store = Store.get(this); images = new LocalImages(this, store);
         settingsBackup=new SettingsBackupUi(this,io,new SettingsBackupUi.Host(){
             public String export(char[] pass)throws Exception {
-                JSONObject extra=new JSONObject();synchronized(store){for(String k:new String[]{"treeUri","directoryId","folderLabel"})if(store.settings.has(k))extra.put(k,store.settings.getString(k));}
+                JSONObject extra=new JSONObject().put("language",UiLanguage.choice(MainActivity.this));synchronized(store){for(String k:new String[]{"treeUri","directoryId","folderLabel"})if(store.settings.has(k))extra.put(k,store.settings.getString(k));}
                 return Fetcher.exportSettings(pass,extra);
             }
             public JSONObject inspect(String raw,char[] pass)throws Exception {
-                JSONObject data=Fetcher.inspectSettings(raw,pass),extra=data.getJSONObject("extra");
-                for(java.util.Iterator<String> i=extra.keys();i.hasNext();){String key=i.next();if(!java.util.Arrays.asList("treeUri","directoryId","folderLabel").contains(key)||!(extra.get(key) instanceof String))throw new IOException("Invalid settings.");}
+                return validateSettings(Fetcher.inspectSettings(raw,pass));
+            }
+            public JSONObject inspectOriginal(String raw,char[] pass)throws Exception {return validateSettings(Fetcher.inspectOriginalSettings(raw,pass));}
+            private JSONObject validateSettings(JSONObject data)throws Exception {
+                JSONObject extra=data.getJSONObject("extra");
+                for(java.util.Iterator<String> i=extra.keys();i.hasNext();){String key=i.next();if(!java.util.Arrays.asList("treeUri","directoryId","folderLabel","language").contains(key)||!(extra.get(key) instanceof String))throw new IOException("Invalid settings.");}
+                if(extra.has("language")&&!java.util.Arrays.asList("en","tr","system").contains(extra.getString("language")))throw new IOException("Invalid language setting.");
                 return data;
             }
             public void apply(JSONObject data)throws Exception {
                 if(images.scanning()||scanPending.get())throw new IOException("Wait for the scan to finish.");
-                Fetcher.restoreSettings(data);
-                // SAF grants are device-owned, never restored from a JSON claim.
+                final JSONObject beforeSettings,beforeIndex;final String beforeLanguage=UiLanguage.choice(MainActivity.this);
+                synchronized(store){store.flushIndex();beforeSettings=new JSONObject(store.settings.toString());beforeIndex=new JSONObject(store.index.toString());}
                 JSONObject extra=data.getJSONObject("extra");String tree=extra.optString("treeUri");boolean granted=false;
                 for(UriPermission grant:getContentResolver().getPersistedUriPermissions())if(grant.getUri().toString().equals(tree)&&grant.isReadPermission())granted=true;
-                if(granted)synchronized(store){String old=store.settings.optString("treeUri");JSONObject before=new JSONObject(store.settings.toString());try{for(java.util.Iterator<String> i=extra.keys();i.hasNext();){String k=i.next();store.settings.put(k,extra.get(k));}store.saveSettings();if(!old.equals(tree))store.replaceIndex(new JSONObject());}catch(Exception e){store.settings=before;throw e;}}
+                final boolean folderGranted=granted;
+                Fetcher.restoreSettings(data,new SettingsArchive.Extras(){
+                    public void apply()throws Exception {
+                        if(extra.has("language"))UiLanguage.save(MainActivity.this,extra.getString("language"));
+                        if(folderGranted)synchronized(store){for(String k:new String[]{"treeUri","directoryId","folderLabel"})if(extra.has(k))store.settings.put(k,extra.get(k));store.saveSettings();if(!beforeSettings.optString("treeUri").equals(tree))store.replaceIndex(new JSONObject());}
+                    }
+                    public void rollback()throws Exception {synchronized(store){store.settings=beforeSettings;store.saveSettings();store.replaceIndex(beforeIndex);}UiLanguage.save(MainActivity.this,beforeLanguage);}
+                });
+                send("language",new JSONObject().put("choice",UiLanguage.choice(MainActivity.this)));
+                if(!tree.isEmpty()&&!granted)send("message","Settings restored. Select the thumbnail folder again to grant access.");
                 images.checkAccess();Fetcher.sync();send("fetcher-status",Fetcher.snapshot());send("status",imageSnapshot(false));
             }
             public void message(String text){send("message",text);}
@@ -177,6 +192,7 @@ public final class MainActivity extends Activity {
                         case "export": if (store.original().isEmpty()) throw new IOException("No collections to export"); export(store.original(), "INSFAV-backup.json", "application/json"); break;
                         case "settings-export": settingsBackup.start(true); break;
                         case "settings-import": settingsBackup.start(false); break;
+                        case "settings-import-original": settingsBackup.startOriginal();break;
                         case "logs": export(diagnostics(),"INSFAV-Plus-diagnostics.txt","text/plain");break;
                         case "frontend-error": store.log("web_error", input.optString("code", "script")); break;
                         case "clear-data": if(images.scanning()||scanPending.get())throw new IOException("Wait for the scan to finish.");if(Fetcher.running())throw new IOException("Pause the fetcher before clearing collections.");store.clearDocument(); getPreferences(0).edit().putInt("clear", getPreferences(0).getInt("clear", 0) + 1).apply(); send("cleared", ""); break;

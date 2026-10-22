@@ -46,6 +46,7 @@ private long lastSignal;private String lastState="";volatile boolean cancelled;v
      if(!RunPolicy.read(settings).contains(ZonedDateTime.now())){hoursEnded=true;break;}
      String user=targets.remove();String filename=Identity.outputFilename(user);boolean validOutput=output.valid(filename);
      if(validOutput){Fetcher.ImageRecord image=output.metadata(user);if(!Fetcher.host().catalogContains(image))Fetcher.host().imageWritten(image,settings.getString("tree",""));queue.mark(user,"EXISTING","LOCAL_IMAGE");state("Checking existing thumbnails");if(bounded&&++cached>=128&&flights.isEmpty())return;continue;}
+     if(output.uri(filename)!=null){queue.mark(user,"FAILED","OUTPUT_EXISTING_PRESERVED");new Diagnostics(context).log("PROFILE","OUTPUT_EXISTING_PRESERVED",0);continue;}
      if(!queue.claim(user))continue;QueueControl.current=user;CompletableFuture<byte[]> future=broker.submit(user,false);flights.put(user,future);future.whenComplete((bytes,error)->wakeup());state("Downloading");
     }
     if(flights.isEmpty()){
@@ -69,7 +70,7 @@ private long lastSignal;private String lastState="";volatile boolean cancelled;v
       else{queue.attempted(user);queue.mark(user,"FAILED",error.code);}
       QueueControl.lastResult=error.code;new Diagnostics(context).log("PROFILE",error.code,error.http);
      }catch(CancellationException e){queue.mark(user,"RETRY_LATER","REQUEST_CANCELLED");}
-     catch(IOException e){if(committing)throw e;queue.attempted(user);QueueControl.lastResult=Diagnostics.imageCode(e);queue.mark(user,"FAILED",QueueControl.lastResult);}
+     catch(IOException e){if("OUTPUT_EXISTING_PRESERVED".equals(e.getMessage())){queue.mark(user,"FAILED","OUTPUT_EXISTING_PRESERVED");QueueControl.lastResult="OUTPUT_EXISTING_PRESERVED";}else{if(committing)throw e;queue.attempted(user);QueueControl.lastResult=Diagnostics.imageCode(e);queue.mark(user,"FAILED",QueueControl.lastResult);}}
      catch(SecurityException|android.database.sqlite.SQLiteException e){throw e;}
       catch(RuntimeException e){QueueControl.lastResult="PROFILE_PROCESSING_ERROR";queue.attempted(user);queue.mark(user,"FAILED","PROFILE_PROCESSING_ERROR");new Diagnostics(context).unexpected("PROFILE",e);new Diagnostics(context).log("PROFILE","PROFILE_PROCESSING_ERROR",0);}
      finally{if(original!=null)Arrays.fill(original,(byte)0);it.remove();}

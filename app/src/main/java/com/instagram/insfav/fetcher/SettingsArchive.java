@@ -33,6 +33,14 @@ public final class SettingsArchive {
     public static JSONObject inspect(Context c,String raw,char[] password)throws Exception {
         JSONObject data=decrypt(c.getPackageName(),raw,password);validate(data);return data;
     }
+    /** Deliberate migration only; ordinary import never tries another application's AAD. */
+    public static JSONObject inspectOriginal(Context c,String raw,char[] password)throws Exception {
+        if(!"com.instagram.insfav.plus".equals(c.getPackageName()))throw new IOException("Unsupported destination application.");
+        JSONObject data=decrypt("com.instagram.insfav",raw,password);validate(data);return data;
+    }
+    public interface Extras {void apply()throws Exception;void rollback()throws Exception;}
+    private static final Extras NO_EXTRAS=new Extras(){public void apply(){}public void rollback(){}};
+    public static void apply(Context c,JSONObject data,Extras extras)throws Exception {apply(c,data,new CookieVault(c),extras);}
     static JSONObject decrypt(String app,String raw,char[] password)throws Exception {
         if(raw.length()>1024*1024)throw new IOException("Settings backup is too large.");
         try {
@@ -60,11 +68,12 @@ public final class SettingsArchive {
         data.getJSONObject("extra");if(!data.isNull("cookies"))CookieJar.decode(data.getString("cookies"));
     }
     public static void apply(Context c,JSONObject data)throws Exception {apply(c,data,new CookieVault(c));}
-    static void apply(Context c,JSONObject data,CookieVault vault)throws Exception {
+    static void apply(Context c,JSONObject data,CookieVault vault)throws Exception {apply(c,data,vault,NO_EXTRAS);}
+    private static void apply(Context c,JSONObject data,CookieVault vault,Extras extras)throws Exception {
         validate(data);if(!QueueControl.lock.compareAndSet(false,true))throw new IOException("Pause retrieval before importing settings.");
-        try{applyLocked(c,data,vault);}finally{QueueControl.lock.set(false);}
+        try{applyLocked(c,data,vault,extras);}finally{QueueControl.lock.set(false);}
     }
-    private static void applyLocked(Context c,JSONObject data,CookieVault vault)throws Exception {
+    private static void applyLocked(Context c,JSONObject data,CookieVault vault,Extras extras)throws Exception {
         SharedPreferences prefs=SessionState.prefs(c);Map<String,?> before=new HashMap<>(prefs.getAll());String old=vault.configured()?vault.stored():null;
         try {
             if(data.isNull("cookies"))vault.remove();else vault.save(CookieJar.decode(data.getString("cookies")));
@@ -72,8 +81,10 @@ public final class SettingsArchive {
             // A backup is configuration, not authorization to resume a queue on another device.
             e.putBoolean("armed",false).putBoolean("userPaused",true).putString("cookieGeneration",UUID.randomUUID().toString()).putString("sessionEvidence","UNKNOWN").putString("state","Stopped — User Disabled").remove("refreshLegacy");
             if(!e.commit())throw new IOException("Settings could not be saved.");
+            extras.apply();
             WorkScheduler.cancel(c);WorkScheduler.recovery(c);WorkScheduler.plan(c,false);
         }catch(Exception error){
+            try{extras.rollback();}catch(Exception rollback){new Diagnostics(c).unexpected("SETTINGS",rollback);}
             if(old==null)vault.remove();else vault.save(CookieJar.decode(old));
             SharedPreferences.Editor e=prefs.edit().clear();for(Map.Entry<String,?> entry:before.entrySet()){Object v=entry.getValue();String n=entry.getKey();if(v instanceof Integer)e.putInt(n,(Integer)v);else if(v instanceof Long)e.putLong(n,(Long)v);else if(v instanceof Boolean)e.putBoolean(n,(Boolean)v);else if(v instanceof String)e.putString(n,(String)v);}e.commit();throw new IOException("Settings import failed; previous settings restored.");
         }

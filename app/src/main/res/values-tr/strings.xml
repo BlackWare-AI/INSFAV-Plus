@@ -161,4 +161,5 @@
     <string name="ui_d929bad69456" formatted="false">Android izin isterse seçili küçük görsel klasörünü onaylayın. İkinci bir çıktı klasörü kullanılmaz.</string>
     <string name="ui_211e5e68cd74" formatted="false">İndeksi veya önbelleği temizlemek fotoğraf ve koleksiyonları silmez. Yeniden tarama kaynakları yalnızca okur ve sahipsiz görselleri korur. İsteğe bağlı indirici yalnızca doğrulanmış yeni görseller yazar.</string>
     <string name="ui_a23b53d0f98e" formatted="false">Klasör değişiklikleri yeniden taramada algılanır. Erişim izni kaybolursa klasörü yeniden seçin.</string>
+    <string name="ui_d91280edbbba" formatted="false">Ayarlar geri yüklendi. Erişim izni vermek için küçük görsel klasörünü yeniden seçin.</string>
 </resources>
