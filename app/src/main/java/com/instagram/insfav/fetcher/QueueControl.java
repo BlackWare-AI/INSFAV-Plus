@@ -3,6 +3,8 @@ package com.instagram.insfav.fetcher;
 import android.content.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 final class QueueControl {
  static volatile int queuedAccounts, runProcessed;
  static volatile String lastResult="";

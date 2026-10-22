@@ -6,6 +6,8 @@ import android.content.pm.ServiceInfo;
 import android.os.*;
 import java.time.ZoneId;
 
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 public final class FetchService extends Service {
     static volatile boolean running;
     private volatile QueueEngine engine;

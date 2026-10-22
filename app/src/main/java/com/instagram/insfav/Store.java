@@ -11,6 +11,7 @@ import java.util.concurrent.*;
 import com.instagram.insfav.fetcher.IndexJournal;
 
 /** Keeps the original collection document independent from replaceable image metadata. */
+@android.annotation.SuppressLint("StaticFieldLeak") // Singleton owns only the application context.
 final class Store {
     private static Store instance;
     static synchronized Store get(Context context) {
@@ -31,7 +32,7 @@ final class Store {
     long externalRevision,collectionGeneration,deltaFloor;
     private final NavigableMap<Long,String> profileChanges=new TreeMap<>();
     Store(Context context) {
-        this.context=context;
+        this.context=context.getApplicationContext();
         root = context.getFilesDir(); diagnostic = new File(root, "diagnostics.txt");
         index = readObject("thumbnail-index.json"); settings = readObject("image-settings.json");
         deltaFloor=index.optLong("revision");
@@ -156,7 +157,7 @@ final class Store {
         profileChanges.put(revision,user);if(profileChanges.size()>256)deltaFloor=profileChanges.pollFirstEntry().getKey();
         if(dirtyChanges>=64)flushIndex();
         else if(pendingSnapshot==null)pendingSnapshot=snapshots.schedule(()->{
-            synchronized(Store.this){pendingSnapshot=null;try{flushIndex();}catch(Exception error){log("index_snapshot","FAILED");}}
+            synchronized(Store.this){pendingSnapshot=null;try{flushIndex();}catch(Exception error){log("index_snapshot","FAILED");com.instagram.insfav.fetcher.Fetcher.indexPersistenceFailure();}}
         },60,TimeUnit.SECONDS);
     }
     private void applyProfile(String user,JSONObject profile,String tree,long revision)throws JSONException {

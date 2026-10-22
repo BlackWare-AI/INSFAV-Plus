@@ -10,6 +10,8 @@ import javax.crypto.spec.*;
 import java.io.IOException;
 
 /** Portable authenticated settings backup. Favorites, queue, index and runtime state are excluded. */
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 public final class SettingsArchive {
     private static final String FORMAT="INSFAV_SETTINGS";
     private static final int ITERATIONS=210000;

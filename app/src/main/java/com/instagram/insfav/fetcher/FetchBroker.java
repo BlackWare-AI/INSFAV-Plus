@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 /** Shared cookie lease and reusable WebViews; dispatch pacing never holds active operations. */
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 final class FetchBroker {
  interface Time{long now();void sleep(long millis)throws InterruptedException;default void await(Object monitor,long millis)throws InterruptedException{if(millis==0)monitor.wait();else sleep(millis);}}
  interface Factory{ProfileProvider open(boolean full)throws ProfileProvider.Failure;}

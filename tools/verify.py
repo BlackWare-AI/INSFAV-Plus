@@ -37,6 +37,8 @@ for path in (root / 'app/build/test-results/testDebugUnitTest').glob('TEST-*.xml
     for key in totals:
         totals[key] += int(suite.get(key, '0'))
 report['unitTests'] = totals
+report['unitTestCommandSucceeded'] = report['commands'][3]['exitCode'] == 0
+report['unitCountsMayBeStale'] = not report['unitTestCommandSucceeded']
 lint = root / 'app/build/reports/lint-results-debug.xml'
 if lint.exists():
     issues = ET.parse(lint).getroot().findall('issue')

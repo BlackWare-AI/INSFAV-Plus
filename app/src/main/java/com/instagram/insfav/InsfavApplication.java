@@ -18,7 +18,7 @@ public final class InsfavApplication extends Application implements Fetcher.Host
  public boolean hasImage(String user){
   String uri;
   synchronized(store){JSONObject p=store.index.optJSONObject("profiles"),i=p==null?null:p.optJSONObject(user);if(!tree().equals(store.index.optString("treeUri"))||i==null||!i.optBoolean("readable"))return false;uri=i.optString("uri");}
-  try{android.graphics.BitmapFactory.Options b=ImageCodec.bounds(getContentResolver(),Uri.parse(uri));return ImageCodec.validate(getContentResolver(),Uri.parse(uri),b);}catch(Exception|OutOfMemoryError error){return false;}
+  try{android.graphics.BitmapFactory.Options b=ImageCodec.bounds(getContentResolver(),Uri.parse(uri));return ImageCodec.validate(getContentResolver(),Uri.parse(uri),b);}catch(OutOfMemoryError error){Fetcher.memoryFailure();throw error;}catch(Exception error){return false;}
  }
  public void imageWritten(String user,Uri uri,String tree)throws Exception{
   synchronized(store){

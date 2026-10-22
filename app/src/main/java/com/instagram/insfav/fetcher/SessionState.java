@@ -4,6 +4,8 @@ import android.content.*;
 import java.util.*;
 
 /** Only non-secret session generation and verification evidence are stored in preferences. */
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 final class SessionState {
     static SharedPreferences prefs(Context c) { return c.getSharedPreferences("thumbnail-fetcher", Context.MODE_PRIVATE); }
     static void changed(Context c) {

@@ -39,6 +39,7 @@ public final class MainActivity extends Activity {
         public void fullReady(String user,String token,int width,int height){try{send("remote-full",new JSONObject().put("user",user).put("token",token).put("width",width).put("height",height));}catch(Exception ignored){}}
         public void fullFailed(String token,String code){try{send("remote-full-failed",new JSONObject().put("token",token).put("code",code));}catch(Exception ignored){}}
     };
+    @android.annotation.SuppressLint("SetJavaScriptEnabled") // Trusted local UI only; imported labels use textContent and CSP denies remote scripts.
     @Override public void onCreate(Bundle state) {
         super.onCreate(state); Fetcher.addListener(fetchListener); store = Store.get(this); images = new LocalImages(this, store);
         settingsBackup=new SettingsBackupUi(this,io,new SettingsBackupUi.Host(){

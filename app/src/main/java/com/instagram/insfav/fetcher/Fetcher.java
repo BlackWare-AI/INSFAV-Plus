@@ -8,6 +8,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import android.graphics.*;
 /** Public adapter; the independent helper remains untouched. Never sends secrets in status or diagnostics. */
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint({"ApplySharedPref","StaticFieldLeak"})
 public final class Fetcher {
  public interface Host{
   Collection<String> users()throws Exception;
@@ -52,6 +54,7 @@ public final class Fetcher {
   if(!tree.equals(s.getString("tree",""))||!dir.equals(s.getString("directoryId","")))s.edit().putString("tree",tree).putString("directoryId",dir).putLong("datasetGeneration",s.getLong("datasetGeneration",0)+1).putBoolean("armed",false).putBoolean("userPaused",true).commit();
  }
  public static void memoryFailure(){if(context==null)return;SessionState.prefs(context).edit().putString("blocked","IMAGE_MEMORY_LIMIT").putString("state","Paused: memory limit; queue preserved").commit();FetchBroker.get(context).cancelAll();closeViewer();WorkScheduler.cancel(context);publish(true);}
+ public static void indexPersistenceFailure(){if(context==null)return;SessionState.prefs(context).edit().putString("blocked","INDEX_SNAPSHOT_FAILED").putString("state","Paused: index snapshot failed; durable changes preserved").commit();FetchBroker.get(context).cancelAll();WorkScheduler.cancel(context);publish(true);}
  public static void memoryPressure(){QueueControl.memoryPressure=true;FetchBroker.get(context).wakeup();}
  public static boolean running(){return QueueControl.lock.get();}
  public static boolean writable(){String tree=host().tree();for(UriPermission p:context.getContentResolver().getPersistedUriPermissions())if(p.getUri().toString().equals(tree)&&p.isWritePermission()&&p.isReadPermission())return true;return false;}
@@ -120,7 +123,8 @@ public final class Fetcher {
     if(id==generation.get()&&writable()){
      String tree=host().tree();OutputFolder folder=new OutputFolder(context,tree);Uri uri=folder.commit(Identity.outputFilename(name),thumbnail,false);host().imageWritten(name,uri,tree);
     }
-   }catch(Exception|OutOfMemoryError issue){if(bytes!=null&&bytes!=fullBytes)Arrays.fill(bytes,(byte)0);if(id==generation.get()&&bytes!=fullBytes)for(Listener l:listeners)l.fullFailed(token,"IMAGE_VALIDATION_FAILED");new Diagnostics(context).log("IMAGE","VIEW_OR_REFRESH_FAILED",0);}
+   }catch(OutOfMemoryError issue){if(bytes!=null&&bytes!=fullBytes)Arrays.fill(bytes,(byte)0);memoryFailure();new Diagnostics(context).log("IMAGE","MEMORY_LIMIT",0);
+   }catch(Exception issue){if(bytes!=null&&bytes!=fullBytes)Arrays.fill(bytes,(byte)0);if(id==generation.get()&&bytes!=fullBytes)for(Listener l:listeners)l.fullFailed(token,"IMAGE_VALIDATION_FAILED");new Diagnostics(context).log("IMAGE","VIEW_OR_REFRESH_FAILED",0);}
    finally{if(id==generation.get())viewing=null;publish();}
   });
  }

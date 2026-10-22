@@ -6,6 +6,8 @@ import android.os.Build;
 import androidx.work.*;
 
 /** Bounded two-minute pooled recovery job; never a sleep loop or an exact alarm. */
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 public final class DownloadWorker extends Worker {
     private volatile QueueEngine engine;
     public DownloadWorker(Context c, WorkerParameters p) { super(c, p); }

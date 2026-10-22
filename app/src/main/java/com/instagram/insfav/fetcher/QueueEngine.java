@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.BooleanSupplier;
 /** Coordinator alone owns queue and SAF commits. Independent broker operations overlap. */
+// Queue, session, schedule and recovery decisions must be durable before continuing.
+@android.annotation.SuppressLint("ApplySharedPref")
 final class QueueEngine {
  static int terminalCount(Map<String,Integer> counts){return counts.getOrDefault("SUCCESS",0)+counts.getOrDefault("FAILED",0)+counts.getOrDefault("SKIPPED_UNAVAILABLE",0)+counts.getOrDefault("SKIPPED_NO_IMAGE",0);}
  interface Reporter{void update(String state);}

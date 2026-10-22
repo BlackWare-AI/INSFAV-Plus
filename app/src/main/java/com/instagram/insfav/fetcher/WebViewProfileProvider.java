@@ -291,7 +291,7 @@ final class WebViewProfileProvider implements ProfileProvider {
             @Override public void onReceivedClientCertRequest(WebView v, ClientCertRequest request) {
                 request.cancel(); fail(new Failure("TLS_ERROR", 0, 0, true));
             }
-            @android.annotation.TargetApi(27)
+            @androidx.annotation.RequiresApi(27)
             @Override public void onSafeBrowsingHit(WebView v, WebResourceRequest request, int type, SafeBrowsingResponse response) {
                 response.backToSafety(false); fail(new Failure("WEBVIEW_SAFE_BROWSING_BLOCKED", 0, 0, true));
             }
