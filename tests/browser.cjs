@@ -37,7 +37,7 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   check(await page.locator('.account').count()<25,'10,000 accounts keep bounded DOM');
   await page.locator('.avatar img').first().waitFor();
   const avatar=await page.locator('.avatar').first().evaluate(el=>({width:el.offsetWidth,height:el.offsetHeight,radius:getComputedStyle(el).borderRadius,fit:getComputedStyle(el.querySelector('img')).objectFit}));
-  check(avatar.width===40&&avatar.height===40&&avatar.radius==='14px'&&avatar.fit==='cover','original avatar rectangle and center crop preserved');
+  check(avatar.width===60&&avatar.height===60&&avatar.radius==='18px'&&avatar.fit==='cover','60px avatar rectangle and center crop verified');
   check(await page.locator('.avatar').nth(1).locator('.person-placeholder').count()===1,'missing image shows gray person instead of a letter');
   await page.evaluate(()=>window.savedHeader=document.querySelector('.folder-header'));
   await page.locator('.folder-header').first().click();await page.waitForTimeout(180);
