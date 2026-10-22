@@ -1,0 +1,12 @@
+{
+  "name": "insfav-build-tools",
+  "private": true,
+  "scripts": {
+    "web": "node tools/minify.cjs",
+    "test": "node --test tests/core.test.cjs"
+  },
+  "devDependencies": {
+    "terser": "5.51.2",
+    "clean-css": "5.3.3"
+  }
+}

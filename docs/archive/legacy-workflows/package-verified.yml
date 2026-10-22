@@ -1,0 +1,42 @@
+name: Package verified thumbnail delivery
+on:
+  push:
+    branches: ['package-verified-**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package:
+    if: ${{ startsWith(github.head_ref || github.ref_name, 'package-verified-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Confirm application code matches the tested commit
+        run: git diff --exit-code 832f7d34205a8270fe289914548eeff12259388b HEAD -- app web version.properties build.gradle settings.gradle gradle gradlew gradlew.bat
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39526391363
+          name: INSFAV-builds
+          path: builds
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39526391363
+          name: INSFAV-emulator-pool
+          path: emulator-pool
+      - name: Package verified sources and measured report
+        env:
+          SOURCE_COMMIT: 832f7d34205a8270fe289914548eeff12259388b
+        run: |
+          git archive --format=zip --prefix=INSFAV/ -o builds/delivery/INSFAV-Android-Studio-Project.zip HEAD
+          cp README.md builds/delivery/README.md
+          python3 tools/delivery-report.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: INSFAV-3.4.0-delivery
+          path: final-delivery/

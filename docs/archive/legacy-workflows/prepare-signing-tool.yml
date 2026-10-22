@@ -1,0 +1,20 @@
+name: Prepare public APK verification tool
+on:
+  push:
+    branches: [package-verified-signing-tools]
+permissions:
+  contents: read
+jobs:
+  tools:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          mkdir public-tools
+          jar=$(find "$ANDROID_HOME/build-tools" -name apksigner.jar | sort -V | tail -1)
+          test -n "$jar"
+          cp "$jar" public-tools/apksigner.jar
+          sha256sum public-tools/apksigner.jar > public-tools/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-apksigner-tool
+          path: public-tools/

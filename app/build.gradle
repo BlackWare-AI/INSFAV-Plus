@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+def appVersion = new Properties()
+rootProject.file('version.properties').withInputStream { appVersion.load(it) }
+android {
+    namespace 'com.instagram.insfav'
+    compileSdk 35
+    defaultConfig { applicationId 'com.instagram.insfav.plus'; minSdk 26; targetSdk 35; versionCode appVersion.VERSION_CODE.toInteger(); versionName appVersion.VERSION_NAME; testApplicationId 'com.instagram.insfav.plus.test'; testInstrumentationRunner 'com.instagram.insfav.fetcher.PoolInstrumentation' }
+    testOptions { unitTests.includeAndroidResources = true }
+    buildFeatures { buildConfig true }
+    signingConfigs {
+        release {
+            if (System.getenv('INSFAV_KEYSTORE')) {
+                storeFile file(System.getenv('INSFAV_KEYSTORE'))
+                storePassword System.getenv('INSFAV_STORE_PASSWORD')
+                keyAlias System.getenv('INSFAV_KEY_ALIAS') ?: 'insfav'
+                keyPassword System.getenv('INSFAV_KEY_PASSWORD') ?: System.getenv('INSFAV_STORE_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug { versionNameSuffix '-debug' }
+        release { if (System.getenv('INSFAV_KEYSTORE')) signingConfig signingConfigs.release; minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+
+dependencies {
+    implementation 'androidx.work:work-runtime:2.10.1'
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.14.1"
+}

@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application>
+ <provider android:name="com.instagram.insfav.RescanDocuments" android:authorities="com.instagram.insfav.plus.test.rescan" android:exported="true" android:grantUriPermissions="true" android:permission="android.permission.MANAGE_DOCUMENTS"><intent-filter><action android:name="android.content.action.DOCUMENTS_PROVIDER"/></intent-filter></provider>
+ <receiver android:name="com.instagram.insfav.RescanDocuments$Grant" android:exported="true"/>
+ <provider android:name="com.instagram.insfav.fetcher.FixtureDocuments" android:authorities="com.instagram.insfav.plus.test.documents" android:exported="true" android:grantUriPermissions="true" android:permission="android.permission.MANAGE_DOCUMENTS"><intent-filter><action android:name="android.content.action.DOCUMENTS_PROVIDER"/></intent-filter></provider>
+ <receiver android:name="com.instagram.insfav.fetcher.FixtureDocuments$Grant" android:exported="true"/>
+</application></manifest>

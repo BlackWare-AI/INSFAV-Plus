@@ -1,0 +1,197 @@
+/* UI tests use a simulated native bridge. SAF/device behavior requires Android testing. */
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'../app/src/main/assets');
+const fixture=[{name:'SAVED',items:Array.from({length:10000},(_,i)=>({pageId:i===0?'test.user':'user'+i,name:i===0?'Test User':'Account '+i}))},{name:'SECOND',items:[{pageId:'test.user',name:'Test User'}]}];
+let checks=0;function check(value,label){assert.ok(value,label);console.log('PASS '+label);checks++;}
+// Poll from the test process: Playwright 1.51 waitForFunction eval conflicts with the app CSP.
+async function waitForValue(page,predicate){const deadline=Date.now()+10000;while(Date.now()<deadline){if(await page.evaluate(predicate))return;await page.waitForTimeout(25);}assert.fail('Timed out waiting for the actual UI/native event');}
+(async()=>{
+ const server=http.createServer((req,res)=>{
+  if(req.url.startsWith('/thumb/')||req.url.startsWith('/full/')||req.url.startsWith('/remote-full/')){res.setHeader('Content-Type','image/svg+xml');res.end('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#777"/></svg>');return;}
+  const name=req.url.split('?')[0]==='/'?'index.html':req.url.split('?')[0].slice(1),file=path.join(root,name);
+  if(!file.startsWith(root)||!fs.existsSync(file)){res.writeHead(404).end();return;}
+  res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.webp')?'image/webp':name.endsWith('.woff2')?'font/woff2':'text/html');res.end(fs.readFileSync(file));
+ });
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--no-zygote','--single-process','--disable-gpu']});
+ try{
+  const page=await browser.newPage({viewport:{width:393,height:820},deviceScaleFactor:1,hasTouch:true,isMobile:true}),errors=[],external=[];
+  page.on('pageerror',error=>errors.push(error.message));page.on('request',req=>{if(!req.url().startsWith('http://127.0.0.1:'))external.push(req.url());});
+  await page.addInitScript(({fixture})=>{
+   window.commands=[];
+   window.snapshot={profiles:{'test.user':{file:true,width:512,height:512}},total:10001,unique:10000,matched:1,missing:9999,unreadable:1,duplicates:2,folderBytes:1024,lastScan:100000,revision:1,folder:'.thumbnails',folderStatus:'ready',scanState:'completed',app:{version:'3.1.0',build:2},stats:{usage:1,load:1,clear:0}};
+   window.Android={request(raw){const input=JSON.parse(raw);commands.push(input);
+    if(input.command==='bootstrap')nativeEvent('bootstrap',{...snapshot,raw:JSON.stringify({preserved:'yes',favorite_page_pref:JSON.stringify(fixture)})});
+    else if(input.command==='fetcher-status')nativeEvent('fetcher-status',{total:10000,success:6,existing:0,failed:1,skipped:1,retry:2,pending:9990,processed:8,cookiesSaved:true,writable:false,minimum:6,maximum:25,start:'02:00',end:'07:00',background:false,state:'Paused',running:false,requestedViews:5,effectiveViews:3,activeViews:2,activeAccounts:3,peakAccounts:3,completedPerMinute:12.5,memoryPssKiB:102400});
+    else if(input.command==='status')nativeEvent('status',structuredClone(snapshot));
+    else if(input.command==='clear-index'){snapshot={...snapshot,profiles:{},matched:0,missing:10000,revision:0,scanState:'not_scanned'};nativeEvent('status',structuredClone(snapshot));}
+   }};
+  },{fixture});
+  await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForSelector('#splash[hidden]',{state:'attached'});
+  check(await page.locator('.folder-header').count()===2,'closed collections render headers only');
+  check(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)==='rgb(0, 0, 0)','AMOLED is pure black');
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal overflow');
+  check(await page.evaluate(()=>commands.every(c=>!['start','full','resume'].includes(c.command))),'startup has no retrieval commands');
+  await page.locator('.folder-header').first().click();await page.waitForSelector('.account');
+  check(await page.locator('.account').count()<25,'10,000 accounts keep bounded DOM');
+  await page.locator('.avatar img').first().waitFor();
+  const avatar=await page.locator('.avatar').first().evaluate(el=>({width:el.offsetWidth,height:el.offsetHeight,radius:getComputedStyle(el).borderRadius,fit:getComputedStyle(el.querySelector('img')).objectFit}));
+  check(avatar.width===40&&avatar.height===40&&avatar.radius==='14px'&&avatar.fit==='cover','original avatar rectangle and center crop preserved');
+  check(await page.locator('.avatar').nth(1).locator('.person-placeholder').count()===1,'missing image shows gray person instead of a letter');
+  await page.evaluate(()=>window.savedHeader=document.querySelector('.folder-header'));
+  await page.locator('.folder-header').first().click();await page.waitForTimeout(180);
+  check(await page.evaluate(()=>savedHeader===document.querySelector('.folder-header')),'collapse retains header DOM for arrow transition');
+  await page.locator('.folder-header').first().click();
+  await page.locator('.card-link').first().click();check(await page.evaluate(()=>commands.at(-1).command==='open'),'account action remains external profile opening');
+  await page.locator('.avatar img').first().waitFor();
+  check(await page.locator('.avatar img').first().evaluate(img=>img.loading==='eager'),'virtualized avatars do not add browser lazy-loading delay');
+  await page.evaluate(()=>{window.savedAvatar=document.querySelector('.avatar img');nativeEvent('status',{...snapshot,revision:222});});
+  check(await page.evaluate(()=>savedAvatar===document.querySelector('.avatar img')),'unrelated index revision keeps the existing avatar element');
+  await page.evaluate(()=>nativeEvent('image-cache-cleared',{}));await page.locator('.avatar img').first().waitFor();
+  check(await page.evaluate(()=>savedAvatar!==document.querySelector('.avatar img')),'explicit cache clear releases retained browser Image entries');
+  check(await page.evaluate(()=>thumbnailMetrics().active<=6&&thumbnailMetrics().retained<=64),'browser image work and retained entries are bounded');
+  await page.locator('.avatar').first().click();check(await page.locator('#viewer').isVisible(),'viewer opens cached local thumbnail');
+  for(let i=0;i<100&&!await page.locator('#full-image').evaluate(el=>el.src.includes('/full/'));i++)await page.waitForTimeout(50);
+  check(await page.evaluate(()=>commands.filter(c=>c.command==='view-remote').length===1),'viewer submits one interactive request to the shared native broker');
+  const cdp=await page.context().newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:170,y:350,id:1},{x:220,y:350,id:2}]});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:120,y:350,id:1},{x:270,y:350,id:2}]});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  check(await page.evaluate(()=>scale>1),'pinch zoom works');const before=await page.evaluate(()=>tx);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:190,y:350,id:1}]});
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:230,y:350,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  check(await page.evaluate(()=>tx)!==before,'zoomed image pans');
+  await page.evaluate(()=>{resetTransform();lastTap=0;});await page.touchscreen.tap(190,350);await page.waitForTimeout(80);await page.touchscreen.tap(190,350);
+  check(await page.evaluate(()=>scale>1),'double tap zoom works');
+  const remoteToken=await page.evaluate(()=>viewerToken),zoomBeforeRemote=await page.evaluate(()=>scale);
+  await page.evaluate(token=>nativeEvent('remote-full',{token,user:'test.user',width:640,height:480}),remoteToken);
+  for(let i=0;i<100&&!await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/'));i++)await page.waitForTimeout(50);
+  check(await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/')),'remote image becomes visible without weakening the app CSP');
+  check((await page.locator('#viewer-caption').innerText()).includes('640 × 480'),'viewer reports the actual remote image dimensions');
+  check(await page.evaluate(z=>scale===z,zoomBeforeRemote),'remote replacement preserves zoom');
+  await page.evaluate(()=>fullLoader.onload?.());check(await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/')),'late local image never overwrites the ready remote image');
+  await page.keyboard.press('Escape');await page.locator('#viewer').waitFor({state:'hidden'});check(true,'back closes viewer after exit animation');
+  check(await page.evaluate(()=>viewerToken===''&&remoteLoader===null&&fullLoader===null&&!document.getElementById('full-image').hasAttribute('src')),'viewer close releases all frontend image and token references');
+  check(await page.evaluate(()=>commands.at(-1).command==='view-closed'),'viewer close requests native high-resolution memory release');
+  await page.evaluate(token=>nativeEvent('remote-full',{token,user:'test.user',width:900,height:900}),remoteToken);check(await page.locator('#viewer').isHidden(),'stale remote completion cannot reopen the viewer');
+  await page.locator('#search-input').fill('user9999');await page.waitForTimeout(180);check(await page.locator('.account').count()===1,'search reaches unmounted accounts');
+  await page.locator('#clear-search').click();check(await page.locator('#search-input').inputValue()==='','search clear restores view');
+  await page.evaluate(()=>scrollTo(0,400000));await page.waitForTimeout(100);check(await page.locator('.account').count()<30,'deep scrolling recycles rows');
+  check(await page.evaluate(()=>thumbnailMetrics().rows<32&&thumbnailMetrics().pool<=32),'recycled row pool remains bounded during a large jump');
+  check(await page.locator('.bottom-nav .nav-btn').count()===1,'bottom bar only retains the information button');
+  await page.locator('#info-btn').click();
+  check(await page.locator('#dialog-title').isHidden()&&await page.locator('#dialog-body img').count()===0,'About removes only its visible title and logo');
+  check(await page.locator('#dialog-body .about-detail').evaluateAll(nodes=>nodes.slice(-3).map(n=>n.firstChild.textContent).join('|'))==='Reset Count|Add List|Delete List','list actions follow Reset Count in the requested order');
+  check(await page.locator('#import-btn').evaluate(el=>getComputedStyle(el).color)==='rgb(255, 255, 255)','Add List preserves the white plus');
+  check(await page.locator('#clear-btn').evaluate(el=>getComputedStyle(el).color)==='rgb(181, 116, 120)','Delete List retains its existing red tone');
+  check(await page.locator('#dialog .about-action .nav-btn').evaluateAll(nodes=>nodes.every(el=>el.offsetHeight>=44&&getComputedStyle(el).borderTopWidth==='0px'&&getComputedStyle(el).backgroundColor==='rgba(0, 0, 0, 0)'&&el.querySelector('svg').getBoundingClientRect().width===22)),'moved icons keep borderless 22px artwork and 44px touch targets');
+  const preservedCounters=await page.evaluate(()=>JSON.stringify(stats));
+  await page.locator('#import-btn').click();await waitForValue(page,()=>commands.at(-1).command==='import');
+  check(await page.locator('#dialog').isHidden()&&await page.evaluate(()=>commands.at(-1).command==='import'),'Add List closes the overlay and dispatches the existing picker command');
+  await page.evaluate(fixture=>nativeEvent('imported',{profiles:snapshot.profiles,raw:JSON.stringify({favorite_page_pref:JSON.stringify(fixture)})}),fixture);
+  await page.locator('#info-btn').click();
+  check(await page.evaluate(value=>stats.load===JSON.parse(value).load+1&&stats.usage===JSON.parse(value).usage&&doc.total===10001,preservedCounters),'import completion preserves the existing single load increment and JSON memberships');
+  await page.locator('#import-btn').click();await page.locator('#info-btn').click();check(await page.evaluate(()=>doc.total===10001&&stats.load===2),'reopening About after picker cancellation preserves collections and counters');
+  await page.locator('#clear-btn').click();await waitForValue(page,()=>document.getElementById('dialog-title').textContent==='Reset collections?');
+  check(await page.locator('#dialog-title').textContent()==='Reset collections?'&&await page.locator('#dialog-title').isVisible(),'Delete List opens the original titled confirmation');
+  const beforeCancel=await page.evaluate(()=>commands.length);await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  check(await page.evaluate(n=>commands.length===n,beforeCancel),'cancel never dispatches a deletion');
+  await page.locator('#info-btn').click();await page.locator('#clear-btn').click();await page.getByRole('button',{name:'Confirm',exact:true}).click();await waitForValue(page,()=>commands.at(-1).command==='clear-data');
+  check(await page.evaluate(()=>commands.at(-1).command==='clear-data')&&await page.locator('#dialog').isHidden(),'confirm dispatches the unchanged deletion and dismisses its overlay');
+  await page.evaluate(()=>nativeEvent('cleared',''));
+  check(await page.evaluate(()=>doc===null&&stats.clear===1&&stats.load===2),'delete completion preserves the existing reset count and leaves load count unchanged');
+  await page.evaluate(fixture=>{snapshot.stats={usage:1,load:1,clear:0};nativeEvent('bootstrap',{...snapshot,raw:JSON.stringify({favorite_page_pref:JSON.stringify(fixture)})});},fixture);
+  await page.locator('#info-btn').click();
+  for(const width of [280,320,393,600]){await page.setViewportSize({width,height:width===280?480:820});check(await page.evaluate(()=>{const bar=document.querySelector('.nav-container').getBoundingClientRect(),search=document.querySelector('.search-box').getBoundingClientRect(),input=document.getElementById('search-input');return document.documentElement.scrollWidth<=innerWidth&&search.right<=bar.right-8&&search.width>100&&input.getBoundingClientRect().height===50;}),'search fills the remaining bar without overflow at '+width+'px');check(await page.locator('.modal').evaluate(el=>el.clientHeight<=innerHeight*.9&&getComputedStyle(el).overflowY==='auto'),'About remains scrollable within the viewport at '+width+'px');}
+  await page.setViewportSize({width:393,height:820});
+  check((await page.locator('#dialog-body').innerText()).includes('BlackWare'),'About credits developer BlackWare');
+  check((await page.locator('#dialog-body').innerText()).includes('AI Development Assistance'),'AI assistance is separately labeled');
+  check((await page.locator('#dialog-body').innerText()).includes('3.1.0'),'About uses native version metadata');
+  check(await page.locator('#dialog-body .features').count()===0,'About only shows a Features menu row');
+  check(!(await page.locator('#dialog-body').innerText()).includes('Application Name'),'only the redundant application-name metadata row is removed');
+  check(await page.locator('#dialog-actions').evaluate(el=>{const [left,right]=el.children;return left.textContent==='Settings'&&right.textContent==='Close'&&left.getBoundingClientRect().top===right.getBoundingClientRect().top&&left.getBoundingClientRect().right<=right.getBoundingClientRect().left;}),'About Settings and Close share one row');
+  check(await page.locator('#dialog').evaluate(el=>getComputedStyle(el).backdropFilter==='blur(4px)'),'open modal has one small static background blur');
+  const aboutBefore=await page.locator('#dialog-body').innerText();
+  const commandsBefore=await page.evaluate(()=>commands.length);
+  await page.locator('#features-menu').click();
+  check(await page.locator('#features-screen').isVisible(),'Features opens a separate screen');
+  check(await page.locator('#features-list li').count()===11,'Features retains existing capabilities and adds optional retrieval');
+  check(await page.locator('#features-screen').evaluate(el=>getComputedStyle(el).backgroundColor)==='rgb(0, 0, 0)','Features preserves AMOLED black');
+  check(await page.locator('#features-screen').evaluate(el=>el.getAnimations()[0]?.effect.getTiming().duration===160),'Features uses the common entry duration');
+  await page.keyboard.press('Escape');await page.locator('#features-screen').waitFor({state:'hidden'});
+  check(await page.locator('#dialog-body').innerText()===aboutBefore,'hardware back returns to the unchanged About content');
+  check(await page.locator('#features-menu').evaluate(el=>el===document.activeElement),'back restores menu focus');
+  await page.locator('#features-menu').click();await page.getByRole('button',{name:'Back to Application Information',exact:true}).click();await page.locator('#features-screen').waitFor({state:'hidden'});
+  check(await page.locator('#dialog').isVisible(),'Features toolbar back returns to About');
+  check(await page.evaluate(n=>commands.length===n,commandsBefore),'About navigation never dispatches counter mutations');
+  const detail=await page.locator('.about-detail:not(.about-action)').evaluateAll(nodes=>Object.fromEntries(nodes.map(n=>[n.querySelector('span').textContent,n.querySelector('strong').textContent])));
+  check(detail['Total Accounts']==='10001'&&detail['Usage Count']==='1'&&detail['Load Count']==='1','About shows current counters with metadata rows');
+  check(await page.locator('.about-detail').evaluateAll(nodes=>{const rows=nodes.filter(n=>['Version','Build','Developer','Total Accounts','Usage Count','Load Count'].includes(n.firstChild.textContent));return new Set(rows.map(n=>JSON.stringify([getComputedStyle(n.firstChild).fontSize,getComputedStyle(n.firstChild).color,getComputedStyle(n.lastChild).fontSize,getComputedStyle(n.lastChild).color]))).size===1;}),'counter typography matches existing metadata');
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#features-menu').click();await page.keyboard.press('Escape');check(await page.locator('#features-screen').isHidden(),'Features respects reduced motion on return');await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.locator('#settings').waitFor({state:'visible'});check(await page.locator('#settings').isVisible(),'Settings remains accessible');check(await page.locator('#progress').evaluate(el=>el.value===el.max),'completed persisted scan shows a full progress bar');
+  check(await page.locator('#profile-actions button').count()===4,'download controls replaced with four local image controls');
+  check(!(await page.locator('#settings').innerText()).includes('Retry Failed'),'obsolete retry controls removed');
+  check(!(await page.locator('#metrics').innerText()).includes('Deleted Orphan WebP Files'),'read-only rescan does not advertise source deletion');
+  check((await page.locator('#metrics').innerText()).includes('Scan Checkpoint Index Size'),'durable scan metadata storage is shown');
+  await page.evaluate(()=>nativeEvent('status',{...snapshot,resolution:{count:101,expected:'256×256',complete:true,unknown:0}}));
+  check(await page.locator('#metrics .metric').evaluateAll(nodes=>nodes.findIndex(n=>n.textContent.includes('Invalid Resolution Images'))+1===nodes.findIndex(n=>n.textContent.includes('Last Scan Date'))),'resolution audit is immediately before Last Scan Date');
+  const audit=page.locator('[data-metric="Invalid Resolution Images"]');check(await audit.locator('b').innerText()==='101','strict 256 target counter remains visible');
+  const beforeResolution=await page.evaluate(()=>commands.length);await audit.click();check(await page.locator('#dialog').isHidden()&&await page.evaluate(n=>commands.length===n,beforeResolution),'resolution counter opens no modal and sends no detail query');
+  check(!await page.locator('#metrics').innerText().then(t=>t.includes('Unreadable Images')||t.includes('Duplicate Image Candidates')),'unreadable and duplicate cards are removed without affecting the audit');
+  await page.locator('#copy-missing-users').click();check(await page.evaluate(()=>commands.at(-1).command==='copy-missing-users'&&Object.keys(commands.at(-1)).length===1),'copy icon requests authoritative native missing usernames without sending account data');
+  for(const width of [280,393,600]){await page.setViewportSize({width,height:820});check(await page.locator('#metrics').evaluate(el=>{const date=el.querySelector('[data-metric="Last Scan Date"]'),folder=el.querySelector('[data-metric="Selected Folder"]'),copy=el.querySelector('#copy-missing-users'),icon=copy.querySelector('svg'),head=copy.parentElement;return date.getBoundingClientRect().top===folder.getBoundingClientRect().top&&getComputedStyle(date.querySelector('b')).fontSize==='12px'&&getComputedStyle(folder.querySelector('b')).fontSize==='12px'&&getComputedStyle(folder.querySelector('b')).textOverflow==='ellipsis'&&icon.getBoundingClientRect().width<=parseFloat(getComputedStyle(head.querySelector('b')).fontSize)&&copy.getBoundingClientRect().right<=head.getBoundingClientRect().right&&el.scrollWidth<=el.clientWidth;}),'paired folder/date cards and bounded copy icon at '+width+'px');}
+  await page.setViewportSize({width:393,height:820});
+  await page.getByRole('button',{name:'Select Thumbnail Folder',exact:true}).click();check(await page.evaluate(()=>commands.at(-1).command==='select-folder'),'SAF selection command is dispatched');
+  await page.getByRole('button',{name:'Rescan Thumbnails',exact:true}).click();check(await page.evaluate(()=>commands.at(-1).command==='rescan'),'rescan is manual');
+  await page.evaluate(()=>nativeEvent('scan-progress',{state:'scanning',processed:25,total:100}));
+  check(await page.locator('#progress').evaluate(el=>el.value===25&&el.max===100),'scan progress is shown');
+  check(await page.getByRole('button',{name:'Select Thumbnail Folder',exact:true}).isDisabled(),'folder replacement is blocked during scan');
+  await page.evaluate(()=>nativeEvent('status',structuredClone(snapshot)));
+  await page.getByRole('button',{name:'Clear Image Cache',exact:true}).click();check(await page.locator('#dialog').isVisible(),'cache deletion requires confirmation');
+  await page.getByRole('button',{name:'Confirm',exact:true}).click();await waitForValue(page,()=>commands.at(-1).command==='clear-cache');check(await page.evaluate(()=>commands.at(-1).command==='clear-cache'),'cache clear is separate from source data');
+  await page.getByRole('button',{name:'Clear Thumbnail Index',exact:true}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click();await waitForValue(page,()=>commands.at(-1).command==='clear-index');
+  check(await page.evaluate(()=>doc.total===10001),'index clearing preserves collection memberships');check(await page.locator('#progress').evaluate(el=>el.value===0),'index clearing resets scan progress display');
+  check((await page.locator('#metrics').innerText()).includes('Missing Images'),'matched and missing metrics are separately named');
+  await page.evaluate(()=>nativeEvent('status',{...snapshot,folderMessage:'Folder permission was lost.',folderStatus:'unavailable'}));
+  check(await page.locator('#folder-warning').isVisible(),'lost permission warning appears');
+  const countersBeforeFetcher=await page.evaluate(()=>JSON.stringify(stats));
+  await page.locator('#fetcher-menu').click();check(await page.locator('#fetcher-screen').isVisible(),'Thumbnail Fetcher opens its own settings screen');
+  check(await page.getByRole('button',{name:'Test Cookies',exact:true}).count()===0,'no Test Cookies gate or button remains');
+  check(await page.locator('#cookie-state').innerText()==='Cookies saved · session checked during retrieval','cookie status does not claim verified authentication');
+  await page.locator('#cookie-paste').click();check(await page.evaluate(()=>commands.at(-1).command==='fetcher-paste'),'Paste uses the Android foreground clipboard adapter');
+  await page.evaluate(()=>nativeEvent('cookie-paste','sessionid=FAKE_FOR_TEST; ds_user_id=1'));check((await page.locator('#cookie-text').inputValue()).startsWith('sessionid='),'native paste fills only the transient cookie editor');await page.locator('#cookie-save').click();
+  check(await page.locator('#cookie-text').inputValue()==='','cookie editor clears immediately after Save');check(await page.evaluate(()=>commands.at(-1).command==='fetcher-cookies-save'),'cookie saving is sent only to native private storage');
+  check(await page.locator('#fetcher-capacity').innerText().then(t=>t.includes('Requested WebViews: 5')&&t.includes('Effective WebViews: 3')&&t.includes('Active WebViews: 2')),'requested, memory-limited effective and active Chromium counts are distinct');
+  await page.evaluate(()=>{clearInterval(fetcherPoll);fetcherPoll=0;window.liveFetcher={...fetcherState,total:16910,existing:14572,success:0,failed:0,skipped:0,retry:5,pending:2333,processed:14572,held:5,running:true,elapsedSeconds:52,process:{phase:'Waiting for configured worker delay',active:0,queued:5,handledThisRun:5,waitSeconds:18,lastResult:'WEBVIEW_TIMEOUT'}};nativeEvent('fetcher-status',liveFetcher);});
+  check(await page.locator('#fetcher-process-phase').innerText()==='Waiting for configured worker delay','five deferred profiles show a real wait reason');
+  check((await page.locator('#fetcher-process-detail').innerText()).includes('Next request in 18 s'),'live card includes next dispatch countdown');
+  check(await page.locator('#fetcher-run-progress').evaluate(el=>el.value===14577&&el.max===16910),'reviewed progress includes held profiles without classifying them as success');
+  check((await page.locator('#fetcher-history').innerText()).includes('5 saved outcomes'),'card explains durable failure history and explicit Retry');
+  for(const width of [280,393,600]){await page.setViewportSize({width,height:820});check(await page.locator('#fetcher-process').evaluate(el=>{const metrics=document.getElementById('fetcher-metrics'),actions=document.getElementById('fetcher-missing').closest('.action-list');return metrics.compareDocumentPosition(el)&Node.DOCUMENT_POSITION_FOLLOWING&&el.compareDocumentPosition(actions)&Node.DOCUMENT_POSITION_FOLLOWING&&el.scrollWidth<=el.clientWidth&&getComputedStyle(el).backgroundColor==='rgb(5, 5, 5)'&&getComputedStyle(el).borderRadius==='16px';}),'live process card matches metrics and sits above actions at '+width+'px');}
+  await page.setViewportSize({width:393,height:820});
+  await page.evaluate(()=>nativeEvent('fetcher-status',{...liveFetcher,process:{...liveFetcher.process,phase:'Loading profiles / downloading images',active:5,queued:0,waitSeconds:0}}));
+  check((await page.locator('#fetcher-process-detail').innerText()).includes('5 active')&&!(await page.locator('#fetcher-process-detail').innerText()).includes('Next request'),'running profiles replace the waiting countdown');
+  if(process.env.FETCHER_SCREENSHOT){await page.locator('#toast').evaluate(el=>el.hidden=true);await page.locator('#fetcher-process').scrollIntoViewIfNeeded();await page.screenshot({path:process.env.FETCHER_SCREENSHOT});}
+  await page.evaluate(()=>nativeEvent('fetcher-status',{...liveFetcher,running:false,state:'Finished: previous failures saved; use Retry to try again',process:{...liveFetcher.process,phase:'Finished: previous failures saved; use Retry to try again',active:0,queued:0,waitSeconds:0}}));
+  await page.locator('#fetcher-concurrency').fill('10');await page.locator('#fetcher-min').fill('8');await page.locator('#fetcher-max').fill('20');await page.locator('#fetcher-background').check();await page.locator('#fetcher-save').click();
+  check(await page.evaluate(()=>commands.at(-1).command==='fetcher-config'&&commands.at(-1).minimum===8&&commands.at(-1).maximum===20&&commands.at(-1).background&&commands.at(-1).concurrentWebViews===10),'delays, working hours and background choice are saved together');
+  await page.locator('#fetcher-write').click();check(await page.evaluate(()=>commands.at(-1).command==='fetcher-write-access'),'write authorization upgrades the current folder instead of selecting a second output');
+  for(const [id,action] of [['fetcher-missing','missing'],['fetcher-pause','pause'],['fetcher-resume','resume'],['fetcher-stop','stop'],['fetcher-retry-skipped','retry_skipped']]){await page.locator('#'+id).click();check(await page.evaluate(action=>commands.at(-1).command==='fetcher-action'&&commands.at(-1).action===action,action),'fetcher dispatches '+action);}
+  await page.locator('#fetcher-verify').click();
+  check(await page.locator('#dialog-title').textContent()==='Verify Fetcher Index?','full Fetcher verification is explicit and confirmed');
+  await page.getByRole('button',{name:'Confirm',exact:true}).click();await waitForValue(page,()=>commands.at(-1).action==='verify_index');
+  check(await page.evaluate(()=>commands.at(-1).command==='fetcher-action'&&commands.at(-1).action==='verify_index'),'explicit verification uses its separate Fetcher action');
+  await page.locator('#fetcher-diagnostics').click();check(await page.evaluate(()=>commands.at(-1).command==='fetcher-logs'),'fetcher diagnostics has a separate redacted export');
+  check(await page.evaluate(before=>JSON.stringify(stats)===before,countersBeforeFetcher),'fetcher controls never alter collection usage/load/reset counters');
+  await page.keyboard.press('Escape');await page.locator('#fetcher-screen').waitFor({state:'hidden'});check(await page.locator('#settings').isVisible(),'back returns from Fetcher to the existing Settings screen');
+  check(await page.evaluate(()=>fetcherPoll===0&&!document.getElementById('settings').inert),'fetcher polling and focus lock are released on return');
+  await page.keyboard.press('Escape');await page.locator('#settings').waitFor({state:'hidden'});
+  await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(100);check(await page.locator('.avatar img').count()===0,'cleared index removes photo references');
+  if(process.env.PRIVATE_JSON){const raw=fs.readFileSync(process.env.PRIVATE_JSON,'utf8');await page.evaluate(raw=>nativeEvent('imported',{raw,profiles:{}}),raw);check(await page.evaluate(()=>doc.total===12612&&doc.unique.length===12197),'private JSON retains membership and unique counts');check(await page.evaluate(()=>doc.raw)===raw,'private JSON text remains unchanged');}
+  await page.evaluate(f=>nativeEvent('imported',{raw:JSON.stringify(f),profiles:{}}),fixture);await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(200);
+  if(process.env.UI_SCREENSHOT)await page.screenshot({path:process.env.UI_SCREENSHOT});
+  check(external.length===0,'all UI image/font/resource requests stay on the local origin');check(errors.length===0,'no browser JavaScript errors');
+  console.log(checks+' UI checks passed');
+ }finally{await browser.close();server.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

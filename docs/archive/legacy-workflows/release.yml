@@ -1,0 +1,144 @@
+name: Official INSFAV 4.0.0 release
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: insfav-official-release-v4.0.0
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.repository == 'BlackWare-AI/INSFAV' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Release gate tests and version check
+        run: |
+          python3 -m unittest discover -s tools/release/tests -v
+          python3 -c "from pathlib import Path; assert Path('version.properties').read_text().splitlines() == ['VERSION_NAME=4.0.0', 'VERSION_CODE=7']"
+      - name: Run focused incremental rescan regressions
+        run: |
+          ./gradlew :app:testDebugUnitTest --no-daemon --console=plain \
+            --tests '*LocalImagesTest.unchangedRescanReusesReadableMetadataAndPreservesRevision' \
+            --tests '*LocalImagesTest.changedThumbnailIsRevalidatedAndIndexRevisionAdvances' \
+            --tests '*LocalImagesTest.persistedIndexIsReusableWithoutRescanning' \
+            --tests '*LocalImagesTest.removedImageIsReportedAndManualRescanFindsReadableAlternative' \
+            --tests '*LocalImagesTest.interruptedRescanPreservesLastCompletedIndex'
+          mkdir -p release-evidence/focused
+          cp app/build/test-results/testDebugUnitTest/TEST-*.xml release-evidence/focused/
+      - name: Run all Android tests, lint and release build
+        run: ./gradlew :app:testDebugUnitTest :app:lintRelease :app:assembleRelease --rerun-tasks --no-daemon --console=plain
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: INSFAV-4.0.0-release-test-evidence
+          path: |
+            release-evidence/
+            app/build/test-results/
+            app/build/reports/lint-results-release.*
+
+  signing-configuration:
+    if: github.repository == 'BlackWare-AI/INSFAV' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check existing signing configuration without exposing values
+        env:
+          INSFAV_KEYSTORE_BASE64: ${{ secrets.INSFAV_KEYSTORE_BASE64 }}
+          INSFAV_STORE_PASSWORD: ${{ secrets.INSFAV_STORE_PASSWORD }}
+          INSFAV_KEY_ALIAS: ${{ secrets.INSFAV_KEY_ALIAS }}
+          INSFAV_KEY_PASSWORD: ${{ secrets.INSFAV_KEY_PASSWORD }}
+          INSFAV_RELEASE_CERT_SHA256: ${{ vars.INSFAV_RELEASE_CERT_SHA256 }}
+        run: python3 tools/release/release_gate.py configuration
+
+  signed-apk:
+    needs: [verify, signing-configuration]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build with the supplied existing key and verify the APK
+        env:
+          INSFAV_KEYSTORE_BASE64: ${{ secrets.INSFAV_KEYSTORE_BASE64 }}
+          INSFAV_STORE_PASSWORD: ${{ secrets.INSFAV_STORE_PASSWORD }}
+          INSFAV_KEY_ALIAS: ${{ secrets.INSFAV_KEY_ALIAS }}
+          INSFAV_KEY_PASSWORD: ${{ secrets.INSFAV_KEY_PASSWORD }}
+          INSFAV_RELEASE_CERT_SHA256: ${{ vars.INSFAV_RELEASE_CERT_SHA256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          private_dir="$RUNNER_TEMP/insfav-signing-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -m 700 "$private_dir"
+          trap 'rm -rf "$private_dir"' EXIT
+          export INSFAV_KEYSTORE="$private_dir/release.p12"
+          python3 tools/release/release_gate.py prepare
+          if ! ./gradlew :app:assembleRelease --no-daemon --console=plain >/dev/null 2>&1; then
+            echo '::error::Signed release build failed. Signing tool output was suppressed to protect secrets.'
+            exit 1
+          fi
+          python3 tools/release/release_gate.py verify --apk app/build/outputs/apk/release/app-release.apk --output release-output
+      - name: Remove temporary signing material
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/insfav-signing-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: INSFAV-4.0.0-signed-candidate
+          path: |
+            release-output/INSFAV-4.0.0.apk
+            release-output/SHA256SUMS
+            release-output/signing-certificate.txt
+            release-output/verification.json
+            release-output/RELEASE-NOTES.md
+
+  publish:
+    needs: signed-apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: INSFAV-4.0.0-signed-candidate
+          path: candidate
+      - name: Verify upload and publish without replacing previous releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd candidate
+          sha256sum --check SHA256SUMS
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          if gh release view v4.0.0 >/dev/null 2>&1 || gh api "repos/$GH_REPO/git/ref/tags/v4.0.0" >/dev/null 2>&1; then
+            echo '::error::v4.0.0 already exists. Refusing to overwrite a release or tag.'
+            exit 1
+          fi
+          gh release create v4.0.0 INSFAV-4.0.0.apk SHA256SUMS signing-certificate.txt verification.json \
+            --draft --target "$GITHUB_SHA" --title 'INSFAV 4.0.0' --notes-file RELEASE-NOTES.md
+          verification_dir=$(mktemp -d "$RUNNER_TEMP/insfav-release-download.XXXXXX")
+          trap 'rm -rf "$verification_dir"' EXIT
+          gh release download v4.0.0 --dir "$verification_dir" --pattern INSFAV-4.0.0.apk
+          (cd "$verification_dir" && sha256sum --check "$GITHUB_WORKSPACE/candidate/SHA256SUMS")
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          gh release edit v4.0.0 --draft=false --latest
+          gh release view v4.0.0 --json url --jq .url

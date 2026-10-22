@@ -1,0 +1,21 @@
+{
+  "repository": "BlackWare-AI/INSFAV-Thumb-Fetcher",
+  "branch": "development/0.4.0",
+  "commit": "b3f03f2a30c36f89add5e954b9b121a7b9d899ae",
+  "files": {
+    "WebViewProfileProvider": "7b98c65a39ad26e95dcdda8e5348e127146dc37f9ec4abb7ad4d1601d96078b2",
+    "ThumbnailCodec": "9bcf420419169d908525b918eda29b61fb23ab1c7085f6408a37500c00f82111",
+    "ConcurrencyPolicy": "4e1d202232150ebb0d64bac4cfc3f8737cd4e7a76590219a03c2847b0f4990a8",
+    "QueueEngine": "f1623876780555d3574872ae50fd649f47904334b93e6ec373b0465c4f437da7",
+    "ProfileProvider": "25bef922cf65ef46d5300697cd0d54e0dfb4c006ddf16d9f50c5064bc535e922",
+    "RunPolicy": "2825dcd81d2085e40ba8f9a944c389ad0a0c50055e8bcdee421015547bef91c0",
+    "QueueControl": "305bfa478d3da924b5c873493b47163b28b1852c8914fbf0fed4fb6889572277",
+    "FetchService": "31aca34773eb907249fa9c13a474e8e41e7a40eb6e6ec92dd0feacbb3d82102a",
+    "DownloadWorker": "9acc48bda1b84f812ce49897c040fc9df66f1c0aee42fc5eae3e0792ed921fba",
+    "RecoveryWorker": "a66e9586d45119cc1acfe2a6e1749433f7dbc9e09b599f3aced7bf80da9d7eae",
+    "WorkScheduler": "dd5ed12c4f8cf3c16f0ac4ec1d27b1711efb3111ddf8519bb028d44a00041209",
+    "FailurePolicy": "ec3eb98a8e20e8fa4cfda1fda941534479387d28465311b1656a38e078080c46"
+  },
+  "hdProbePreservedFromInsfav": "e6c7e688617cc056dbb6dfc216c089060c51c86e",
+  "notes": "Pool and codec imported. Coordinator and broker adapted for INSFAV data/SAF and shared HD priority. Requested ceiling, runtime memory guard and persistent per-worker start pacing replace source heuristics. Original HD selector preserved."
+}
