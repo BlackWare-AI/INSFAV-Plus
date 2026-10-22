@@ -40,9 +40,13 @@ public final class FetchService extends Service {
     @Override public IBinder onBind(Intent intent) { return null; }
     @Override public void onTimeout(int id, int type) {
         long next = RunPolicy.read(SessionState.prefs(this)).nextWindow(System.currentTimeMillis(), ZoneId.systemDefault());
-        SessionState.prefs(this).edit().putLong("systemNotBefore", next).putString("state", "Android service time limit; next working window scheduled").commit();
+        String state = "Paused: Android service time limit; queue preserved";
+        SessionState.prefs(this).edit().putLong("systemNotBefore", next).putString("state", state).commit();
         new Diagnostics(this).log("SERVICE", "TIMEOUT", 0);
-        QueueEngine current = engine; if (current != null) current.cancel("Android service time limit; next working window scheduled"); stopForeground(STOP_FOREGROUND_REMOVE); stopSelf();
+        QueueEngine current = engine; if (current != null) current.cancel(state);
+        try (QueueStore queue = new QueueStore(this)) { queue.deferClaims("SERVICE_TIMEOUT"); }
+        catch (RuntimeException error) { new Diagnostics(this).unexpected("SERVICE", error); }
+        stopForeground(STOP_FOREGROUND_REMOVE); DownloadNotification.finish(this); Fetcher.publish(); stopSelf();
     }
     @Override public void onTaskRemoved(Intent rootIntent) {
         // Removing the UI task is not Pause or Stop. The foreground worker stays owned by this service.

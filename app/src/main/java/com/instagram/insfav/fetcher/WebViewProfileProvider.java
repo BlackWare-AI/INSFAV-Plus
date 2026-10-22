@@ -15,6 +15,8 @@ import java.util.concurrent.*;
 
 /** Bounded reusable pages, one shared cookie lease; browser operations run on the main looper. */
 final class WebViewProfileProvider implements ProfileProvider {
+    static final long PROFILE_DEADLINE_MS = 15000;
+    static final long SESSION_DEADLINE_MS = 10000;
     interface Pages { void load(WebView view, String url); }
     interface Resources { WebResourceResponse intercept(String url); }
     private final Pages pages;
@@ -91,9 +93,9 @@ final class WebViewProfileProvider implements ProfileProvider {
         Operation operation = new Operation(user, cookies.value("ds_user_id", System.currentTimeMillis()), highResolution);
         operations.add(operation); main.post(operation::start);
         try {
-            if (!operation.done.await(user.isEmpty() ? 25 : 65, TimeUnit.SECONDS)) {
-                main.post(() -> operation.fail(new Failure("WEBVIEW_TIMEOUT", 0, 0, true)));
-                throw new Failure("WEBVIEW_TIMEOUT", 0, 0, true);
+            if (!operation.done.await(user.isEmpty() ? 25000 : PROFILE_DEADLINE_MS + 2000, TimeUnit.MILLISECONDS)) {
+                main.post(() -> operation.fail(new Failure("WEBVIEW_TIMEOUT")));
+                throw new Failure("WEBVIEW_TIMEOUT");
             }
             if (operation.failure != null) throw operation.failure;
             return operation.result;
@@ -188,7 +190,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         Operation(String user, String expectedId, boolean highResolution) { this.user = user; this.expectedId = expectedId; this.highResolution = highResolution; sessionEvidence = verifiedSession ? "VERIFIED" : "UNKNOWN"; }
         void later(Runnable action, long delay) { main.postAtTime(action, token, SystemClock.uptimeMillis() + delay); }
         void armWatchdog() {
-            if (!timingStarted) { timingStarted = true; later(() -> fail(new Failure("WEBVIEW_TIMEOUT")), user.isEmpty() ? 18000 : 55000); }
+            if (!timingStarted) { timingStarted = true; deadline = began + (user.isEmpty() ? 18000 : PROFILE_DEADLINE_MS); later(() -> fail(new Failure("WEBVIEW_TIMEOUT")), Math.max(0, deadline - SystemClock.uptimeMillis())); }
         }
         @SuppressLint("SetJavaScriptEnabled")
         void start() {
@@ -234,7 +236,8 @@ final class WebViewProfileProvider implements ProfileProvider {
                 view.setDownloadListener((url, agent, disposition, type, length) -> fail(new Failure("WEBVIEW_DOWNLOAD_BLOCKED", 0, 0, true)));
                 CookieManager manager = CookieManager.getInstance();
                 manager.setAcceptCookie(true); manager.setAcceptThirdPartyCookies(view, false);
-                started = true; deadline = SystemClock.uptimeMillis() + (user.isEmpty() ? 10000 : 45000);
+                started = true; deadline = user.isEmpty() ? SystemClock.uptimeMillis() + SESSION_DEADLINE_MS : began + PROFILE_DEADLINE_MS;
+                if (SystemClock.uptimeMillis() >= deadline) { fail(new Failure("WEBVIEW_TIMEOUT")); return; }
                 pages.load(view, "https://www.instagram.com/" + (user.isEmpty() ? "" : user + "/"));
                 later(this::poll, 500);
             } catch (OutOfMemoryError error) { fail(new Failure("IMAGE_MEMORY_LIMIT", 0, 0, true)); }
@@ -333,7 +336,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         void finish(JSONObject data, Failure error) {
             if (finishing) return;
             finishing = true; result = data; failure = error; main.removeCallbacksAndMessages(token);
-            log.outcome(error == null ? (user.isEmpty() ? "SESSION_VERIFIED" : "PROFILE_IMAGE_RESOLVED") : error.code, reason, error != null && error.http != 0 ? error.http : http, pageFinished, candidateFound, sessionEvidence, SystemClock.uptimeMillis() - began, user.isEmpty() ? 10000 : 45000);
+            log.outcome(error == null ? (user.isEmpty() ? "SESSION_VERIFIED" : "PROFILE_IMAGE_RESOLVED") : error.code, reason, error != null && error.http != 0 ? error.http : http, pageFinished, candidateFound, sessionEvidence, SystemClock.uptimeMillis() - began, user.isEmpty() ? SESSION_DEADLINE_MS : PROFILE_DEADLINE_MS);
             if (error != null) log.log("WEBVIEW", error.code, error.http);
             if (error != null && FailurePolicy.pause(error)) barrier = error;
             try {

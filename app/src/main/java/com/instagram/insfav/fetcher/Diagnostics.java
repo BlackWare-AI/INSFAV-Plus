@@ -53,6 +53,13 @@ final class Diagnostics {
         for (String allowed : new String[]{"OUTPUT_PERMISSION_LOST", "OUTPUT_SELECT_PARENT", "OUTPUT_FOLDER_CREATE_FAILED", "OUTPUT_FOLDER_INVALID", "OUTPUT_UNAVAILABLE", "OUTPUT_DUPLICATE_NAMES", "OUTPUT_READ_FAILED", "OUTPUT_SIZE_REJECTED", "PARTIAL_CLEANUP_FAILED", "OUTPUT_INVALID_WEBP", "OUTPUT_CREATE_FAILED", "OUTPUT_WRITE_FAILED", "OUTPUT_READBACK_FAILED", "OUTPUT_REPLACE_FAILED", "ATOMIC_RENAME_UNSUPPORTED", "OUTPUT_FINAL_VERIFY_FAILED", "OUTPUT_FILENAME_CHANGED"}) if (allowed.equals(code)) return allowed;
         return "IO_ERROR";
     }
+    void unexpected(String stage, Throwable error) {
+        // Fixed categories and an application line number only: never log messages or exception.toString().
+        String code = error instanceof IllegalArgumentException ? "ARGUMENT" : error instanceof IllegalStateException ? "STATE" : error instanceof NullPointerException ? "NULL" : error instanceof OutOfMemoryError ? "MEMORY" : "OTHER";
+        int line = 0;
+        for (StackTraceElement frame : error.getStackTrace()) if (frame.getClassName().startsWith("com.instagram.insfav.")) { line = Math.max(0, frame.getLineNumber()); break; }
+        log(stage, "UNEXPECTED_" + code, line);
+    }
     static String imageCode(IOException error) {
         String code = error.getMessage();
         for (String allowed : new String[]{"IMAGE_SIZE_REJECTED", "IMAGE_CONTAINER_INVALID", "IMAGE_REJECTED", "IMAGE_DECODE_FAILED", "WEBP_ENCODE_FAILED", "WEBP_VERIFY_FAILED"}) if (allowed.equals(code)) return allowed;

@@ -11,5 +11,9 @@ final class ScheduleStatus {
   if(running)return "Working — Within Schedule";
   return "Waiting — Android Background Restrictions";
  }
+ static String outsideMessage(RunPolicy policy,long now,java.time.ZoneId zone) {
+  String next=java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm",java.util.Locale.ROOT).format(java.time.Instant.ofEpochMilli(policy.nextAllowed(now,zone)).atZone(zone));
+  return "Outside working hours. Configured window: "+RunPolicy.time(policy.start)+"–"+RunPolicy.time(policy.end)+". Next eligible time: "+next+".";
+ }
  private ScheduleStatus(){}
 }

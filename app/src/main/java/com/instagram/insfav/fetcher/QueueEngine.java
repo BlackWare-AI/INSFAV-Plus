@@ -51,7 +51,7 @@ final class QueueEngine {
       original=f.getValue().get();byte[] thumbnail=ThumbnailCodec.convert(original);if(interrupted())break;
       if(generation!=settings.getLong("datasetGeneration",0)){state("Paused: data changed");return;}
       committing=true;android.net.Uri uri=output.commit(Identity.outputFilename(user),thumbnail,false);Fetcher.host().imageWritten(user,uri,settings.getString("tree",""));queue.mark(user,output.lastWriteCreated?"SUCCESS":"EXISTING","VALID_WEBP");QueueControl.lastResult=output.lastWriteCreated?"SUCCESS":"EXISTING";new Diagnostics(context).log("PROFILE","SUCCESS",0);
-     }catch(ExecutionException e){Throwable cause=e.getCause();ProfileProvider.Failure error=cause instanceof ProfileProvider.Failure?(ProfileProvider.Failure)cause:new ProfileProvider.Failure("PROFILE_PROCESSING_ERROR");QueueControl.lastResult=error.code;
+      }catch(ExecutionException e){Throwable cause=e.getCause();if(cause instanceof OutOfMemoryError)throw (OutOfMemoryError)cause;if(cause instanceof android.database.sqlite.SQLiteException)throw (android.database.sqlite.SQLiteException)cause;if(cause instanceof SecurityException)throw (SecurityException)cause;if(!(cause instanceof ProfileProvider.Failure))new Diagnostics(context).unexpected("PROFILE",cause==null?e:cause);ProfileProvider.Failure error=cause instanceof ProfileProvider.Failure?(ProfileProvider.Failure)cause:new ProfileProvider.Failure("PROFILE_PROCESSING_ERROR");QueueControl.lastResult=error.code;
       if(error.code.equals("OUTSIDE_WORKING_HOURS")){hoursEnded=true;}
       else if(FailurePolicy.sessionTransient(error)){queue.mark(user,"RETRY_LATER",error.code);state("Waiting: session verification retry");return;}
       else if(FailurePolicy.pause(error)){queue.mark(user,"RETRY_LATER",error.code);state(error.code.equals("RATE_LIMITED")?"Rate Limited":SessionState.pausedText(error.code));return;}
@@ -63,19 +63,19 @@ final class QueueEngine {
      }catch(CancellationException e){queue.mark(user,"RETRY_LATER","REQUEST_CANCELLED");}
      catch(IOException e){if(committing)throw e;queue.attempted(user);QueueControl.lastResult=Diagnostics.imageCode(e);queue.mark(user,"FAILED",QueueControl.lastResult);}
      catch(SecurityException|android.database.sqlite.SQLiteException e){throw e;}
-     catch(RuntimeException e){QueueControl.lastResult="PROFILE_PROCESSING_ERROR";queue.attempted(user);queue.mark(user,"FAILED","PROFILE_PROCESSING_ERROR");new Diagnostics(context).log("PROFILE","PROFILE_PROCESSING_ERROR",0);}
+      catch(RuntimeException e){QueueControl.lastResult="PROFILE_PROCESSING_ERROR";queue.attempted(user);queue.mark(user,"FAILED","PROFILE_PROCESSING_ERROR");new Diagnostics(context).unexpected("PROFILE",e);new Diagnostics(context).log("PROFILE","PROFILE_PROCESSING_ERROR",0);}
      finally{if(original!=null)Arrays.fill(original,(byte)0);it.remove();}
      Map<String,Integer> totals=queue.counts();finished=++QueueControl.runProcessed;long elapsed=Math.max(1,System.currentTimeMillis()-started);QueueControl.completedPerMinute=finished*60000.0/elapsed;QueueControl.etaSeconds=finished>=3?(long)(Math.max(0,totals.getOrDefault("PENDING",0)+totals.getOrDefault("RETRY_LATER",0)-queue.held())*60.0/QueueControl.completedPerMinute):-1;state("Downloading");
     }
     if(!completed){if(android.os.SystemClock.elapsedRealtime()-lastSignal>=1000)state(broker.authenticating!=null?"Verifying session":QueueControl.activeAccounts==0?"Waiting for worker delay":"Downloading");Thread.sleep(25);}
    }
    state(QueueControl.requested?QueueControl.requestedState:cancelledState);
-  }catch(SecurityException e){settings.edit().putString("blocked","STORAGE_PERMISSION_LOST").commit();state("Paused: folder write permission required");}
-  catch(android.database.sqlite.SQLiteException e){settings.edit().putString("blocked","DATABASE_ERROR").commit();state("Paused: database error; queue preserved");}
+   }catch(SecurityException e){new Diagnostics(context).log("STORAGE","PERMISSION_LOST",0);settings.edit().putString("blocked","STORAGE_PERMISSION_LOST").commit();state("Paused: folder write permission required");}
+   catch(android.database.sqlite.SQLiteException e){new Diagnostics(context).log("QUEUE","DATABASE_ERROR",0);settings.edit().putString("blocked","DATABASE_ERROR").commit();state("Paused: database error; queue preserved");}
   catch(IOException e){String code=Diagnostics.storageCode(e);settings.edit().putString("blocked",code).commit();new Diagnostics(context).log("STORAGE",code,0);state("Paused: storage access error; queue preserved");}
-  catch(OutOfMemoryError e){broker.cancelBulk();settings.edit().putString("blocked","IMAGE_MEMORY_LIMIT").commit();state("Paused: memory limit; queue preserved");}
+   catch(OutOfMemoryError e){broker.cancelAll();ProfileProvider provider=broker.provider;if(provider!=null){provider.cancel();provider.close();broker.provider=null;}settings.edit().putString("blocked","IMAGE_MEMORY_LIMIT").commit();new Diagnostics(context).log("QUEUE","MEMORY_LIMIT",0);state("Paused: memory limit; queue preserved");}
   catch(InterruptedException e){Thread.currentThread().interrupt();state(cancelledState);}
-  catch(Exception e){settings.edit().putString("blocked","PROCESSING_ERROR").commit();state("Paused: processing error; queue preserved");}
+   catch(Exception e){settings.edit().putString("blocked","PROCESSING_ERROR").commit();new Diagnostics(context).unexpected("QUEUE",e);state("Paused: processing error; queue preserved");}
   finally{broker.cancelBulk();try(QueueStore q=new QueueStore(context)){q.deferClaims("REQUEST_CANCELLED");q.meta("sourceRevision",Long.toString(Fetcher.host().revision()));}catch(Exception ignored){}broker.endBatch();settings.edit().putLong("elapsedSeconds",settings.getLong("elapsedSeconds",0)+Math.max(0,(System.currentTimeMillis()-started)/1000)).putLong("startedAt",0).apply();QueueControl.current="";QueueControl.etaSeconds=-1;Fetcher.publish();}
  }
 }

@@ -80,7 +80,8 @@ final class FetchBroker {
  private void execute(Request r){r.thread=Thread.currentThread();byte[] bytes=null;try{
   if(r.result.isCancelled())return;if(!r.full&&!RunPolicy.read(prefs).contains(java.time.Instant.ofEpochMilli(time.now()).atZone(java.time.ZoneId.systemDefault())))throw new ProfileProvider.Failure("OUTSIDE_WORKING_HOURS");ProfileProvider p=provider;bytes=p.fetch(r.user,r.full);if(!r.result.complete(bytes))Arrays.fill(bytes,(byte)0);
  }catch(ProfileProvider.Failure e){if(FailurePolicy.pause(e))block(e);r.result.completeExceptionally(e);if(e.code.equals("WEBVIEW_RENDERER_GONE"))QueueControl.memoryPressure=true;}
+ catch(SecurityException|android.database.sqlite.SQLiteException e){new Diagnostics(context).unexpected("PROFILE",e);r.result.completeExceptionally(e);}
  catch(OutOfMemoryError e){ProfileProvider.Failure memory=new ProfileProvider.Failure("IMAGE_MEMORY_LIMIT",0,0,true);block(memory);r.result.completeExceptionally(memory);}
- catch(RuntimeException e){r.result.completeExceptionally(new ProfileProvider.Failure("PROFILE_PROCESSING_ERROR"));}
+  catch(RuntimeException e){new Diagnostics(context).unexpected("PROFILE",e);r.result.completeExceptionally(new ProfileProvider.Failure("PROFILE_PROCESSING_ERROR"));}
  finally{active.remove(r);QueueControl.activeAccounts=active.size();r.thread=null;Thread.interrupted();Fetcher.publish();}}
 }

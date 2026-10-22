@@ -12,9 +12,9 @@ final class ProbeDecision {
         if (wall.isEmpty()) return null;
         switch (wall) {
             case "PROFILE_PAGE_UNAVAILABLE":
-                if (data.optBoolean("candidateFound")) return null;
-                // User-selected fast-skip policy: explicit text is sufficient, including HTTP 200/unknown.
-                boolean confirmed = !user.isEmpty() && data.optBoolean("unavailableText");
+                if (data.optBoolean("candidateFound") || everCandidate || !data.optBoolean("searchCompleted")) return null;
+                // HTTP status alone is not evidence; a completed candidate search and explicit text are required.
+                boolean confirmed = Identity.valid(user) && data.optBoolean("unavailableText");
                 return new ProfileProvider.Failure(wall, http, 0, false, confirmed);
             case "PROFILE_DEFAULT_AVATAR":
                 return data.optBoolean("identityConfirmed") && data.optBoolean("searchCompleted") && data.optBoolean("pageReady")

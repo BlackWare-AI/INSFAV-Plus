@@ -14,10 +14,10 @@ public class ProviderOperationTest {
   void emit(JSONObject data){ValueCallback<String> callback=pending;pending=null;assertNotNull(callback);callback.onReceiveValue(JSONObject.quote(data.toString()));}
  }
  @Before public void setup()throws Exception{c=RuntimeEnvironment.getApplication();SessionState.prefs(c).edit().clear().commit();provider=new WebViewProfileProvider(c,CookieJar.parse("sessionid=FIXTURE; ds_user_id=123",System.currentTimeMillis()),(v,u)->{},u->null);}
- WebViewProfileProvider.Operation operation(){WebViewProfileProvider.Operation o=provider.new Operation("example","123",false);o.view=new Page(c);o.started=true;o.deadline=SystemClock.uptimeMillis()+45000;return o;}
+ WebViewProfileProvider.Operation operation(){WebViewProfileProvider.Operation o=provider.new Operation("example","123",false);o.view=new Page(c);o.started=true;o.deadline=SystemClock.uptimeMillis()+WebViewProfileProvider.PROFILE_DEADLINE_MS;return o;}
  JSONObject image()throws Exception{return new WebProfileTest().valid();}
  @Test public void deadlineAndDelayedJsCallbackCannotBecomeNoImageOrSuccess()throws Exception{
-  WebViewProfileProvider.Operation o=operation();Page page=(Page)o.view;o.poll();ShadowSystemClock.advanceBy(Duration.ofSeconds(45));page.emit(image());assertEquals("WEBVIEW_TIMEOUT",o.failure.code);assertFalse(FailurePolicy.noImage(o.failure));assertEquals(Diagnostics.Reason.DEADLINE,o.reason);
+  WebViewProfileProvider.Operation o=operation();Page page=(Page)o.view;o.poll();ShadowSystemClock.advanceBy(Duration.ofSeconds(15));page.emit(image());assertEquals("WEBVIEW_TIMEOUT",o.failure.code);assertFalse(FailurePolicy.noImage(o.failure));assertEquals(Diagnostics.Reason.DEADLINE,o.reason);
  }
  @Test public void lateLoadingImageSucceedsBeforeDeadline()throws Exception{
   WebViewProfileProvider.Operation o=operation();Page page=(Page)o.view;o.poll();page.emit(new JSONObject().put("reason","PAGE_NOT_READY").put("candidateFound",true));Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500));page.emit(image());assertNull(o.failure);assertNotNull(o.result);
@@ -27,7 +27,7 @@ public class ProviderOperationTest {
   WebViewProfileProvider.Operation paused=operation();Page old=(Page)paused.view;paused.poll();paused.fail(new ProfileProvider.Failure("REQUEST_CANCELLED"));old.emit(image());assertNull(paused.result);
   WebViewProfileProvider.Operation resumed=operation();Page current=(Page)resumed.view;resumed.poll();current.emit(image());assertNull(resumed.failure);assertNotNull(resumed.result);
  }
- @Test public void stalledJsCallbackIsStoppedByOperationWatchdog(){WebViewProfileProvider.Operation o=operation();o.armWatchdog();o.poll();Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(57));assertEquals("WEBVIEW_TIMEOUT",o.failure.code);assertFalse(FailurePolicy.noImage(o.failure));}
+ @Test public void stalledJsCallbackIsStoppedByOperationWatchdog(){WebViewProfileProvider.Operation o=operation();o.armWatchdog();o.poll();Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(15));assertEquals("WEBVIEW_TIMEOUT",o.failure.code);assertFalse(FailurePolicy.noImage(o.failure));}
  WebResourceRequest request(boolean main){return new WebResourceRequest(){public android.net.Uri getUrl(){return android.net.Uri.parse("https://www.instagram.com/example/");}public boolean isForMainFrame(){return main;}public boolean isRedirect(){return false;}public boolean hasGesture(){return false;}public String getMethod(){return "GET";}public java.util.Map<String,String> getRequestHeaders(){return java.util.Collections.emptyMap();}};}
  @Test public void main404StillWaitsForExplicitText()throws Exception{
   org.robolectric.util.ReflectionHelpers.setField(provider,"verifiedSession",true);
@@ -58,5 +58,10 @@ public class ProviderOperationTest {
  @Test public void candidateSnapshotKeepsPollingInsteadOfSkipping()throws Exception{
   WebViewProfileProvider.Operation o=operation();Page page=(Page)o.view;o.poll();page.emit(new JSONObject().put("wall","PROFILE_PAGE_UNAVAILABLE").put("reason","TEXT_MATCH").put("unavailableText",true).put("candidateFound",true));assertNull(o.failure);assertFalse(o.finishing);
   Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500));page.emit(image());assertNull(o.failure);assertNotNull(o.result);
+ }
+ @Test public void historicalCandidatePreventsLaterErrorTextFromBecomingPermanent()throws Exception{
+  WebViewProfileProvider.Operation o=operation();Page page=(Page)o.view;o.poll();page.emit(new JSONObject().put("candidateFound",true));
+  Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500));page.emit(new JSONObject().put("wall","PROFILE_PAGE_UNAVAILABLE").put("unavailableText",true).put("searchCompleted",true));assertNull(o.failure);
+  Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(500));page.emit(image());assertNotNull(o.result);
  }
 }

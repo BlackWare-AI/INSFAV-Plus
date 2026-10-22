@@ -14,6 +14,7 @@ function (expected, expectedId) {
     }
     const pageText = document.body && typeof document.body.innerText === "string" ? document.body.innerText.slice(0, 24000).toLowerCase().replace(/[’‘]/g, "'") : "";
     const unavailableText = /sorry, this page isn't available|bu sayfa kullanılamıyor|bu sayfaya ulaşılamıyor|sayfa kaldırılmış|bağlantı bozuk olabilir/.test(pageText);
+    if (/please wait a few minutes before you try again|we restrict certain activity/.test(pageText)) return wall("RATE_LIMITED", "TEXT_MATCH");
     const structured = new Set();
     let viewer = false, anonymous = false, routedError = false, visits = 0;
     const normalize = x => typeof x === "string" ? x.trim().replace(/^@/, "").toLowerCase() : "";

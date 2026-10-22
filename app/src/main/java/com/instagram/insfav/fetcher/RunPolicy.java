@@ -10,7 +10,7 @@ final class RunPolicy {
         if (minimum < 1 || maximum < minimum || maximum > 86400 || start < 0 || start >= 1440 || end < 0 || end >= 1440 || start == end) throw new IllegalArgumentException("INVALID_SCHEDULE");
         this.minimum = minimum; this.maximum = maximum; this.start = start; this.end = end;
     }
-    static RunPolicy read(SharedPreferences s) { return new RunPolicy(s.getInt("minimum", 15), s.getInt("maximum", 30), s.getInt("startMinute", 120), s.getInt("endMinute", 420)); }
+    static RunPolicy read(SharedPreferences s) { return new RunPolicy(s.getInt("minimum", 15), s.getInt("maximum", 30), s.getInt("startMinute", 0), s.getInt("endMinute", 480)); }
     boolean contains(ZonedDateTime time) { int minute = time.getHour() * 60 + time.getMinute(); return start < end ? minute >= start && minute < end : minute >= start || minute < end; }
     long nextAllowed(long epoch, ZoneId zone) {
         ZonedDateTime now = Instant.ofEpochMilli(epoch).atZone(zone); if (contains(now)) return epoch; return nextWindow(epoch, zone);

@@ -51,6 +51,7 @@ const {chromium} = require('playwright');
    let data=await run();assert.equal(data.wall,undefined,asset);assert.equal(data.url,image);assert.equal(data.candidateFound,true);
    await load(canonical+"<p>bu sayfa kullanılamıyor</p><script type='application/json'>{\"username\":\"example\",\"id\":\"9\",\"profile_pic_url\":\""+image+"\"}</script>");
    data=await run();assert.notEqual(data.wall,'PROFILE_PAGE_UNAVAILABLE');assert.equal(data.candidateFound,true);
+    await load("<p>please wait a few minutes before you try again</p><p>bu sayfa kullanılamıyor</p>");data=await run();assert.equal(data.wall,'RATE_LIMITED',asset);
    for(const gate of ["<form id='loginForm'><input></form>","<script type='application/json'>{\"login_required\":true}</script>","<form action='/challenge/'><input></form>"]) {
     await load(gate+'<p>bu sayfa kullanılamıyor</p>');data=await run();assert.ok(['COOKIE_INVALID_EXPIRED','CHALLENGE_REQUIRED'].includes(data.wall),asset);
    }

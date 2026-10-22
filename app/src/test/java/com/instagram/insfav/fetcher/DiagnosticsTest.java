@@ -24,10 +24,10 @@ public class DiagnosticsTest {
         SessionState.prefs(c).edit().putLong("diagnosticBatch", 7).putInt("concurrentWebViews", 10).commit();
         Diagnostics d = new Diagnostics(c);
         d.session("SHARED_COOKIES_APPLIED"); d.session("SESSION_UNKNOWN");
-        d.outcome("WEBVIEW_TIMEOUT", Diagnostics.reason("DEADLINE"), 0, false, true, "UNKNOWN", 45000, 45000);
-        d.outcome("PROFILE_PAGE_UNAVAILABLE", Diagnostics.reason("https://private.test/SECRET"), 200, true, false, "SECRET", 42, 45000);
+        d.outcome("WEBVIEW_TIMEOUT", Diagnostics.reason("DEADLINE"), 0, false, true, "UNKNOWN", 15000, 15000);
+        d.outcome("PROFILE_PAGE_UNAVAILABLE", Diagnostics.reason("https://private.test/SECRET"), 200, true, false, "SECRET", 42, 15000);
         ByteArrayOutputStream out = new ByteArrayOutputStream(); d.export(out); String text = out.toString(StandardCharsets.UTF_8);
-        for (String field : new String[]{"code=WEBVIEW_TIMEOUT", "reason=DEADLINE", "http=0", "pageFinished=false", "candidateFound=true", "session=UNKNOWN", "elapsedMs=45000", "timeoutMs=45000", "workers=10", "effectiveWorkers=", "activeAccounts=", "queuedAccounts=", "queue=", "batch=7", "SESSION SHARED_COOKIES_APPLIED 7", "SESSION SESSION_UNKNOWN 7", "reason=UNKNOWN_RESPONSE"}) assertTrue(field, text.contains(field));
+        for (String field : new String[]{"code=WEBVIEW_TIMEOUT", "reason=DEADLINE", "http=0", "pageFinished=false", "candidateFound=true", "session=UNKNOWN", "elapsedMs=15000", "timeoutMs=15000", "workers=10", "effectiveWorkers=", "activeAccounts=", "queuedAccounts=", "queue=", "batch=7", "SESSION SHARED_COOKIES_APPLIED 7", "SESSION SESSION_UNKNOWN 7", "reason=UNKNOWN_RESPONSE"}) assertTrue(field, text.contains(field));
         assertFalse(text.contains("SECRET")); assertFalse(text.contains("private.test"));
         assertFalse(text.contains("SESSION SESSION_VERIFIED"));
         System.out.println("OFFLINE_FIXTURE_DIAGNOSTICS_BEGIN\n" + text + "OFFLINE_FIXTURE_DIAGNOSTICS_END");
@@ -38,4 +38,8 @@ public class DiagnosticsTest {
         ByteArrayOutputStream out=new ByteArrayOutputStream();new Diagnostics(c).export(out);String text=out.toString(StandardCharsets.UTF_8);
         assertTrue(text.contains("Saved profile outcomes (private ledger): 2"));assertTrue(text.contains("Deferred profiles awaiting explicit Retry: 1"));assertFalse(text.contains("private.fixture"));assertFalse(text.contains("private.timeout"));
     }
+ @Test public void unexpectedErrorContainsOnlyFixedCategoryAndNumericLocation()throws Exception{
+  Diagnostics d=new Diagnostics(RuntimeEnvironment.getApplication());d.unexpected("PROFILE",new IllegalArgumentException("sessionid=SECRET https://private.test/person PRIVATE_USER"));
+  java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();d.export(out);String text=out.toString("UTF-8");assertTrue(text.contains("UNEXPECTED_ARGUMENT"));assertFalse(text.contains("SECRET"));assertFalse(text.contains("private.test"));assertFalse(text.contains("PRIVATE_USER"));
+ }
 }
