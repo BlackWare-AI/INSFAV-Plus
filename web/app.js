@@ -1,10 +1,11 @@
 'use strict';
 const C=InsfavCore,$=id=>document.getElementById(id),native=!!window.Android,I=window.InsfavI18n,t=(text,args)=>I.text(text,args),uiText=(node,text)=>I.bind(node,text);
+let bootstrapReady=false,bootstrapTimer;
 let doc=null,profiles={},stats={usage:0,load:0,clear:0},state={},opened=new Set(),query='',rows=[],positions=[0],mounted=new Map(),scheduled=false,previousFocus=null,lastFocus=null,viewerUser='',toastTimer=0,cacheVersion=0,lastRevision='',imageFailureTimer=0,fullLoader=null,appInfo={},fetcherState={},viewerToken='',remoteLoader=null,remoteShown=false,fetcherPoll=0;
 function placeholder(button){const icon=document.createElement('span');icon.className='person-placeholder';icon.setAttribute('aria-hidden','true');button.replaceChildren(icon);}
 const motionStyle=getComputedStyle(document.documentElement),motion={duration:parseFloat(motionStyle.getPropertyValue('--motion-base'))||160,easing:motionStyle.getPropertyValue('--motion-ease').trim()||'ease-out'};
 function request(command,extra={}){if(native)Android.request(JSON.stringify({command,...extra}));else previewCommand(command,extra);}
-function message(text){$('toast').textContent=t(text);$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,4200);}
+function message(text){const copied=String(text).match(/^(\d+) usernames copied\.$/),outside=String(text).match(/^Outside working hours\. Configured window: (\d{2}:\d{2})–(\d{2}:\d{2})\. Next eligible time: (.+)\.$/);if(copied)text=t('{count} usernames copied.',{count:copied[1]});if(outside)text=t('Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.',{start:outside[1],end:outside[2],next:outside[3]});$('toast').textContent=t(text);$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,4200);}
 function setDocument(raw){const next=C.parseDocument(raw);doc=next;opened.clear();query='';$('search-input').value='';$('clear-search').hidden=true;rebuild();}
 window.nativeEvent=(event,data)=>{
  try{
@@ -12,7 +13,7 @@ window.nativeEvent=(event,data)=>{
    if(data.language)I.choose(data.language);profiles=data.profiles||{};state=data;if(data.app)appInfo=data.app;if(data.stats)stats=data.stats;
    if(data.raw)setDocument(data.raw);else{doc=null;rebuild();}
    if(event==='imported'){stats.load++;message('JSON imported. All original fields preserved.');}
-   updateSettings();$('splash').hidden=true;
+   bootstrapReady=true;clearTimeout(bootstrapTimer);$('startup-error').hidden=true;updateSettings();$('splash').hidden=true;
   }
   if(event==='status'){
    if(data.folderMessage&&data.folderMessage!==state.folderMessage)message(data.folderMessage);
@@ -21,6 +22,11 @@ window.nativeEvent=(event,data)=>{
    if(revision!==lastRevision){lastRevision=revision;cacheVersion++;refreshAvatars(oldProfiles);}
    updateSettings();
   }
+  if(event==='inventory')renderInventory(data);
+  if(event==='performance')renderPerformance(data);
+  if(event==='history')renderHistory(data);
+  if(event==='fetcher-results'&&data.status===resultFilter){resultUsers=new Set(data.users);rebuild();}
+  if(event==='error'&&!bootstrapReady)showStartupFailure();
   if(event==='image-cache-cleared')clearBrowserImages();
   if(event==='thumbnail-cleanup'){message(`${data.deleted} deleted · ${data.preserved} preserved · ${data.errors} errors. ${data.state}`);}
   if(event==='scan-progress'){state.scan=data;state.scanState=data.state;updateSettings();}
@@ -37,14 +43,16 @@ window.nativeEvent=(event,data)=>{
   }
   if(event==='remote-full-failed'&&viewerToken===data.token){$('viewer-caption').textContent+=' · Online image unavailable; local image retained';}
   if(event==='language')I.choose(data.choice);if(event==='message'||event==='error')message(data);
- }catch(error){message('Unable to read data: '+error.message);$('splash').hidden=true;}
+ }catch(error){if(event==='bootstrap'||!bootstrapReady)showStartupFailure();else message(t('Unable to read data')+': '+error.message);}
 };
 function rebuild(preserve=false){
- const groups=doc?C.filterCollections(doc,query):[];
+ let groups=doc?C.filterCollections(doc,query):[];
+ if(resultFilter)groups=groups.map(group=>({...group,items:group.items.filter(item=>resultUsers.has(item.user))})).filter(group=>group.items.length);
+ $('filter-empty').hidden=!doc||groups.length>0;
  rows=C.rowsFor(groups,opened,!!query.trim());positions=C.offsets(rows);
  $('list').style.height=positions.at(-1)+'px';
  if(!preserve){for(const node of mounted.values()){const button=node.querySelector('.avatar');if(button)releaseAvatar(button);node.remove();}mounted.clear();}
- $('empty').hidden=!!doc;$('search-info').classList.toggle('visible',!!query.trim());
+ $('empty').hidden=!!doc;$('search-info').classList.toggle('visible',!!query.trim()||!!resultFilter);
  $('search-info').textContent=groups.reduce((count,collection)=>count+collection.items.length,0)+' '+t('RESULTS');renderVisible();
 }
 function highlighted(el,text){el.replaceChildren();const q=query.trim();if(!q){el.textContent=text;return;}const source=C.foldDisplay(text),needle=C.foldDisplay(q);let p=0,i;while((i=source.indexOf(needle,p))!==-1){el.append(document.createTextNode(text.slice(p,i)));const mark=document.createElement('mark');mark.textContent=text.slice(i,i+q.length);el.append(mark);p=i+q.length;}el.append(document.createTextNode(text.slice(p)));}
@@ -176,7 +184,7 @@ function updateSettings(){
    changedText(detail,value);
    if(label==='Missing Images'){
     let copy=metric.querySelector('.copy-missing');
-    if(!copy){const head=document.createElement('div');head.className='metric-head';copy=document.createElement('button');copy.id='copy-missing-users';copy.className='copy-missing';copy.setAttribute('aria-label',t('Copy missing usernames'));copy.title='Copy missing usernames';copy.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';copy.onclick=()=>request('copy-missing-users');head.append(detail,copy);metric.prepend(head);}
+    if(!copy){const head=document.createElement('div');head.className='metric-head';copy=document.createElement('button');copy.id='copy-missing-users';copy.className='copy-missing';copy.setAttribute('aria-label',t('Copy missing usernames'));copy.title=t('Copy missing usernames');copy.setAttribute('data-i18n-title','Copy missing usernames');copy.setAttribute('data-i18n-aria-label','Copy missing usernames');copy.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';copy.onclick=()=>request('copy-missing-users');head.append(detail,copy);metric.prepend(head);}
     copy.disabled=Number(value)===0;
    }
    if(label==='Selected Folder'){metric.classList.add('folder-metric');if(detail.title!==String(value))detail.title=String(value);}
@@ -188,9 +196,9 @@ function updateSettings(){
     const title='Target: 256×256 · '+(state.resolution?.complete?'All images in the last completed scan':'Saved dimensions; Rescan includes every folder image')+(state.resolution?.unknown?' · '+state.resolution.unknown+' unknown dimensions':'');if(metric.title!==title)metric.title=title;
    }
   }
-$('scan-state').textContent=(state.scanState||'idle').replaceAll('_',' ').replace(/^./,value=>value.toUpperCase());
+$('scan-state').textContent=t((state.scanState||'idle').replaceAll('_',' ').replace(/^./,value=>value.toUpperCase()));
  $('progress').max=busy?Math.max(1,scan.total||1):1;$('progress').value=busy?(scan.processed||0):state.scanState==='completed'?1:0;
- $('progress-detail').textContent=scan.message||(busy?`${scan.processed||0} / ${scan.total||0} folder entries checked`:'Rescan updates the index without changing source files. Retry an interrupted scan to resume saved work. Image Cache Size counts legacy app image copies; WebView Storage includes browser-managed assets and data. Rescan after external changes.');
+ $('progress-detail').textContent=scan.message||(busy?t('Checked {processed} / {total} files',{processed:scan.processed||0,total:scan.total||0}):t('Rescan reads source files. Cancel preserves completed work; rescan again to resume. Scan after external folder changes.'));
  $('folder-warning').hidden=!state.folderMessage;$('folder-warning').textContent=state.folderMessage||'';
  $('version-info').textContent=`INSFAV Plus ${appInfo.version||''} · Build ${appInfo.build??'—'} · BlackWare`;
  for(const button of $('profile-actions').querySelectorAll('button')){button.disabled=button.dataset.action==='cancel-scan'?!busy:busy&&button.dataset.action!=='clear-cache';button.hidden=button.dataset.action==='cancel-scan'&&!busy;}
@@ -206,23 +214,24 @@ function openFetcher(){
  clearInterval(fetcherPoll);fetcherPoll=0;
 }
 function closeFetcher(){clearInterval(fetcherPoll);fetcherPoll=0;$('cookie-text').value='';hideScreen($('fetcher-screen'),()=>{$('settings').inert=false;$('fetcher-menu').focus();});}
+function outsideSchedule(f){return t('Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.',{start:f.start,end:f.end,next:f.nextAllowedAt?new Date(f.nextAllowedAt).toLocaleString(I.locale(),{hour12:false}):'—'});}
 function updateFetcher(){
  const f=fetcherState;if($('fetcher-screen').hidden)return;
  $('cookie-state').textContent=f.cookiesSaved?t('Cookies saved · session checked during retrieval'):t('Not configured');
- $('fetcher-state').textContent=(f.outsideScheduleMessage||((f.scheduleStatus||'')+' · '+(f.state||'Idle')))+(f.blocked==='RATE_LIMITED'?' · '+(f.blockedHttp===429?'HTTP 429':'Instagram restriction')+(f.retryAt?' · Cooldown until '+new Date(f.retryAt).toLocaleTimeString(I.locale(),{hour12:false}):'')+(f.automaticResume?' · Automatic resume scheduled':' · Manual resume'):'');$('fetcher-folder').textContent=(f.folder||'Not selected')+(f.writable?' · Write access granted':' · Read only');$('fetcher-write').hidden=!!f.writable;
+ $('fetcher-state').textContent=(f.outsideScheduleMessage?outsideSchedule(f):(I.status(f.scheduleStatus||'')+' · '+I.status(f.state||'Idle')))+(f.blocked==='RATE_LIMITED'?' · '+(f.blockedHttp===429?'HTTP 429':'Instagram restriction')+(f.retryAt?' · Cooldown until '+new Date(f.retryAt).toLocaleTimeString(I.locale(),{hour12:false}):'')+(f.automaticResume?' · Automatic resume scheduled':' · Manual resume'):'');$('fetcher-folder').textContent=t(f.folder||'Not selected')+' · '+t(f.writable?'Write access granted':'Read only');$('fetcher-write').hidden=!!f.writable;
  for(const [id,value] of [['fetcher-concurrency',f.requestedViews],['fetcher-min',f.minimum],['fetcher-max',f.maximum],['fetcher-start',f.start],['fetcher-end',f.end]]){const input=$(id);if(value!==undefined&&document.activeElement!==input&&!input.dataset.edited)input.value=value;}
  if(!$('fetcher-background').dataset.edited)$('fetcher-background').checked=!!f.background;
- $('fetcher-capacity').textContent='Requested WebViews: '+(f.requestedViews||1)+' · Effective WebViews: '+(f.effectiveViews||1)+' · Active WebViews: '+(f.activeViews||0)+(f.effectiveViews<f.requestedViews?' · Reduced by the memory budget':'');
+ $('fetcher-capacity').textContent=t('Requested WebViews: {requested} · Effective WebViews: {effective} · Active WebViews: {active}',{requested:f.requestedViews||1,effective:f.effectiveViews||1,active:f.activeViews||0})+(f.effectiveViews<f.requestedViews?' · '+t('Reduced by the memory budget'):'');
  const values=[['Active Accounts',f.activeAccounts||0],['Accounts / Minute',Number(f.completedPerMinute||0).toFixed(1)],['Peak Active Accounts',f.peakAccounts||0],['App PSS (MiB)',((f.memoryPssKiB||0)/1024).toFixed(1)],['Total Unique Accounts',f.total||0],['Successful',f.success||0],['Existing',f.existing||0],['Failed',f.failed||0],['Skipped Profiles',f.skipped||0],['Retry Later',f.retry||0],['Pending',f.pending||0],['Processed',f.processed||0]];
  for(const [label,value]of values)changedText(metricNode($('fetcher-metrics'),label)._count,value);
  $('fetcher-progress').max=Math.max(1,f.total||0);$('fetcher-progress').value=f.processed||0;
  const process=f.process||{},reviewed=Math.min(f.total||0,(f.processed||0)+(f.held||0));
- $('fetcher-process-phase').textContent=process.phase||f.state||'Idle';
- $('fetcher-process-detail').textContent=(process.active??f.activeAccounts??0)+' active · '+(process.queued||0)+' queued · '+(process.handledThisRun||0)+' handled this run'+(process.waitSeconds>0?' · Next request in '+process.waitSeconds+' s':'');
- $('fetcher-process-result').textContent=process.lastResult?'Last result: '+process.lastResult.replaceAll('_',' '):'Waiting for the next result';
+ $('fetcher-process-phase').textContent=I.status(process.phase||f.state||'Idle');
+ $('fetcher-process-detail').textContent=t('{active} active · {queued} queued · {handled} handled this run',{active:process.active??f.activeAccounts??0,queued:process.queued||0,handled:process.handledThisRun||0})+(process.waitSeconds>0?' · '+t('Next request in {seconds} s',{seconds:process.waitSeconds}):'');
+ $('fetcher-process-result').textContent=process.lastResult?t('Last result')+': '+process.lastResult.replaceAll('_',' '):t('Waiting for the next result');
  $('fetcher-run-progress').max=Math.max(1,f.total||0);$('fetcher-run-progress').value=reviewed;
- $('fetcher-history').textContent=reviewed+' / '+(f.total||0)+' accounts reviewed · '+((f.skipped||0)+(f.failed||0)+(f.held||0))+' saved outcomes · Retried only with Retry Skipped / Failed Profiles';
- $('fetcher-current').textContent=(f.resolution?.verificationRecommended?'External folder changes detected · Verify Fetcher Index recommended · ':'')+'Elapsed '+(f.elapsedSeconds||0)+' s'+(f.etaSeconds>=0?' · ETA '+f.etaSeconds+' s':'');
+ $('fetcher-history').textContent=t('{reviewed} / {total} accounts reviewed · {saved} saved outcomes · Retried only with Retry Skipped / Failed Profiles',{reviewed,total:f.total||0,saved:(f.skipped||0)+(f.failed||0)+(f.held||0)});
+ $('fetcher-current').textContent=(f.resolution?.verificationRecommended?'External folder changes detected · Verify Fetcher Index recommended · ':'')+t('Elapsed')+' '+(f.elapsedSeconds||0)+' s'+(f.etaSeconds>=0?' · ETA '+f.etaSeconds+' s':'');
  $('fetcher-verify').disabled=!!f.running;$('fetcher-missing').disabled=!!f.running;$('fetcher-resume').disabled=!!f.running;$('fetcher-retry-skipped').disabled=!!f.running;
 }
 $('fetcher-menu').onclick=openFetcher;$('fetcher-back').onclick=closeFetcher;
@@ -232,7 +241,7 @@ $('cookie-save').onclick=()=>{const text=$('cookie-text').value;$('cookie-text')
 $('cookie-remove').onclick=()=>{$('cookie-text').value='';confirmAction('Remove Instagram Cookies?','Retrieval stops. Collections and local photos stay unchanged.',()=>request('fetcher-cookies-remove'));};
 $('fetcher-save').onclick=()=>{request('fetcher-config',{minimum:Number($('fetcher-min').value),maximum:Number($('fetcher-max').value),start:$('fetcher-start').value,end:$('fetcher-end').value,background:$('fetcher-background').checked,concurrentWebViews:Number($('fetcher-concurrency').value)});for(const input of $('fetcher-screen').querySelectorAll('input'))delete input.dataset.edited;};
 $('fetcher-write').onclick=()=>request('fetcher-write-access');
-for(const [id,action]of [['fetcher-missing','missing'],['fetcher-pause','pause'],['fetcher-resume','resume'],['fetcher-stop','stop'],['fetcher-retry-skipped','retry_skipped']])$(id).onclick=()=>request('fetcher-action',{action});
+for(const [id,action]of [['fetcher-missing','missing'],['fetcher-pause','pause'],['fetcher-resume','resume'],['fetcher-stop','stop'],['fetcher-retry-skipped','retry_skipped']])$(id).onclick=()=>{if(!['pause','stop'].includes(action)&&fetcherState.withinSchedule===false){message(outsideSchedule(fetcherState));return;}request('fetcher-action',{action});};
 $('fetcher-verify').onclick=()=>confirmAction('Verify Fetcher Index?','Explicitly validate the selected folder and repair Fetcher metadata. Photos, normal INSFAV indexing and collections are unchanged.',()=>request('fetcher-action',{action:'verify_index'}));
 $('fetcher-diagnostics').onclick=()=>request('logs');
 let scale=1,tx=0,ty=0,pointers=new Map(),gesture=null,lastTap=0,lastTapX=0,lastTapY=0;
@@ -272,4 +281,21 @@ $('language-choice').onchange=()=>{const choice=$('language-choice').value;if(na
 I.onChange=()=>{if($('language-choice'))$('language-choice').value=I.choice();updateSettings();updateFetcher();for(const node of mounted.values()){const button=node.querySelector('.avatar');if(button){const r=rows.find(row=>row.key===node.dataset.key);if(r)button.setAttribute('aria-label',t('View profile image for {name} (@{user})',{name:r.item.name,user:r.item.user}));}}};
 I.choose(native?'system':(()=>{try{return localStorage.getItem('insfav-plus-language')||'system';}catch(_){return 'system';}})());
 
-request('bootstrap',{profileDeltas:true});
+let resultFilter='',resultUsers=new Set(),inventoryState={kind:'missing',offset:0,query:''},inventoryRequest=0;
+const resultOptions=[['Downloaded','SUCCESS'],['Existing','EXISTING'],['Skipped Unavailable','SKIPPED_UNAVAILABLE'],['Skipped No Image','SKIPPED_NO_IMAGE'],['Failed','FAILED'],['Retry Later','RETRY_LATER']];
+for(const [label,code]of resultOptions){const option=document.createElement('option');option.value=code;uiText(option,label);$('result-filter').append(option);}
+function refreshResults(){if(resultFilter)request('fetcher-results',{status:resultFilter});}
+$('result-filter').onchange=()=>{resultFilter=$('result-filter').value;resultUsers.clear();$('result-refresh').hidden=!resultFilter;refreshResults();rebuild();};$('result-refresh').onclick=refreshResults;
+$('inventory-menu').onclick=()=>menu('Thumbnail management',[['Missing images',()=>openInventory('missing')],['Images available',()=>openInventory('present')],['Orphan thumbnails',()=>openInventory('orphan')]]);
+function queryInventory(){request('inventory',{...inventoryState,requestId:++inventoryRequest});}
+function openInventory(kind=inventoryState.kind){inventoryState.kind=kind;const body=document.createElement('div'),note=document.createElement('p'),input=document.createElement('input'),count=document.createElement('p'),list=document.createElement('div'),pager=document.createElement('div');
+ note.className='muted';uiText(note,'Read-only. Orphans are never deleted. Inventory reflects the last completed rescan.');input.id='inventory-search';input.value=inventoryState.query;input.setAttribute('aria-label',t('Search files'));input.placeholder=t('Search files');let timer;input.oninput=()=>{inventoryState.query=input.value;inventoryState.offset=0;clearTimeout(timer);timer=setTimeout(queryInventory,180);};count.id='inventory-count';count.className='muted';count.setAttribute('role','status');list.id='inventory-list';list.className='action-list';pager.className='fetcher-inline';for(const [label,step]of [['Previous',-100],['Next',100]]){const button=document.createElement('button');button.className='btn';button.id='inventory-'+(step<0?'previous':'next');uiText(button,label);button.onclick=()=>{inventoryState.offset=Math.max(0,inventoryState.offset+step);queryInventory();};pager.append(button);}body.append(note,input,count,list,pager);showDialog(t({missing:'Missing images',present:'Images available',orphan:'Orphan thumbnails'}[kind]),body,[{label:'Close'}]);queryInventory();}
+function renderInventory(data){if(data.requestId!==inventoryRequest||!$('inventory-list'))return;const list=$('inventory-list');list.replaceChildren();$('inventory-count').textContent=data.complete?t('{total} files',{total:data.total}):t('Rescan first to inspect orphan thumbnails.');for(const item of data.items){const button=document.createElement('button');button.textContent=item.name+(item.width?' · '+item.width+' × '+item.height:'');button.disabled=!item.preview;button.onclick=()=>{const body=document.createElement('div'),img=new Image();img.className='inventory-preview';img.alt=item.name;img.src='/thumb/inventory?preview='+encodeURIComponent(item.preview);body.append(img);showDialog(t('Local image preview'),body,[{label:'Back',run:()=>openInventory()},{label:'Close'}]);};list.append(button);}$('inventory-previous').disabled=data.offset===0;$('inventory-next').disabled=data.offset+data.items.length>=data.total;}
+$('performance-menu').onclick=()=>request('performance');$('history-menu').onclick=()=>request('history');
+function renderPerformance(data){const body=document.createElement('div');body.className='metrics';const metrics=[...data.metrics,{label:'Average browser image load',value:avatarMetrics.loaded?Number((avatarMetrics.loadMs/avatarMetrics.loaded).toFixed(2)):null,measured:avatarMetrics.loaded>0,unit:'ms',scope:'Current browser session'},{label:'Peak process RAM',measured:false,unit:'',scope:'Not sampled'}];for(const metric of metrics){const card=document.createElement('div'),label=document.createElement('span'),value=document.createElement('b'),note=document.createElement('p');card.className='metric';uiText(label,metric.label);value.textContent=metric.measured?metric.value+' '+metric.unit:t('Not measured');note.className='muted';note.textContent=t(metric.scope);card.append(label,value,note);body.append(card);}if(data.lastScan&&data.previousScan){const compare=document.createElement('p');compare.className='muted';compare.textContent=t('Previous scan comparison')+': '+(data.lastScan.elapsedMs-data.previousScan.elapsedMs)+' ms';body.append(compare);}showDialog('Performance diagnostics',body,[{label:'Close'}]);}
+function renderHistory(data){const body=document.createElement('ol');body.className='operation-history';for(const line of data.items){const row=document.createElement('li'),[stamp,...parts]=line.split(' ');row.textContent=new Date(Number(stamp)).toLocaleString(I.locale(),{hour12:false})+' · '+parts.join(' ');body.append(row);}if(!data.items.length){const row=document.createElement('li');uiText(row,'No recorded operations');body.append(row);}showDialog('Recent operations',body,[{label:'Close'}]);}
+function showStartupFailure(){clearTimeout(bootstrapTimer);bootstrapReady=false;$('startup-error').hidden=false;$('splash').hidden=false;$('splash').querySelector('.loader').hidden=true;$('startup-retry').focus();}
+function beginBootstrap(){bootstrapReady=false;$('startup-error').hidden=true;$('splash').querySelector('.loader').hidden=false;clearTimeout(bootstrapTimer);bootstrapTimer=setTimeout(showStartupFailure,12000);request('bootstrap',{profileDeltas:true});}
+$('startup-retry').onclick=beginBootstrap;$('startup-logs').onclick=()=>request('logs');$('startup-import').onclick=()=>request('import');
+
+beginBootstrap();

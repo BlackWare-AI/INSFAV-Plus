@@ -13,22 +13,60 @@ public final class InsfavApplication extends Application implements Fetcher.Host
   @Override
   public void onCreate() {
     super.onCreate();
-    store = Store.get(this);
-    Fetcher.initialize(this, this);
+    ensureReady();
+  }
+
+  private boolean ready;
+  private String bootstrapFailure = "INITIALIZATION_FAILED";
+
+  public String bootstrapFailure() {
+    return bootstrapFailure;
+  }
+
+  private void recordBootstrapFailure(Throwable error) {
+    bootstrapFailure =
+        error instanceof OutOfMemoryError
+            ? "MEMORY_LIMIT"
+            : error instanceof android.database.sqlite.SQLiteException
+                ? "DATABASE_ERROR"
+                : "INITIALIZATION_FAILED";
+    try (java.io.FileOutputStream out = openFileOutput("bootstrap-failure.txt", MODE_PRIVATE)) {
+      out.write(
+          (System.currentTimeMillis() + " BOOTSTRAP " + bootstrapFailure + "\n")
+              .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    } catch (java.io.IOException ignored) {
+    }
+  }
+
+  public synchronized boolean ensureReady() {
+    if (ready) return true;
+    try {
+      store = Store.get(this);
+      Fetcher.initialize(this, this);
+      ready = true;
+      return true;
+    } catch (RuntimeException failure) {
+      recordBootstrapFailure(failure);
+      return false;
+    } catch (OutOfMemoryError failure) {
+      recordBootstrapFailure(failure);
+      return false;
+    }
   }
 
   @Override
   public void onTrimMemory(int level) {
     super.onTrimMemory(level);
-    if (level == TRIM_MEMORY_RUNNING_LOW
-        || level == TRIM_MEMORY_RUNNING_CRITICAL
-        || level == TRIM_MEMORY_COMPLETE) Fetcher.memoryPressure();
+    if (ready
+        && (level == TRIM_MEMORY_RUNNING_LOW
+            || level == TRIM_MEMORY_RUNNING_CRITICAL
+            || level == TRIM_MEMORY_COMPLETE)) Fetcher.memoryPressure();
   }
 
   @Override
   public void onLowMemory() {
     super.onLowMemory();
-    Fetcher.memoryPressure();
+    if (ready) Fetcher.memoryPressure();
   }
 
   public Collection<String> users() throws Exception {

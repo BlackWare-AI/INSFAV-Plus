@@ -27,7 +27,7 @@ app prevents any guarantee of automatic background restart.
 
 Collection JSON and encrypted settings remain separate formats. Neither app's
 private database, preferences, cookie file or Keystore is accessed by the other.
-Orphan thumbnails remain available for read-only inspection and are not deleted.
+Orphan thumbnails remain available under Thumbnail management for read-only inspection and local preview; they are not deleted. Fetcher filters are view snapshots: use Refresh after retrieval to update them.
 Existing invalid source filenames are preserved and reported as
 `OUTPUT_EXISTING_PRESERVED`; choose another authorized folder or handle them
 outside the app before retrying.

@@ -309,6 +309,16 @@ final class LocalImages {
           scanner
               .metrics()
               .put("jsonWriteNanos", store.writeMetrics().optLong("snapshotNanos") - jsonBefore));
+      synchronized (store) {
+        if (store.settings.has("lastScanMetrics"))
+          store.settings.put(
+              "previousScanMetrics", store.settings.getJSONObject("lastScanMetrics"));
+        store.settings.put(
+            "lastScanMetrics",
+            new JSONObject(progress.getJSONObject("io").toString())
+                .put("elapsedMs", progress.optLong("elapsedMs")));
+        store.saveSettings();
+      }
     } catch (Exception | OutOfMemoryError error) {
       String state =
           error instanceof InterruptedException

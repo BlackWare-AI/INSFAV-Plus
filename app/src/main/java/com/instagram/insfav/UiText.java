@@ -1,14 +1,30 @@
 package com.instagram.insfav;
 
-/** Native presentation uses the same catalog as the WebView without dynamic resource names. */
+import android.content.Context;
+import java.util.*;
+
+/**
+ * Native labels share the web catalog. Fixed two-language arrays avoid per-label resource churn.
+ */
 public final class UiText {
-  public static String text(android.content.Context context, String source) {
-    android.content.Context localized = UiLanguage.context(context);
-    String[] sources = localized.getResources().getStringArray(R.array.ui_sources);
-    for (int i = 0; i < sources.length; i++)
-      if (sources[i].equals(source))
-        return localized.getResources().getStringArray(R.array.ui_values)[i];
-    return source;
+  private static Map<String, Integer> indices;
+  private static final Map<String, String[]> values = new HashMap<>();
+
+  public static synchronized String text(Context context, String source) {
+    if (indices == null) {
+      indices = new HashMap<>();
+      String[] keys = context.getResources().getStringArray(R.array.ui_sources);
+      for (int i = 0; i < keys.length; i++) indices.put(keys[i], i);
+    }
+    Integer index = indices.get(source);
+    if (index == null) return source;
+    String language = UiLanguage.resolved(context);
+    String[] translated = values.get(language);
+    if (translated == null) {
+      translated = UiLanguage.context(context).getResources().getStringArray(R.array.ui_values);
+      values.put(language, translated);
+    }
+    return translated[index];
   }
 
   private UiText() {}

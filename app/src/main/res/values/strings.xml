@@ -162,4 +162,84 @@
     <string name="ui_211e5e68cd74" formatted="false">Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.</string>
     <string name="ui_a23b53d0f98e" formatted="false">Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.</string>
     <string name="ui_d91280edbbba" formatted="false">Settings restored. Select the thumbnail folder again to grant access.</string>
+    <string name="ui_ecdfade5daef" formatted="false">Thumbnail management</string>
+    <string name="ui_7934c1ce4abb" formatted="false">Missing images</string>
+    <string name="ui_e07071572936" formatted="false">Images available</string>
+    <string name="ui_12337460153b" formatted="false">Orphan thumbnails</string>
+    <string name="ui_863ee877ea3e" formatted="false">Read-only. Orphans are never deleted. Inventory reflects the last completed rescan.</string>
+    <string name="ui_179fed85ec50" formatted="false">Search files</string>
+    <string name="ui_a57b08a480b8" formatted="false">Previous</string>
+    <string name="ui_1ff57a29d7c9" formatted="false">Next</string>
+    <string name="ui_222ec0a9c342" formatted="false">{total} files</string>
+    <string name="ui_94275ce3181b" formatted="false">Rescan first to inspect orphan thumbnails.</string>
+    <string name="ui_9269427d5a83" formatted="false">Local image preview</string>
+    <string name="ui_4cc94b55bb02" formatted="false">Performance diagnostics</string>
+    <string name="ui_da6d32a00f72" formatted="false">Recent operations</string>
+    <string name="ui_67682dc63bff" formatted="false">No recorded operations</string>
+    <string name="ui_9ae3e12cb149" formatted="false">Fetcher results</string>
+    <string name="ui_04cc9c1a86c0" formatted="false">Refresh results</string>
+    <string name="ui_47c062d35d2c" formatted="false">No matching accounts</string>
+    <string name="ui_be771527f1f3" formatted="false">Unable to start INSFAV Plus. Your source files are preserved.</string>
+    <string name="ui_942087cc2d41" formatted="false">Retry</string>
+    <string name="ui_973909caa1c5" formatted="false">Unable to read data</string>
+    <string name="ui_9455aa0e9b66" formatted="false">Checked {processed} / {total} files</string>
+    <string name="ui_d66ad173db90" formatted="false">Rescan reads source files. Cancel preserves completed work; rescan again to resume. Scan after external folder changes.</string>
+    <string name="ui_040f7884d3b5" formatted="false">Not measured</string>
+    <string name="ui_eb46702054ff" formatted="false">Not sampled</string>
+    <string name="ui_18f325e102ac" formatted="false">Previous scan comparison</string>
+    <string name="ui_dfc8c7661bc9" formatted="false">Average browser image load</string>
+    <string name="ui_75cad0cd2868" formatted="false">Current browser session</string>
+    <string name="ui_c49a7639e346" formatted="false">Peak process RAM</string>
+    <string name="ui_57cd9d544975" formatted="false">SAF query</string>
+    <string name="ui_be7bcd791126" formatted="false">Source open</string>
+    <string name="ui_b46f7129326e" formatted="false">Validation / decode</string>
+    <string name="ui_54002a09daee" formatted="false">SQLite transactions</string>
+    <string name="ui_a114a260719f" formatted="false">JSON snapshot</string>
+    <string name="ui_3aeaa8ab5aed" formatted="false">Rescan duration</string>
+    <string name="ui_93e40026333a" formatted="false">Active WebViews</string>
+    <string name="ui_0ba2c8f42ff4" formatted="false">Fetcher workers</string>
+    <string name="ui_41cfda6c07d6" formatted="false">Process PSS</string>
+    <string name="ui_1b125351ac42" formatted="false">Java heap used</string>
+    <string name="ui_ae00bc783f40" formatted="false">Average native image read</string>
+    <string name="ui_0e6a2bb7493c" formatted="false">Last scan; decode includes source reading</string>
+    <string name="ui_a75411826fbe" formatted="false">Last completed scan</string>
+    <string name="ui_9333cc288215" formatted="false">Current pool</string>
+    <string name="ui_4e7cf2486d1c" formatted="false">Current effective limit</string>
+    <string name="ui_32da92e685e3" formatted="false">Android process sample</string>
+    <string name="ui_a0d363833b35" formatted="false">Current Java heap; not total native RAM</string>
+    <string name="ui_cf4339a66132" formatted="false">Source I/O; not browser decode</string>
+    <string name="ui_b5f0400a8642" formatted="false">Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.</string>
+    <string name="ui_6fba0c4df42e" formatted="false">Cookies saved · session checked during retrieval</string>
+    <string name="ui_4252bd1fdeeb" formatted="false">Requested WebViews: {requested} · Effective WebViews: {effective} · Active WebViews: {active}</string>
+    <string name="ui_279a21b306a4" formatted="false">Reduced by the memory budget</string>
+    <string name="ui_a40543daab22" formatted="false">{active} active · {queued} queued · {handled} handled this run</string>
+    <string name="ui_45b9f8f24dbf" formatted="false">Next request in {seconds} s</string>
+    <string name="ui_ab9c681a6929" formatted="false">Last result</string>
+    <string name="ui_70af0feadb70" formatted="false">Waiting for the next result</string>
+    <string name="ui_4651689436a8" formatted="false">{reviewed} / {total} accounts reviewed · {saved} saved outcomes · Retried only with Retry Skipped / Failed Profiles</string>
+    <string name="ui_a194a68a45d3" formatted="false">Elapsed</string>
+    <string name="ui_27dbcb4760dd" formatted="false">Write access granted</string>
+    <string name="ui_8ac767353080" formatted="false">Read only</string>
+    <string name="ui_2cd67c195757" formatted="false">Current INSFAV thumbnail folder</string>
+    <string name="ui_474ad819c8ba" formatted="false">Scanning</string>
+    <string name="ui_22a970d2e5b1" formatted="false">Completed</string>
+    <string name="ui_132d124d6bb3" formatted="false">Interrupted</string>
+    <string name="ui_95edf3f37798" formatted="false">Outside Schedule</string>
+    <string name="ui_21df3623fcc2" formatted="false">Stopped — User Disabled</string>
+    <string name="ui_317c26b3d34f" formatted="false">Paused — Outside Schedule</string>
+    <string name="ui_0b1bdf64294e" formatted="false">Working — Within Schedule</string>
+    <string name="ui_c0ba1e8575ab" formatted="false">Waiting — Android Background Restrictions</string>
+    <string name="ui_6d5b69e88a07" formatted="false">Rate Limited — Cooldown</string>
+    <string name="ui_265d7968817f" formatted="false">Finishing active profiles</string>
+    <string name="ui_a04fd974b71b" formatted="false">Verifying Instagram session</string>
+    <string name="ui_37a3c197898b" formatted="false">Loading profiles / downloading images</string>
+    <string name="ui_4e3a7fc9e5c5" formatted="false">Waiting for configured worker delay</string>
+    <string name="ui_47e3f21079ad" formatted="false">Preparing next profiles</string>
+    <string name="ui_37b345555d7e" formatted="false">Downloading</string>
+    <string name="ui_6e293a8c009e" formatted="false">Waiting</string>
+    <string name="ui_e159b06187d3" formatted="false">Paused</string>
+    <string name="ui_1a4f630ac1b6" formatted="false">Stopped</string>
+    <string name="ui_1121b3591cf3" formatted="false">Rate Limited</string>
+    <string name="ui_d528b8e106ea" formatted="false">{count} usernames copied.</string>
+    <string name="ui_4e1af7c74096" formatted="false">Operation failed</string>
 </resources>

@@ -17,17 +17,23 @@ public final class UiLanguage {
       throw new java.io.IOException("Language could not be saved");
   }
 
+  static String resolved(Context c) {
+    String selected = choice(c);
+    return "system".equals(selected)
+        ? ("tr"
+                .equals(
+                    android.content.res.Resources.getSystem()
+                        .getConfiguration()
+                        .getLocales()
+                        .get(0)
+                        .getLanguage())
+            ? "tr"
+            : "en")
+        : selected;
+  }
+
   public static Context context(Context c) {
-    String choice = choice(c);
-    String system =
-        android.content.res.Resources.getSystem()
-            .getConfiguration()
-            .getLocales()
-            .get(0)
-            .getLanguage();
-    Locale language =
-        Locale.forLanguageTag(
-            "system".equals(choice) ? ("tr".equals(system) ? "tr" : "en") : choice);
+    Locale language = Locale.forLanguageTag(resolved(c));
     Configuration config = new Configuration(c.getResources().getConfiguration());
     config.setLocale(language);
     return c.createConfigurationContext(config);

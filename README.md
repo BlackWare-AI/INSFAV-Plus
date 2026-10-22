@@ -9,6 +9,9 @@ Independent Android collection manager based on INSFAV commit
 - Existing collection formats, list memberships, 128/256 WebP files, HD viewer,
   Fetcher, scheduling, notifications, WorkManager, SAF and diagnostics remain supported.
 - English and Turkish, system language by default with a saved override.
+- Read-only missing/present/orphan thumbnail inventory with local previews.
+- Download outcome filters keep list order and memberships; Refresh updates the explicit filter snapshot.
+- Optional measured diagnostics, bounded redacted operation history and recoverable startup errors.
 
 The optional Fetcher accesses a third-party service automatically. Its use may
 conflict with that service's terms or access restrictions. Android controls when

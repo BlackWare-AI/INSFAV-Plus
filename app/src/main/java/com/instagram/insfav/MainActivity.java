@@ -23,6 +23,7 @@ public final class MainActivity extends Activity {
   private volatile boolean foreground;
   private Store store;
   private LocalImages images;
+  private ThumbnailInventory inventory;
   private final ExecutorService io = Executors.newSingleThreadExecutor();
   private final ExecutorService scans = Executors.newSingleThreadExecutor();
   private String pendingExport;
@@ -92,9 +93,15 @@ public final class MainActivity extends Activity {
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
+    if (getApplication() instanceof InsfavApplication
+        && !((InsfavApplication) getApplication()).ensureReady()) {
+      nativeRecovery();
+      return;
+    }
     Fetcher.addListener(fetchListener);
     store = Store.get(this);
     images = new LocalImages(this, store);
+    inventory = new ThumbnailInventory(this, store, images);
     settingsBackup =
         new SettingsBackupUi(
             this,
@@ -264,6 +271,14 @@ public final class MainActivity extends Activity {
                     new ByteArrayInputStream(data));
               }
               if (path.startsWith("/thumb/") || path.startsWith("/full/")) {
+                if (uri.getQueryParameter("preview") != null)
+                  return new WebResourceResponse(
+                      "application/octet-stream",
+                      null,
+                      200,
+                      "OK",
+                      java.util.Collections.singletonMap("Cache-Control", "no-store"),
+                      inventory.open(uri.getQueryParameter("preview")));
                 String user = Store.normalize(uri.getLastPathSegment());
                 if (!user.matches("[a-z0-9._]{1,30}")) return response("image/webp", new byte[0]);
                 if (path.startsWith("/full/"))
@@ -317,10 +332,47 @@ public final class MainActivity extends Activity {
     web.loadUrl("https://insfav.local/index.html");
   }
 
+  private void nativeRecovery() {
+    android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+    layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+    layout.setGravity(android.view.Gravity.CENTER);
+    layout.setPadding(32, 32, 32, 32);
+    layout.setBackgroundColor(Color.BLACK);
+    android.widget.TextView text = new android.widget.TextView(this);
+    text.setTextColor(Color.WHITE);
+    text.setText(
+        UiText.text(this, "Unable to start INSFAV Plus. Your source files are preserved."));
+    layout.addView(text);
+    for (String label : new String[] {"Retry", "Export Diagnostics"}) {
+      android.widget.Button button = new android.widget.Button(this);
+      button.setText(UiText.text(this, label));
+      button.setOnClickListener(
+          v -> {
+            if (label.equals("Retry")) recreate();
+            else
+              export(
+                  "INSFAV Plus "
+                      + BuildConfig.VERSION_NAME
+                      + " build "
+                      + BuildConfig.VERSION_CODE
+                      + "\nAndroid SDK "
+                      + Build.VERSION.SDK_INT
+                      + "\n"
+                      + "BOOTSTRAP INITIALIZATION_FAILED\n"
+                      + "No account identifiers or credentials included.",
+                  "INSFAV-Plus-bootstrap.txt",
+                  "text/plain");
+          });
+      layout.addView(button);
+    }
+    setContentView(layout);
+  }
+
   @Override
   protected void onResume() {
     super.onResume();
     foreground = true;
+    if (images == null) return;
     io.execute(
         () -> {
           images.checkAccess();
@@ -369,7 +421,11 @@ public final class MainActivity extends Activity {
   }
 
   private void error(Exception error) {
-    store.log("operation_error", error.getClass().getSimpleName());
+    if (store != null) store.log("operation_error", error.getClass().getSimpleName());
+    if (web == null)
+      android.widget.Toast.makeText(
+              this, UiText.text(this, "Operation failed"), android.widget.Toast.LENGTH_LONG)
+          .show();
     send("error", error.getMessage() == null ? "Operation failed" : error.getMessage());
   }
 
@@ -602,6 +658,27 @@ public final class MainActivity extends Activity {
                   case "settings-import-original":
                     settingsBackup.startOriginal();
                     break;
+                  case "inventory":
+                    send(
+                        "inventory",
+                        inventory
+                            .query(
+                                input.getString("kind"),
+                                input.optInt("offset", 0),
+                                input.optString("query"))
+                            .put("requestId", input.optLong("requestId")));
+                    break;
+                  case "fetcher-results":
+                    send("fetcher-results", Fetcher.results(input.getString("status")));
+                    break;
+                  case "performance":
+                    send("performance", PerformanceReport.read(store, images, Fetcher.snapshot()));
+                    break;
+                  case "history":
+                    send(
+                        "history",
+                        new JSONObject().put("items", OperationHistory.read(MainActivity.this)));
+                    break;
                   case "logs":
                     export(diagnostics(), "INSFAV-Plus-diagnostics.txt", "text/plain");
                     break;
@@ -763,7 +840,7 @@ public final class MainActivity extends Activity {
   @Override
   protected void onActivityResult(int request, int result, Intent intent) {
     super.onActivityResult(request, result, intent);
-    if (settingsBackup.result(request, result, intent)) return;
+    if (settingsBackup != null && settingsBackup.result(request, result, intent)) return;
     if (result != RESULT_OK || intent == null || intent.getData() == null) {
       if (request == EXPORT) pendingExport = null;
       return;
@@ -870,7 +947,7 @@ public final class MainActivity extends Activity {
   protected void onStop() {
     exitBack.reset();
     foreground = false;
-    Fetcher.foregroundStopped();
+    if (images != null) Fetcher.foregroundStopped();
     super.onStop();
   }
 
@@ -879,8 +956,11 @@ public final class MainActivity extends Activity {
     Fetcher.removeListener(fetchListener);
     Fetcher.closeViewer();
     if (scanCancellation != null) scanCancellation.cancel();
-    images.cancelScan();
-    images.closeStreams();
+    if (images != null) {
+      images.cancelScan();
+      images.closeStreams();
+    }
+    if (inventory != null) inventory.close();
     scans.shutdownNow();
     io.shutdownNow();
     if (web != null) {

@@ -8,6 +8,10 @@ import java.util.*;
 
 /** Queue-backed progress. Browser workers never manufacture download successes. */
 final class DownloadNotification {
+  private static String t(Context context, String value) {
+    return com.instagram.insfav.UiText.text(context, value);
+  }
+
   private static long lastAt;
   private static String lastPhase = "";
 
@@ -82,7 +86,7 @@ final class DownloadNotification {
     channel(c);
     return new Notification.Builder(c, "downloads")
         .setSmallIcon(R.drawable.ic_download_status)
-        .setContentTitle("INSFAV Plus Thumbnail Fetcher")
+        .setContentTitle("INSFAV Plus · " + t(c, "Thumbnail Fetcher"))
         .setContentText("STARTING · Loading saved queue and index")
         .setProgress(0, 0, true)
         .setOnlyAlertOnce(true)
@@ -116,7 +120,7 @@ final class DownloadNotification {
             0,
             new Intent(c, MainActivity.class),
             PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-    String compact = progress.status + " · Downloaded " + progress.downloaded;
+    String compact = t(c, progress.status) + " · " + t(c, "Downloaded") + " " + progress.downloaded;
     String detail =
         "Downloaded "
             + progress.downloaded
@@ -161,7 +165,7 @@ final class DownloadNotification {
     Notification.Builder builder =
         new Notification.Builder(c, "downloads")
             .setSmallIcon(icon)
-            .setContentTitle("INSFAV Plus Thumbnail Fetcher")
+            .setContentTitle("INSFAV Plus · " + t(c, "Thumbnail Fetcher"))
             .setContentText(compact)
             .setStyle(new Notification.BigTextStyle().bigText(detail))
             .setContentIntent(open)
@@ -194,7 +198,7 @@ final class DownloadNotification {
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         builder.addAction(
             new Notification.Action.Builder(
-                    null, action.equals("pause") ? "Pause" : "Stop", control)
+                    null, t(c, action.equals("pause") ? "Pause" : "Stop"), control)
                 .build());
       }
     return builder.build();

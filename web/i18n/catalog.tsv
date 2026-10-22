@@ -160,3 +160,83 @@ If Android requests permission, confirm the same folder already selected in Prof
 Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.	İndeksi veya önbelleği temizlemek fotoğraf ve koleksiyonları silmez. Yeniden tarama kaynakları yalnızca okur ve sahipsiz görselleri korur. İsteğe bağlı indirici yalnızca doğrulanmış yeni görseller yazar.
 Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.	Klasör değişiklikleri yeniden taramada algılanır. Erişim izni kaybolursa klasörü yeniden seçin.
 Settings restored. Select the thumbnail folder again to grant access.	Ayarlar geri yüklendi. Erişim izni vermek için küçük görsel klasörünü yeniden seçin.
+Thumbnail management	Küçük görsel yönetimi
+Missing images	Eksik görseller
+Images available	Görseli bulunanlar
+Orphan thumbnails	Sahipsiz küçük görseller
+Read-only. Orphans are never deleted. Inventory reflects the last completed rescan.	Salt okunur. Sahipsiz dosyalar silinmez. Görünüm son tamamlanan taramayı gösterir.
+Search files	Dosya ara
+Previous	Önceki
+Next	Sonraki
+{total} files	{total} dosya
+Rescan first to inspect orphan thumbnails.	Sahipsiz görselleri incelemek için önce yeniden tarayın.
+Local image preview	Yerel görsel önizlemesi
+Performance diagnostics	Performans tanılaması
+Recent operations	Son işlemler
+No recorded operations	Kayıtlı işlem yok
+Fetcher results	İndirici sonuçları
+Refresh results	Sonuçları yenile
+No matching accounts	Eşleşen hesap yok
+Unable to start INSFAV Plus. Your source files are preserved.	INSFAV Plus başlatılamadı. Kaynak dosyalarınız korunuyor.
+Retry	Yeniden dene
+Unable to read data	Veri okunamadı
+Checked {processed} / {total} files	{processed} / {total} dosya kontrol edildi
+Rescan reads source files. Cancel preserves completed work; rescan again to resume. Scan after external folder changes.	Tarama kaynak dosyaları okur. İptal tamamlanan işleri korur; devam etmek için yeniden tarayın. Harici klasör değişikliklerinden sonra tarama yapın.
+Not measured	Ölçülmedi
+Not sampled	Örneklenmedi
+Previous scan comparison	Önceki taramayla karşılaştırma
+Average browser image load	Ortalama tarayıcı görsel yüklemesi
+Current browser session	Geçerli tarayıcı oturumu
+Peak process RAM	En yüksek işlem belleği
+SAF query	SAF sorgusu
+Source open	Kaynağı açma
+Validation / decode	Doğrulama / çözme
+SQLite transactions	SQLite işlemleri
+JSON snapshot	JSON yazımı
+Rescan duration	Yeniden tarama süresi
+Active WebViews	Etkin WebView sayısı
+Fetcher workers	İndirici işçileri
+Process PSS	İşlem PSS
+Java heap used	Kullanılan Java belleği
+Average native image read	Ortalama yerel görsel okuması
+Last scan; decode includes source reading	Son tarama; çözme süresine kaynak okuma dahildir
+Last completed scan	Son tamamlanan tarama
+Current pool	Geçerli havuz
+Current effective limit	Geçerli etkin sınır
+Android process sample	Android işlem örneği
+Current Java heap; not total native RAM	Geçerli Java belleği; toplam yerel bellek değildir
+Source I/O; not browser decode	Kaynak G/Ç; tarayıcı çözmesi değildir
+Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.	Çalışma saati dışında. Ayarlanan pencere: {start}–{end}. Sonraki uygun zaman: {next}.
+Cookies saved · session checked during retrieval	Çerezler kayıtlı · oturum indirme sırasında kontrol edilir
+Requested WebViews: {requested} · Effective WebViews: {effective} · Active WebViews: {active}	İstenen WebView: {requested} · Etkin sınır: {effective} · Çalışan WebView: {active}
+Reduced by the memory budget	Bellek sınırı nedeniyle azaltıldı
+{active} active · {queued} queued · {handled} handled this run	{active} etkin · {queued} sırada · bu çalışmada {handled} işlendi
+Next request in {seconds} s	Sonraki istek {seconds} sn sonra
+Last result	Son sonuç
+Waiting for the next result	Sonraki sonuç bekleniyor
+{reviewed} / {total} accounts reviewed · {saved} saved outcomes · Retried only with Retry Skipped / Failed Profiles	{reviewed} / {total} hesap incelendi · {saved} sonuç kaydedildi · Yalnızca Atlanan / başarısız profilleri yeniden dene ile denenir
+Elapsed	Geçen süre
+Write access granted	Yazma izni var
+Read only	Salt okunur
+Current INSFAV thumbnail folder	Geçerli INSFAV küçük görsel klasörü
+Scanning	Taranıyor
+Completed	Tamamlandı
+Interrupted	Kesildi
+Outside Schedule	Çalışma saati dışında
+Stopped — User Disabled	Durduruldu — kullanıcı kapattı
+Paused — Outside Schedule	Duraklatıldı — çalışma saati dışında
+Working — Within Schedule	Çalışıyor — çalışma saati içinde
+Waiting — Android Background Restrictions	Bekleniyor — Android arka plan kısıtları
+Rate Limited — Cooldown	İstek sınırı — bekleme süresi
+Finishing active profiles	Etkin profiller tamamlanıyor
+Verifying Instagram session	Instagram oturumu doğrulanıyor
+Loading profiles / downloading images	Profiller yükleniyor / görseller indiriliyor
+Waiting for configured worker delay	Ayarlanan işçi gecikmesi bekleniyor
+Preparing next profiles	Sonraki profiller hazırlanıyor
+Downloading	İndiriliyor
+Waiting	Bekleniyor
+Paused	Duraklatıldı
+Stopped	Durduruldu
+Rate Limited	İstek sınırı
+{count} usernames copied.	{count} kullanıcı adı kopyalandı.
+Operation failed	İşlem başarısız oldu

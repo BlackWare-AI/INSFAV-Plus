@@ -162,6 +162,86 @@
     <item>Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.</item>
     <item>Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.</item>
     <item>Settings restored. Select the thumbnail folder again to grant access.</item>
+    <item>Thumbnail management</item>
+    <item>Missing images</item>
+    <item>Images available</item>
+    <item>Orphan thumbnails</item>
+    <item>Read-only. Orphans are never deleted. Inventory reflects the last completed rescan.</item>
+    <item>Search files</item>
+    <item>Previous</item>
+    <item>Next</item>
+    <item>{total} files</item>
+    <item>Rescan first to inspect orphan thumbnails.</item>
+    <item>Local image preview</item>
+    <item>Performance diagnostics</item>
+    <item>Recent operations</item>
+    <item>No recorded operations</item>
+    <item>Fetcher results</item>
+    <item>Refresh results</item>
+    <item>No matching accounts</item>
+    <item>Unable to start INSFAV Plus. Your source files are preserved.</item>
+    <item>Retry</item>
+    <item>Unable to read data</item>
+    <item>Checked {processed} / {total} files</item>
+    <item>Rescan reads source files. Cancel preserves completed work; rescan again to resume. Scan after external folder changes.</item>
+    <item>Not measured</item>
+    <item>Not sampled</item>
+    <item>Previous scan comparison</item>
+    <item>Average browser image load</item>
+    <item>Current browser session</item>
+    <item>Peak process RAM</item>
+    <item>SAF query</item>
+    <item>Source open</item>
+    <item>Validation / decode</item>
+    <item>SQLite transactions</item>
+    <item>JSON snapshot</item>
+    <item>Rescan duration</item>
+    <item>Active WebViews</item>
+    <item>Fetcher workers</item>
+    <item>Process PSS</item>
+    <item>Java heap used</item>
+    <item>Average native image read</item>
+    <item>Last scan; decode includes source reading</item>
+    <item>Last completed scan</item>
+    <item>Current pool</item>
+    <item>Current effective limit</item>
+    <item>Android process sample</item>
+    <item>Current Java heap; not total native RAM</item>
+    <item>Source I/O; not browser decode</item>
+    <item>Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.</item>
+    <item>Cookies saved · session checked during retrieval</item>
+    <item>Requested WebViews: {requested} · Effective WebViews: {effective} · Active WebViews: {active}</item>
+    <item>Reduced by the memory budget</item>
+    <item>{active} active · {queued} queued · {handled} handled this run</item>
+    <item>Next request in {seconds} s</item>
+    <item>Last result</item>
+    <item>Waiting for the next result</item>
+    <item>{reviewed} / {total} accounts reviewed · {saved} saved outcomes · Retried only with Retry Skipped / Failed Profiles</item>
+    <item>Elapsed</item>
+    <item>Write access granted</item>
+    <item>Read only</item>
+    <item>Current INSFAV thumbnail folder</item>
+    <item>Scanning</item>
+    <item>Completed</item>
+    <item>Interrupted</item>
+    <item>Outside Schedule</item>
+    <item>Stopped — User Disabled</item>
+    <item>Paused — Outside Schedule</item>
+    <item>Working — Within Schedule</item>
+    <item>Waiting — Android Background Restrictions</item>
+    <item>Rate Limited — Cooldown</item>
+    <item>Finishing active profiles</item>
+    <item>Verifying Instagram session</item>
+    <item>Loading profiles / downloading images</item>
+    <item>Waiting for configured worker delay</item>
+    <item>Preparing next profiles</item>
+    <item>Downloading</item>
+    <item>Waiting</item>
+    <item>Paused</item>
+    <item>Stopped</item>
+    <item>Rate Limited</item>
+    <item>{count} usernames copied.</item>
+    <item>Operation failed</item>
   </string-array>
   <string-array name="ui_values">
     <item>@string/ui_74a883a037bc</item>
@@ -326,5 +406,85 @@
     <item>@string/ui_211e5e68cd74</item>
     <item>@string/ui_a23b53d0f98e</item>
     <item>@string/ui_d91280edbbba</item>
+    <item>@string/ui_ecdfade5daef</item>
+    <item>@string/ui_7934c1ce4abb</item>
+    <item>@string/ui_e07071572936</item>
+    <item>@string/ui_12337460153b</item>
+    <item>@string/ui_863ee877ea3e</item>
+    <item>@string/ui_179fed85ec50</item>
+    <item>@string/ui_a57b08a480b8</item>
+    <item>@string/ui_1ff57a29d7c9</item>
+    <item>@string/ui_222ec0a9c342</item>
+    <item>@string/ui_94275ce3181b</item>
+    <item>@string/ui_9269427d5a83</item>
+    <item>@string/ui_4cc94b55bb02</item>
+    <item>@string/ui_da6d32a00f72</item>
+    <item>@string/ui_67682dc63bff</item>
+    <item>@string/ui_9ae3e12cb149</item>
+    <item>@string/ui_04cc9c1a86c0</item>
+    <item>@string/ui_47c062d35d2c</item>
+    <item>@string/ui_be771527f1f3</item>
+    <item>@string/ui_942087cc2d41</item>
+    <item>@string/ui_973909caa1c5</item>
+    <item>@string/ui_9455aa0e9b66</item>
+    <item>@string/ui_d66ad173db90</item>
+    <item>@string/ui_040f7884d3b5</item>
+    <item>@string/ui_eb46702054ff</item>
+    <item>@string/ui_18f325e102ac</item>
+    <item>@string/ui_dfc8c7661bc9</item>
+    <item>@string/ui_75cad0cd2868</item>
+    <item>@string/ui_c49a7639e346</item>
+    <item>@string/ui_57cd9d544975</item>
+    <item>@string/ui_be7bcd791126</item>
+    <item>@string/ui_b46f7129326e</item>
+    <item>@string/ui_54002a09daee</item>
+    <item>@string/ui_a114a260719f</item>
+    <item>@string/ui_3aeaa8ab5aed</item>
+    <item>@string/ui_93e40026333a</item>
+    <item>@string/ui_0ba2c8f42ff4</item>
+    <item>@string/ui_41cfda6c07d6</item>
+    <item>@string/ui_1b125351ac42</item>
+    <item>@string/ui_ae00bc783f40</item>
+    <item>@string/ui_0e6a2bb7493c</item>
+    <item>@string/ui_a75411826fbe</item>
+    <item>@string/ui_9333cc288215</item>
+    <item>@string/ui_4e7cf2486d1c</item>
+    <item>@string/ui_32da92e685e3</item>
+    <item>@string/ui_a0d363833b35</item>
+    <item>@string/ui_cf4339a66132</item>
+    <item>@string/ui_b5f0400a8642</item>
+    <item>@string/ui_6fba0c4df42e</item>
+    <item>@string/ui_4252bd1fdeeb</item>
+    <item>@string/ui_279a21b306a4</item>
+    <item>@string/ui_a40543daab22</item>
+    <item>@string/ui_45b9f8f24dbf</item>
+    <item>@string/ui_ab9c681a6929</item>
+    <item>@string/ui_70af0feadb70</item>
+    <item>@string/ui_4651689436a8</item>
+    <item>@string/ui_a194a68a45d3</item>
+    <item>@string/ui_27dbcb4760dd</item>
+    <item>@string/ui_8ac767353080</item>
+    <item>@string/ui_2cd67c195757</item>
+    <item>@string/ui_474ad819c8ba</item>
+    <item>@string/ui_22a970d2e5b1</item>
+    <item>@string/ui_132d124d6bb3</item>
+    <item>@string/ui_95edf3f37798</item>
+    <item>@string/ui_21df3623fcc2</item>
+    <item>@string/ui_317c26b3d34f</item>
+    <item>@string/ui_0b1bdf64294e</item>
+    <item>@string/ui_c0ba1e8575ab</item>
+    <item>@string/ui_6d5b69e88a07</item>
+    <item>@string/ui_265d7968817f</item>
+    <item>@string/ui_a04fd974b71b</item>
+    <item>@string/ui_37a3c197898b</item>
+    <item>@string/ui_4e3a7fc9e5c5</item>
+    <item>@string/ui_47e3f21079ad</item>
+    <item>@string/ui_37b345555d7e</item>
+    <item>@string/ui_6e293a8c009e</item>
+    <item>@string/ui_e159b06187d3</item>
+    <item>@string/ui_1a4f630ac1b6</item>
+    <item>@string/ui_1121b3591cf3</item>
+    <item>@string/ui_d528b8e106ea</item>
+    <item>@string/ui_4e1af7c74096</item>
   </string-array>
 </resources>

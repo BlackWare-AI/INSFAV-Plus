@@ -442,6 +442,29 @@ public final class Fetcher {
             "folder", host().tree().isEmpty() ? "Not selected" : "Current INSFAV thumbnail folder");
   }
 
+  /** An explicit view query, never included in periodic aggregate status. */
+  public static JSONObject results(String status) throws Exception {
+    if (!java.util.Arrays.asList(
+            "SUCCESS",
+            "EXISTING",
+            "SKIPPED_UNAVAILABLE",
+            "SKIPPED_NO_IMAGE",
+            "FAILED",
+            "RETRY_LATER")
+        .contains(status)) throw new IOException("Unsupported result filter");
+    if (!running()) sync();
+    org.json.JSONArray users = new org.json.JSONArray();
+    try (QueueStore q = new QueueStore(context);
+        android.database.Cursor c =
+            q.getReadableDatabase()
+                .rawQuery(
+                    "SELECT username FROM accounts WHERE status=? ORDER BY position",
+                    new String[] {status})) {
+      while (c.moveToNext()) users.put(c.getString(0));
+    }
+    return new JSONObject().put("status", status).put("users", users);
+  }
+
   public static JSONObject resolution(int offset) throws Exception {
     try (QueueStore q = new QueueStore(context)) {
       if (!running()) FetcherCatalog.seed(q);

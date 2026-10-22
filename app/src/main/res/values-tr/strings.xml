@@ -162,4 +162,84 @@
     <string name="ui_211e5e68cd74" formatted="false">İndeksi veya önbelleği temizlemek fotoğraf ve koleksiyonları silmez. Yeniden tarama kaynakları yalnızca okur ve sahipsiz görselleri korur. İsteğe bağlı indirici yalnızca doğrulanmış yeni görseller yazar.</string>
     <string name="ui_a23b53d0f98e" formatted="false">Klasör değişiklikleri yeniden taramada algılanır. Erişim izni kaybolursa klasörü yeniden seçin.</string>
     <string name="ui_d91280edbbba" formatted="false">Ayarlar geri yüklendi. Erişim izni vermek için küçük görsel klasörünü yeniden seçin.</string>
+    <string name="ui_ecdfade5daef" formatted="false">Küçük görsel yönetimi</string>
+    <string name="ui_7934c1ce4abb" formatted="false">Eksik görseller</string>
+    <string name="ui_e07071572936" formatted="false">Görseli bulunanlar</string>
+    <string name="ui_12337460153b" formatted="false">Sahipsiz küçük görseller</string>
+    <string name="ui_863ee877ea3e" formatted="false">Salt okunur. Sahipsiz dosyalar silinmez. Görünüm son tamamlanan taramayı gösterir.</string>
+    <string name="ui_179fed85ec50" formatted="false">Dosya ara</string>
+    <string name="ui_a57b08a480b8" formatted="false">Önceki</string>
+    <string name="ui_1ff57a29d7c9" formatted="false">Sonraki</string>
+    <string name="ui_222ec0a9c342" formatted="false">{total} dosya</string>
+    <string name="ui_94275ce3181b" formatted="false">Sahipsiz görselleri incelemek için önce yeniden tarayın.</string>
+    <string name="ui_9269427d5a83" formatted="false">Yerel görsel önizlemesi</string>
+    <string name="ui_4cc94b55bb02" formatted="false">Performans tanılaması</string>
+    <string name="ui_da6d32a00f72" formatted="false">Son işlemler</string>
+    <string name="ui_67682dc63bff" formatted="false">Kayıtlı işlem yok</string>
+    <string name="ui_9ae3e12cb149" formatted="false">İndirici sonuçları</string>
+    <string name="ui_04cc9c1a86c0" formatted="false">Sonuçları yenile</string>
+    <string name="ui_47c062d35d2c" formatted="false">Eşleşen hesap yok</string>
+    <string name="ui_be771527f1f3" formatted="false">INSFAV Plus başlatılamadı. Kaynak dosyalarınız korunuyor.</string>
+    <string name="ui_942087cc2d41" formatted="false">Yeniden dene</string>
+    <string name="ui_973909caa1c5" formatted="false">Veri okunamadı</string>
+    <string name="ui_9455aa0e9b66" formatted="false">{processed} / {total} dosya kontrol edildi</string>
+    <string name="ui_d66ad173db90" formatted="false">Tarama kaynak dosyaları okur. İptal tamamlanan işleri korur; devam etmek için yeniden tarayın. Harici klasör değişikliklerinden sonra tarama yapın.</string>
+    <string name="ui_040f7884d3b5" formatted="false">Ölçülmedi</string>
+    <string name="ui_eb46702054ff" formatted="false">Örneklenmedi</string>
+    <string name="ui_18f325e102ac" formatted="false">Önceki taramayla karşılaştırma</string>
+    <string name="ui_dfc8c7661bc9" formatted="false">Ortalama tarayıcı görsel yüklemesi</string>
+    <string name="ui_75cad0cd2868" formatted="false">Geçerli tarayıcı oturumu</string>
+    <string name="ui_c49a7639e346" formatted="false">En yüksek işlem belleği</string>
+    <string name="ui_57cd9d544975" formatted="false">SAF sorgusu</string>
+    <string name="ui_be7bcd791126" formatted="false">Kaynağı açma</string>
+    <string name="ui_b46f7129326e" formatted="false">Doğrulama / çözme</string>
+    <string name="ui_54002a09daee" formatted="false">SQLite işlemleri</string>
+    <string name="ui_a114a260719f" formatted="false">JSON yazımı</string>
+    <string name="ui_3aeaa8ab5aed" formatted="false">Yeniden tarama süresi</string>
+    <string name="ui_93e40026333a" formatted="false">Etkin WebView sayısı</string>
+    <string name="ui_0ba2c8f42ff4" formatted="false">İndirici işçileri</string>
+    <string name="ui_41cfda6c07d6" formatted="false">İşlem PSS</string>
+    <string name="ui_1b125351ac42" formatted="false">Kullanılan Java belleği</string>
+    <string name="ui_ae00bc783f40" formatted="false">Ortalama yerel görsel okuması</string>
+    <string name="ui_0e6a2bb7493c" formatted="false">Son tarama; çözme süresine kaynak okuma dahildir</string>
+    <string name="ui_a75411826fbe" formatted="false">Son tamamlanan tarama</string>
+    <string name="ui_9333cc288215" formatted="false">Geçerli havuz</string>
+    <string name="ui_4e7cf2486d1c" formatted="false">Geçerli etkin sınır</string>
+    <string name="ui_32da92e685e3" formatted="false">Android işlem örneği</string>
+    <string name="ui_a0d363833b35" formatted="false">Geçerli Java belleği; toplam yerel bellek değildir</string>
+    <string name="ui_cf4339a66132" formatted="false">Kaynak G/Ç; tarayıcı çözmesi değildir</string>
+    <string name="ui_b5f0400a8642" formatted="false">Çalışma saati dışında. Ayarlanan pencere: {start}–{end}. Sonraki uygun zaman: {next}.</string>
+    <string name="ui_6fba0c4df42e" formatted="false">Çerezler kayıtlı · oturum indirme sırasında kontrol edilir</string>
+    <string name="ui_4252bd1fdeeb" formatted="false">İstenen WebView: {requested} · Etkin sınır: {effective} · Çalışan WebView: {active}</string>
+    <string name="ui_279a21b306a4" formatted="false">Bellek sınırı nedeniyle azaltıldı</string>
+    <string name="ui_a40543daab22" formatted="false">{active} etkin · {queued} sırada · bu çalışmada {handled} işlendi</string>
+    <string name="ui_45b9f8f24dbf" formatted="false">Sonraki istek {seconds} sn sonra</string>
+    <string name="ui_ab9c681a6929" formatted="false">Son sonuç</string>
+    <string name="ui_70af0feadb70" formatted="false">Sonraki sonuç bekleniyor</string>
+    <string name="ui_4651689436a8" formatted="false">{reviewed} / {total} hesap incelendi · {saved} sonuç kaydedildi · Yalnızca Atlanan / başarısız profilleri yeniden dene ile denenir</string>
+    <string name="ui_a194a68a45d3" formatted="false">Geçen süre</string>
+    <string name="ui_27dbcb4760dd" formatted="false">Yazma izni var</string>
+    <string name="ui_8ac767353080" formatted="false">Salt okunur</string>
+    <string name="ui_2cd67c195757" formatted="false">Geçerli INSFAV küçük görsel klasörü</string>
+    <string name="ui_474ad819c8ba" formatted="false">Taranıyor</string>
+    <string name="ui_22a970d2e5b1" formatted="false">Tamamlandı</string>
+    <string name="ui_132d124d6bb3" formatted="false">Kesildi</string>
+    <string name="ui_95edf3f37798" formatted="false">Çalışma saati dışında</string>
+    <string name="ui_21df3623fcc2" formatted="false">Durduruldu — kullanıcı kapattı</string>
+    <string name="ui_317c26b3d34f" formatted="false">Duraklatıldı — çalışma saati dışında</string>
+    <string name="ui_0b1bdf64294e" formatted="false">Çalışıyor — çalışma saati içinde</string>
+    <string name="ui_c0ba1e8575ab" formatted="false">Bekleniyor — Android arka plan kısıtları</string>
+    <string name="ui_6d5b69e88a07" formatted="false">İstek sınırı — bekleme süresi</string>
+    <string name="ui_265d7968817f" formatted="false">Etkin profiller tamamlanıyor</string>
+    <string name="ui_a04fd974b71b" formatted="false">Instagram oturumu doğrulanıyor</string>
+    <string name="ui_37a3c197898b" formatted="false">Profiller yükleniyor / görseller indiriliyor</string>
+    <string name="ui_4e3a7fc9e5c5" formatted="false">Ayarlanan işçi gecikmesi bekleniyor</string>
+    <string name="ui_47e3f21079ad" formatted="false">Sonraki profiller hazırlanıyor</string>
+    <string name="ui_37b345555d7e" formatted="false">İndiriliyor</string>
+    <string name="ui_6e293a8c009e" formatted="false">Bekleniyor</string>
+    <string name="ui_e159b06187d3" formatted="false">Duraklatıldı</string>
+    <string name="ui_1a4f630ac1b6" formatted="false">Durduruldu</string>
+    <string name="ui_1121b3591cf3" formatted="false">İstek sınırı</string>
+    <string name="ui_d528b8e106ea" formatted="false">{count} kullanıcı adı kopyalandı.</string>
+    <string name="ui_4e1af7c74096" formatted="false">İşlem başarısız oldu</string>
 </resources>
