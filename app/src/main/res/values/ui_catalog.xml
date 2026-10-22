@@ -1,0 +1,330 @@
+<resources>
+  <string-array name="ui_sources" translatable="false">
+    <item>Settings</item>
+    <item>Basic Settings</item>
+    <item>Advanced / Diagnostics</item>
+    <item>Language</item>
+    <item>System language</item>
+    <item>English</item>
+    <item>Thumbnail Folder</item>
+    <item>Profile Images</item>
+    <item>Select Thumbnail Folder</item>
+    <item>Rescan Thumbnails</item>
+    <item>Cancel Scan</item>
+    <item>Thumbnail Fetcher</item>
+    <item>Backup / Restore</item>
+    <item>Maintenance / Cleanup</item>
+    <item>Clear Image Cache</item>
+    <item>Clear Thumbnail Index</item>
+    <item>Clear Collections</item>
+    <item>Import JSON</item>
+    <item>Export Original JSON</item>
+    <item>Export Diagnostic Logs</item>
+    <item>Export Diagnostics</item>
+    <item>Export All Settings</item>
+    <item>Import All Settings</item>
+    <item>Import settings from original INSFAV</item>
+    <item>Total Accounts</item>
+    <item>Unique Accounts</item>
+    <item>Matched Images</item>
+    <item>Missing Images</item>
+    <item>Indexed Folder Size</item>
+    <item>Image Cache Size</item>
+    <item>Thumbnail Index Size</item>
+    <item>WebView Storage</item>
+    <item>Scan Checkpoint Index Size</item>
+    <item>Non-256×256 Images</item>
+    <item>Last Scan Date</item>
+    <item>Selected Folder</item>
+    <item>Not selected</item>
+    <item>Never</item>
+    <item>Not scanned</item>
+    <item>Copy missing usernames</item>
+    <item>Collections</item>
+    <item>Application information</item>
+    <item>Search...</item>
+    <item>Search accounts</item>
+    <item>Clear search</item>
+    <item>Add List</item>
+    <item>Delete List</item>
+    <item>Back</item>
+    <item>Back to Settings</item>
+    <item>Back to Application Information</item>
+    <item>Features &amp; Functions</item>
+    <item>Developer</item>
+    <item>Version</item>
+    <item>Build</item>
+    <item>Usage Count</item>
+    <item>Load Count</item>
+    <item>Reset Count</item>
+    <item>Unavailable</item>
+    <item>Close</item>
+    <item>Confirm</item>
+    <item>Cancel</item>
+    <item>Continue</item>
+    <item>Confirm deletion</item>
+    <item>Reset collections?</item>
+    <item>The collection database will be cleared. Profile images are managed separately.</item>
+    <item>Remove the collection document? Local photos and their index are unchanged.</item>
+    <item>Clear browser and legacy image caches? Source photos, collections, cookies and the thumbnail index are preserved.</item>
+    <item>Clear thumbnail metadata and scan checkpoints? Source photos, collections and cookies are preserved. Rescan rebuilds the index.</item>
+    <item>RESULTS</item>
+    <item>View profile image for {name} (@{user})</item>
+    <item>Import your JSON backup to get started.</item>
+    <item>Instagram Cookies</item>
+    <item>Not configured</item>
+    <item>Paste cookies here</item>
+    <item>Paste</item>
+    <item>Save</item>
+    <item>Remove</item>
+    <item>Workers</item>
+    <item>Concurrent WebViews</item>
+    <item>Per-worker delay and working hours</item>
+    <item>Minimum Delay (seconds)</item>
+    <item>Maximum Delay (seconds)</item>
+    <item>Start Time</item>
+    <item>End Time</item>
+    <item>Background Processing</item>
+    <item>Save Schedule</item>
+    <item>Current INSFAV folder</item>
+    <item>Allow Writing to Selected Folder</item>
+    <item>Retrieval</item>
+    <item>Idle</item>
+    <item>Current process</item>
+    <item>Current Process</item>
+    <item>Accounts reviewed</item>
+    <item>Start Missing</item>
+    <item>Pause</item>
+    <item>Resume</item>
+    <item>Stop</item>
+    <item>Retry Skipped / Failed Profiles</item>
+    <item>Verify / Repair Fetcher Index</item>
+    <item>Active Accounts</item>
+    <item>Accounts / Minute</item>
+    <item>Peak Active Accounts</item>
+    <item>App PSS (MiB)</item>
+    <item>Total Unique Accounts</item>
+    <item>Successful</item>
+    <item>Downloaded</item>
+    <item>Existing</item>
+    <item>Failed</item>
+    <item>Skipped Profiles</item>
+    <item>Retry Later</item>
+    <item>Pending</item>
+    <item>Processed</item>
+    <item>Skipped Unavailable</item>
+    <item>Skipped No Image</item>
+    <item>All accounts</item>
+    <item>Profile image</item>
+    <item>Close image</item>
+    <item>Remove Instagram Cookies?</item>
+    <item>Retrieval stops. Collections and local photos stay unchanged.</item>
+    <item>Verify Fetcher Index?</item>
+    <item>Explicitly validate the selected folder and repair Fetcher metadata. Photos, normal INSFAV indexing and collections are unchanged.</item>
+    <item>Clear search to collapse collections.</item>
+    <item>JSON imported. All original fields preserved.</item>
+    <item>Collections cleared. Local photos are unchanged.</item>
+    <item>No readable local image. Select a thumbnail folder or rescan in Settings.</item>
+    <item>No missing usernames.</item>
+    <item>Use the Android Paste command in the cookie field.</item>
+    <item>Cookies saved securely.</item>
+    <item>Image cache cleared. Source photos and collections are unchanged.</item>
+    <item>Thumbnail index cleared. Source photos and collections are unchanged.</item>
+    <item>Scan cancellation requested. Completed checkpoints are preserved.</item>
+    <item>Wait for the scan to finish.</item>
+    <item>Pause the fetcher before rescanning.</item>
+    <item>Pause the fetcher before changing folders.</item>
+    <item>Password (at least 8 characters)</item>
+    <item>Backup password</item>
+    <item>Confirm password</item>
+    <item>Encrypted settings and cookies only. Favorites and account lists are excluded. Keep the password separately.</item>
+    <item>Use matching passwords of at least 8 characters.</item>
+    <item>Settings export failed. Existing settings are unchanged.</item>
+    <item>Encrypted settings exported.</item>
+    <item>Settings export failed.</item>
+    <item>Settings restored. Retrieval is stopped; review the folder and tap Resume when ready.</item>
+    <item>Settings import failed: wrong password, incompatible backup or active retrieval. Existing settings were preserved.</item>
+    <item>Instagram account collections</item>
+    <item>JSON import and export</item>
+    <item>Collection management</item>
+    <item>Account search</item>
+    <item>Local profile thumbnails</item>
+    <item>Optional session-based thumbnail retrieval</item>
+    <item>External thumbnail folder integration</item>
+    <item>Fullscreen image viewer</item>
+    <item>Efficient large-list rendering</item>
+    <item>Persistent settings</item>
+    <item>AMOLED interface</item>
+    <item>Cookies stay in encrypted private storage and are excluded from diagnostics. Saving cookies does not prove that the session is valid.</item>
+    <item>Select your .thumbnails folder for local photos. Optional retrieval is managed separately in Thumbnail Fetcher.</item>
+    <item>Each WebView has its own start-to-start delay. A waiting worker does not block other ready workers. Server cooldown and access restrictions apply to the whole pool. Batch work follows these hours, including overnight windows. Viewer requests take priority after active operations finish and still obey delays and access restrictions. Android may delay background work.</item>
+    <item>If Android requests permission, confirm the same folder already selected in Profile Images. No second output folder is used.</item>
+    <item>Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.</item>
+    <item>Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.</item>
+    <item>Settings restored. Select the thumbnail folder again to grant access.</item>
+  </string-array>
+  <string-array name="ui_values">
+    <item>@string/ui_74a883a037bc</item>
+    <item>@string/ui_bc7bc9104fbf</item>
+    <item>@string/ui_2130ca1fe222</item>
+    <item>@string/ui_a4fe65264ef7</item>
+    <item>@string/ui_6ae0ffc6f1b7</item>
+    <item>@string/ui_ba118bf7fc9c</item>
+    <item>@string/ui_f417b11c5f21</item>
+    <item>@string/ui_e543f62d7ce9</item>
+    <item>@string/ui_523caef291f5</item>
+    <item>@string/ui_a9581f23ca22</item>
+    <item>@string/ui_5085d45a3a7c</item>
+    <item>@string/ui_ac94dce12454</item>
+    <item>@string/ui_81f27b9339cc</item>
+    <item>@string/ui_aa4277ced790</item>
+    <item>@string/ui_91ea7d01cf16</item>
+    <item>@string/ui_71b1be94a25f</item>
+    <item>@string/ui_4ac20a03fb4a</item>
+    <item>@string/ui_12dd2e2eda81</item>
+    <item>@string/ui_27561979c897</item>
+    <item>@string/ui_06aaeb3af9e0</item>
+    <item>@string/ui_89d8e0714b34</item>
+    <item>@string/ui_477775555da7</item>
+    <item>@string/ui_45ac357334fc</item>
+    <item>@string/ui_ae9dfb3785af</item>
+    <item>@string/ui_bc30561c61fa</item>
+    <item>@string/ui_2e750a6ba13d</item>
+    <item>@string/ui_6a5e7a36dd7e</item>
+    <item>@string/ui_2f9a1af7798b</item>
+    <item>@string/ui_95e318e8ca0e</item>
+    <item>@string/ui_7430c0ae9762</item>
+    <item>@string/ui_80b886fc2802</item>
+    <item>@string/ui_cdf4fff0c5b4</item>
+    <item>@string/ui_ad00bb761e88</item>
+    <item>@string/ui_b7271da3ad6b</item>
+    <item>@string/ui_b3e45307d786</item>
+    <item>@string/ui_0f35f9de1656</item>
+    <item>@string/ui_df12aeba9bb9</item>
+    <item>@string/ui_6300ef800bb8</item>
+    <item>@string/ui_4294207616e4</item>
+    <item>@string/ui_bb85378cd455</item>
+    <item>@string/ui_9f9feade761d</item>
+    <item>@string/ui_bc0a7c2355d6</item>
+    <item>@string/ui_7f55382219f0</item>
+    <item>@string/ui_904f3f107245</item>
+    <item>@string/ui_3b7ea51793e9</item>
+    <item>@string/ui_474ffc6a82c9</item>
+    <item>@string/ui_ed620ecff0da</item>
+    <item>@string/ui_76900f1bfd16</item>
+    <item>@string/ui_ea37ec29c386</item>
+    <item>@string/ui_5d72eb6d899f</item>
+    <item>@string/ui_1650f88d2021</item>
+    <item>@string/ui_3fb7b39416f1</item>
+    <item>@string/ui_dd167905de0d</item>
+    <item>@string/ui_bdd254b65baa</item>
+    <item>@string/ui_05b7906ca4ac</item>
+    <item>@string/ui_8c0039327f0f</item>
+    <item>@string/ui_38912fa1421e</item>
+    <item>@string/ui_ca1844969742</item>
+    <item>@string/ui_7d9eb7acb13e</item>
+    <item>@string/ui_eebdd24a77d9</item>
+    <item>@string/ui_19766ed6ccb2</item>
+    <item>@string/ui_31fbef162594</item>
+    <item>@string/ui_fa57243dc0dd</item>
+    <item>@string/ui_a671f8a7497a</item>
+    <item>@string/ui_56e2be0b8476</item>
+    <item>@string/ui_76164d150208</item>
+    <item>@string/ui_3dae651dd30a</item>
+    <item>@string/ui_286c4051c648</item>
+    <item>@string/ui_4aa70a38c6d2</item>
+    <item>@string/ui_225214b0c264</item>
+    <item>@string/ui_a18be045dee8</item>
+    <item>@string/ui_b6141baed9aa</item>
+    <item>@string/ui_dd1841d29502</item>
+    <item>@string/ui_095547d78ff6</item>
+    <item>@string/ui_f3380f7b44bd</item>
+    <item>@string/ui_1509f561f241</item>
+    <item>@string/ui_c3812fc4acb8</item>
+    <item>@string/ui_7a1ec9fe6c3b</item>
+    <item>@string/ui_4eee1a372884</item>
+    <item>@string/ui_8fd9b4d3c5db</item>
+    <item>@string/ui_ac1004f8bd6b</item>
+    <item>@string/ui_73257bebae29</item>
+    <item>@string/ui_271189ae389a</item>
+    <item>@string/ui_48bccddd89a9</item>
+    <item>@string/ui_8912e50e3b13</item>
+    <item>@string/ui_ce5706dd94d3</item>
+    <item>@string/ui_9f901a6f3d61</item>
+    <item>@string/ui_8f9084fca021</item>
+    <item>@string/ui_1c3d1a7d17bf</item>
+    <item>@string/ui_ab0171ca0494</item>
+    <item>@string/ui_170f1ed765ae</item>
+    <item>@string/ui_81b2c761ee4e</item>
+    <item>@string/ui_01661be1921f</item>
+    <item>@string/ui_fe9c5b17e675</item>
+    <item>@string/ui_858e4ba7a29f</item>
+    <item>@string/ui_d640c7421da0</item>
+    <item>@string/ui_cae7d57bc067</item>
+    <item>@string/ui_2d5127825c46</item>
+    <item>@string/ui_a7591c85e2ff</item>
+    <item>@string/ui_4e2c4e6f508a</item>
+    <item>@string/ui_4f971a3cccd8</item>
+    <item>@string/ui_34b888d46dd8</item>
+    <item>@string/ui_ed98c8b7dd78</item>
+    <item>@string/ui_5b696e92fa9a</item>
+    <item>@string/ui_f3686bb328c6</item>
+    <item>@string/ui_f0b0738f75b8</item>
+    <item>@string/ui_0a597385b8be</item>
+    <item>@string/ui_031a8f0f659d</item>
+    <item>@string/ui_cc7aca94eec3</item>
+    <item>@string/ui_7afd87b5a427</item>
+    <item>@string/ui_331551b0de41</item>
+    <item>@string/ui_6071b9b565c9</item>
+    <item>@string/ui_c3042da5d3ed</item>
+    <item>@string/ui_2453b849a552</item>
+    <item>@string/ui_f4f6813aa30f</item>
+    <item>@string/ui_c10c5bb960b8</item>
+    <item>@string/ui_790fb1b462df</item>
+    <item>@string/ui_3bee10827989</item>
+    <item>@string/ui_b7de788ad2bf</item>
+    <item>@string/ui_2dafb977fb99</item>
+    <item>@string/ui_828d337fcf1b</item>
+    <item>@string/ui_6e2a6876132d</item>
+    <item>@string/ui_7d05c500cecd</item>
+    <item>@string/ui_e8d77a57aca1</item>
+    <item>@string/ui_eb23bae361c4</item>
+    <item>@string/ui_9efabc6fc2a8</item>
+    <item>@string/ui_16b3918a53bd</item>
+    <item>@string/ui_777a06220d72</item>
+    <item>@string/ui_37491799c35d</item>
+    <item>@string/ui_f7b9673e3299</item>
+    <item>@string/ui_9d3cd03c5632</item>
+    <item>@string/ui_c62892cdc87e</item>
+    <item>@string/ui_1cef6df361a4</item>
+    <item>@string/ui_ccbd92065ba8</item>
+    <item>@string/ui_5a0097cbc9c1</item>
+    <item>@string/ui_3e39703b6e87</item>
+    <item>@string/ui_5ac265f396a2</item>
+    <item>@string/ui_4d30c69a5b4f</item>
+    <item>@string/ui_e71e35bfc311</item>
+    <item>@string/ui_4c0594b79c07</item>
+    <item>@string/ui_156b9ecadfc2</item>
+    <item>@string/ui_aa36883dc189</item>
+    <item>@string/ui_973c79956f46</item>
+    <item>@string/ui_d559928a8402</item>
+    <item>@string/ui_57a9eda190aa</item>
+    <item>@string/ui_d1306f93f0e8</item>
+    <item>@string/ui_fcdbfa0a6363</item>
+    <item>@string/ui_17ac3668f1eb</item>
+    <item>@string/ui_d21163da34b7</item>
+    <item>@string/ui_c6885f589717</item>
+    <item>@string/ui_35432a767cbd</item>
+    <item>@string/ui_c31076779888</item>
+    <item>@string/ui_6808c907b778</item>
+    <item>@string/ui_a24a0ec7778a</item>
+    <item>@string/ui_bdfc5a5453f0</item>
+    <item>@string/ui_035b0db1f5a1</item>
+    <item>@string/ui_8b35277a6cec</item>
+    <item>@string/ui_be2315032a4f</item>
+    <item>@string/ui_d929bad69456</item>
+    <item>@string/ui_211e5e68cd74</item>
+    <item>@string/ui_a23b53d0f98e</item>
+    <item>@string/ui_d91280edbbba</item>
+  </string-array>
+</resources>

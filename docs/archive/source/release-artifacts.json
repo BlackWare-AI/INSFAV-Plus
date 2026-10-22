@@ -1,0 +1,22 @@
+[
+  {
+    "sourceCommit": "0a4ba915418e0652618879d4af2c0745ef9ca4f0",
+    "file": "INSFAV-4.0.0.apk",
+    "bytes": 706853,
+    "sha256": "1948b71041013884aa627b8012c72a75c9394d7e5ddc9e20215f9f9e2da9bc84",
+    "signatureVerified": true,
+    "publicCertificate": [
+      "Signer #1 certificate SHA-256 digest: a3058fab8d03c1549abb04ae4660ff2256296967e6291bd7a751ecb9b32e82c2"
+    ]
+  },
+  {
+    "sourceCommit": "0a4ba915418e0652618879d4af2c0745ef9ca4f0",
+    "file": "release-assets/INSFAV-5.0.0.apk",
+    "bytes": 719309,
+    "sha256": "62a999f7fe8488005c0dc0952cb31e67c4cb0924e809f07fb5c97cc249fa89a4",
+    "signatureVerified": true,
+    "publicCertificate": [
+      "Signer #1 certificate SHA-256 digest: a3058fab8d03c1549abb04ae4660ff2256296967e6291bd7a751ecb9b32e82c2"
+    ]
+  }
+]

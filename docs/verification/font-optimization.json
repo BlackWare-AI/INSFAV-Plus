@@ -1,0 +1,55 @@
+{
+  "fontTools": "4.67.0",
+  "fonts": [
+    {
+      "file": "inter-0.woff2",
+      "beforeBytes": 25960,
+      "afterBytes": 25088,
+      "encodedCharacters": 157,
+      "cmapAdvancesAndOutlinesEqual": true
+    },
+    {
+      "file": "inter-1.woff2",
+      "beforeBytes": 18748,
+      "afterBytes": 18100,
+      "encodedCharacters": 107,
+      "cmapAdvancesAndOutlinesEqual": true
+    },
+    {
+      "file": "inter-2.woff2",
+      "beforeBytes": 11232,
+      "afterBytes": 10556,
+      "encodedCharacters": 238,
+      "cmapAdvancesAndOutlinesEqual": true
+    },
+    {
+      "file": "inter-3.woff2",
+      "beforeBytes": 18996,
+      "afterBytes": 18268,
+      "encodedCharacters": 110,
+      "cmapAdvancesAndOutlinesEqual": true
+    },
+    {
+      "file": "inter-4.woff2",
+      "beforeBytes": 10252,
+      "afterBytes": 9584,
+      "encodedCharacters": 115,
+      "cmapAdvancesAndOutlinesEqual": true
+    },
+    {
+      "file": "inter-5.woff2",
+      "beforeBytes": 85068,
+      "afterBytes": 81532,
+      "encodedCharacters": 733,
+      "cmapAdvancesAndOutlinesEqual": true
+    },
+    {
+      "file": "inter-6.woff2",
+      "beforeBytes": 48256,
+      "afterBytes": 46624,
+      "encodedCharacters": 230,
+      "cmapAdvancesAndOutlinesEqual": true
+    }
+  ],
+  "turkishCoverage": true
+}

@@ -1,0 +1,89 @@
+{
+  "phase": "phase7-corrected",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "exitCode": 0,
+      "seconds": 1.242
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "web"
+      ],
+      "exitCode": 0,
+      "seconds": 1.465
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 0.387
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:testDebugUnitTest"
+      ],
+      "exitCode": 0,
+      "seconds": 69.33
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:lintDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 6.179
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:assembleDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 1.304
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:chromium"
+      ],
+      "exitCode": 0,
+      "seconds": 35.037
+    }
+  ],
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false,
+  "unitTests": {
+    "tests": 253,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Warning": 40,
+    "Information": 0,
+    "categories": {
+      "AppBundleLocaleChanges": 1,
+      "ApplySharedPref": 28,
+      "GradleDependency": 1,
+      "MonochromeLauncherIcon": 1,
+      "ObsoleteSdkInt": 1,
+      "SetJavaScriptEnabled": 1,
+      "StaticFieldLeak": 2,
+      "TypographyEllipsis": 2,
+      "UnusedAttribute": 1,
+      "UnusedResources": 1,
+      "UseRequiresApi": 1
+    }
+  }
+}

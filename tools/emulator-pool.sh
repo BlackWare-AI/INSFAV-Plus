@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 mkdir -p emulator-pool
-apk=$(find builds -name app-debug.apk -print -quit)
-test_apk=$(find builds -name '*debug-androidTest.apk' -print -quit)
+apk=$(find app/build -name app-debug.apk -print -quit)
+test_apk=$(find app/build -name '*debug-androidTest.apk' -print -quit)
 adb install -r "$apk"
 adb install -r "$test_apk"
 adb shell pm grant com.instagram.insfav.plus android.permission.POST_NOTIFICATIONS

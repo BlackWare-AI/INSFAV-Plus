@@ -6,7 +6,7 @@ The Git bundle preserves the complete source history and annotated
 
 ```sh
 git bundle verify docs/archive/source/insfav-baseline.bundle
-git clone docs/archive/source/insfav-baseline.bundle /tmp/insfav-source-audit
+git clone --branch baseline/insfav-0a4ba91 docs/archive/source/insfav-baseline.bundle /tmp/insfav-source-audit
 ```
 
 The original repository is read-only. The independent Plus history starts from

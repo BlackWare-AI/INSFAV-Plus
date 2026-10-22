@@ -19,7 +19,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:
   },count);
   await page.goto('http://127.0.0.1:'+server.address().port+'/');await page.waitForSelector('#splash[hidden]',{state:'attached'});
   assert.equal(await page.locator('.account').count(),0);
-  await page.locator('.folder-header').nth(1).click();await page.locator('.folder-header').nth(0).click();
+  await page.locator('.folder-header').nth(1).click({noWaitAfter:true});await page.locator('.folder-header').nth(0).click({noWaitAfter:true});
   await page.waitForSelector('.avatar img');
   const geometry=await page.evaluate(()=>{
    const rows=[...document.querySelectorAll('.account')].map(e=>e.getBoundingClientRect());

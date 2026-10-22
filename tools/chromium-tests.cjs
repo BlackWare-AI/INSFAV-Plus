@@ -1,0 +1,6 @@
+'use strict';
+const cp=require('node:child_process'),fs=require('node:fs'),path=require('node:path'),os=require('node:os');
+let baseline=process.env.BASELINE_ASSETS,temporary;
+if(!baseline){temporary=fs.mkdtempSync(path.join(os.tmpdir(),'insfav-audit-'));cp.execFileSync('git',['clone','--quiet','--branch','baseline/insfav-0a4ba91','docs/archive/source/insfav-baseline.bundle',temporary]);baseline=path.join(temporary,'app/src/main/assets');}
+const scripts=process.argv.includes('--performance')?['performance','thumbnail-performance']:['browser','clipboard-preview','about-counters','probe-browser','probe-classification','avatar-layout','settings-language','font-coverage'];
+let failed=0;try{for(const script of scripts){const result=cp.spawnSync(process.execPath,['tests/'+script+'.cjs'],{stdio:'inherit',env:{...process.env,BASELINE_ASSETS:baseline,BASELINE_REF:'0a4ba915418e0652618879d4af2c0745ef9ca4f0'}});if(result.status!==0)failed++;}}finally{if(temporary)fs.rmSync(temporary,{recursive:true,force:true});}process.exitCode=failed?1:0;

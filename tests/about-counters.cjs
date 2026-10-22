@@ -22,7 +22,7 @@ const {chromium}=require('playwright'),http=require('node:http'),fs=require('nod
   const old=await trace(path.resolve(baseline)),now=await trace(current);assert.deepEqual(now,old);
   assert.deepEqual(now.map(x=>[x.total,x.usage,x.load]),[[3,37,18],[3,37,18],[3,37,19],[3,37,19],[3,37,19],[3,38,19]]);
   const native=fs.readFileSync(path.resolve(__dirname,'../app/src/main/java/com/instagram/insfav/MainActivity.java'),'utf8');
-  const previous=cp.execFileSync('git',['show',(process.env.BASELINE_REF||'97f075d13839efed80fa2e7f698af35279f9da16')+':app/src/main/java/com/instagram/insfav/MainActivity.java'],{cwd:path.resolve(__dirname,'..'),encoding:'utf8'});
+  const previous=fs.readFileSync(path.resolve(baseline,'../java/com/instagram/insfav/MainActivity.java'),'utf8');
   for(const pattern of [/private int incrementUsage\(\) \{[^}]+}/,/getPreferences\(0\)\.edit\(\)\.putInt\("load",[^;]+;/,/getPreferences\(0\)\.edit\(\)\.putInt\("clear",[^;]+;/])assert.equal(native.match(pattern)?.[0],previous.match(pattern)?.[0]);
   console.log('PASS baseline/current: 6 identical counter snapshots including repeated About, import, error, status, and reopened stored values');
   console.log('PASS Total Accounts keeps duplicate memberships: 3 records / 2 unique accounts');
