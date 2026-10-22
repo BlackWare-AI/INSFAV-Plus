@@ -21,6 +21,12 @@ final class RunPolicy {
         if (!candidate.isAfter(now)) candidate = now.toLocalDate().plusDays(1).atTime(start / 60, start % 60).atZone(zone);
         return candidate.toInstant().toEpochMilli();
     }
+    long windowEnd(long epoch,ZoneId zone) {
+        ZonedDateTime now=Instant.ofEpochMilli(epoch).atZone(zone);
+        ZonedDateTime endAt=now.toLocalDate().atTime(end/60,end%60).atZone(zone);
+        if(!endAt.isAfter(now))endAt=now.toLocalDate().plusDays(1).atTime(end/60,end%60).atZone(zone);
+        return endAt.toInstant().toEpochMilli();
+    }
     long delayMillis() { return ThreadLocalRandom.current().nextLong(minimum * 1000L, maximum * 1000L + 1); }
     static int minute(String text) {
         if (!text.matches("[0-2][0-9]:[0-5][0-9]")) throw new IllegalArgumentException("INVALID_TIME");

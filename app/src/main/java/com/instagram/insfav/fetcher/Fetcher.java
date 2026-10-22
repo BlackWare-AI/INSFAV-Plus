@@ -13,7 +13,19 @@ public final class Fetcher {
   Collection<String> users()throws Exception;
   String tree();String directory();long revision();boolean hasImage(String user);
   void imageWritten(String user,Uri uri,String tree)throws Exception;
+  default void imageWritten(ImageRecord image,String tree)throws Exception {imageWritten(image.user,image.uri,tree);}
+  default boolean catalogContains(ImageRecord image) {return true;}
+  default void sourceChanged() {}
+  default void flushImages()throws Exception {}
   default JSONObject catalog()throws Exception{return new JSONObject();}
+ }
+ public static final class ImageRecord {
+  public final String user,name;public final Uri uri;public final long size,modified;public final int width,height;
+  ImageRecord(String user,String uri,String name,long size,int width,int height,long modified){
+   if(!Identity.valid(user)||uri.isEmpty()||width<=0||height<=0)throw new IllegalArgumentException("OUTPUT_METADATA_INVALID");
+   this.user=user;this.uri=Uri.parse(uri);this.name=name;this.size=size;this.width=width;this.height=height;this.modified=modified;
+  }
+  public JSONObject profile()throws Exception{return new JSONObject().put("uri",uri.toString()).put("name",name).put("size",size).put("width",width).put("height",height).put("modified",modified).put("readable",true);}
  }
  public interface Listener{void changed();void fullReady(String user,String token,int width,int height);void fullFailed(String token,String code);}
  private static android.database.ContentObserver catalogObserver;private static String observerTree="";
@@ -23,7 +35,14 @@ public final class Fetcher {
  public static void initialize(Context c,Host h){context=c.getApplicationContext();host=h;lastSynced=null;try{android.webkit.CookieManager.getInstance().removeAllCookies(null);android.webkit.WebStorage.getInstance().deleteAllData();}catch(RuntimeException|LinkageError ignored){}}
  static Host host(){if(host==null)throw new IllegalStateException("FETCHER_NOT_READY");return host;}
  public static void addListener(Listener l){listeners.add(l);}public static void removeListener(Listener l){listeners.remove(l);}
- static void publish(){long now=System.nanoTime(),before=lastPublished.get();if(now-before<200000000L||!lastPublished.compareAndSet(before,now))return;for(Listener l:listeners)l.changed();}
+ private static final ScheduledExecutorService updates=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"insfav-status-updates");t.setDaemon(true);return t;});
+ private static ScheduledFuture<?> pendingUpdate;
+ static void publish(){publish(false);}
+ static synchronized void publish(boolean critical){
+  long now=System.nanoTime(),delay=1000000000L-(now-lastPublished.get());
+  if(critical||delay<=0){if(pendingUpdate!=null){pendingUpdate.cancel(false);pendingUpdate=null;}lastPublished.set(now);for(Listener listener:listeners)listener.changed();}
+  else if(pendingUpdate==null)pendingUpdate=updates.schedule(()->{synchronized(Fetcher.class){pendingUpdate=null;}publish(false);},delay,TimeUnit.NANOSECONDS);
+ }
  public static synchronized void sync()throws Exception{
   if(QueueControl.lock.get())throw new IOException("Pause the fetcher before changing collections or folder.");
   SharedPreferences s=SessionState.prefs(context);String tree=host().tree(),dir=host().directory();
@@ -32,7 +51,8 @@ public final class Fetcher {
   try(QueueStore q=new QueueStore(context)){FetcherCatalog.seed(q);}
   if(!tree.equals(s.getString("tree",""))||!dir.equals(s.getString("directoryId","")))s.edit().putString("tree",tree).putString("directoryId",dir).putLong("datasetGeneration",s.getLong("datasetGeneration",0)+1).putBoolean("armed",false).putBoolean("userPaused",true).commit();
  }
- public static void memoryPressure(){QueueControl.memoryPressure=true;}
+ public static void memoryFailure(){if(context==null)return;SessionState.prefs(context).edit().putString("blocked","IMAGE_MEMORY_LIMIT").putString("state","Paused: memory limit; queue preserved").commit();FetchBroker.get(context).cancelAll();closeViewer();WorkScheduler.cancel(context);publish(true);}
+ public static void memoryPressure(){QueueControl.memoryPressure=true;FetchBroker.get(context).wakeup();}
  public static boolean running(){return QueueControl.lock.get();}
  public static boolean writable(){String tree=host().tree();for(UriPermission p:context.getContentResolver().getPersistedUriPermissions())if(p.getUri().toString().equals(tree)&&p.isWritePermission()&&p.isReadPermission())return true;return false;}
  public static void saveCookies(String text)throws Exception{

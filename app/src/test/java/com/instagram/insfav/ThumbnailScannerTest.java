@@ -44,17 +44,17 @@ public class ThumbnailScannerTest {
         populate(600);
         images.scan((e,v)->{
             if(e.equals("scan-progress") && v.optInt("processed")==0)org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(300));
-            if(e.equals("scan-progress") && v.optInt("processed")>=256)images.cancelScan();
+            if(e.equals("scan-progress") && v.optInt("processed")>=512)images.cancelScan();
         });
-        assertEquals("interrupted",store.settings.optString("scanState"));assertEquals(256,provider.opens);assertFalse(store.index.has("profiles"));
+        assertEquals("interrupted",store.settings.optString("scanState"));assertEquals(512,provider.opens);assertFalse(store.index.has("profiles"));
         store=new Store(context);images=new LocalImages(context,store);images.scan((e,v)->{});
         assertEquals("completed",store.settings.optString("scanState"));assertEquals(600,provider.opens);
-        assertEquals(600,store.index.getJSONObject("profiles").length());assertTrue(metrics().getBoolean("resumed"));assertEquals(256,metrics().getInt("reused"));
+        assertEquals(600,store.index.getJSONObject("profiles").length());assertTrue(metrics().getBoolean("resumed"));assertEquals(512,metrics().getInt("reused"));
     }
     @Test public void failedListingKeepsPublicSnapshotAndCompletedCheckpoints()throws Exception {
-        images.scan((e,v)->{});String previous=store.index.toString();populate(600);provider.failMoveAt=300;int before=provider.opens;
-        images.scan((e,v)->{});assertEquals("failed",store.settings.optString("scanState"));assertEquals(previous,store.index.toString());assertEquals(before+256,provider.opens);
-        provider.failMoveAt=-1;images.scan((e,v)->{});assertEquals(before+600,provider.opens);assertEquals(600,store.index.getJSONObject("profiles").length());
+        images.scan((e,v)->{});String previous=store.index.toString();populate(1100);provider.failMoveAt=700;int before=provider.opens;
+        images.scan((e,v)->{});assertEquals("failed",store.settings.optString("scanState"));assertEquals(previous,store.index.toString());assertEquals(before+512,provider.opens);
+        provider.failMoveAt=-1;images.scan((e,v)->{});assertEquals(before+1100,provider.opens);assertEquals(1100,store.index.getJSONObject("profiles").length());
     }
     @Test public void loadingProviderCannotReplaceCompletedIndexOrPruneItsRecords()throws Exception {
         images.scan((e,v)->{});String previous=store.index.toString();provider.loading=true;

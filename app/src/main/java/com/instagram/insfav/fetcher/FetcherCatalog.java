@@ -48,6 +48,7 @@ final class FetcherCatalog {
         try(QueueStore q=new QueueStore(c)){
             boolean known=false;try(Cursor cursor=q.getReadableDatabase().rawQuery("SELECT username FROM fetch_images WHERE uri=?",new String[]{uri.toString()})){while(cursor.moveToNext()){known=true;if(writing.contains(cursor.getString(0)))return;}}
             if(known)q.invalidateUri(uri.toString());else if(writing.isEmpty())q.meta("verificationRecommended","1");
+            if(known||writing.isEmpty()){Fetcher.host().sourceChanged();Fetcher.publish();}
         }
         catch(RuntimeException ignored){new Diagnostics(c).log("INDEX","CHANGE_REQUIRES_VERIFICATION",0);}
     }

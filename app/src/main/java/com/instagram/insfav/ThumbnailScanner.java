@@ -11,15 +11,17 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.json.*;
 
-/** One sequential SAF metadata cursor, bounded validation workers and durable 256-row batches. */
+/** One sequential SAF metadata cursor, bounded validation workers and durable 512-row batches. */
 final class ThumbnailScanner implements AutoCloseable {
-    static final int BATCH_SIZE=256, WORKERS=2;
+    static final int BATCH_SIZE=512, WORKERS=2;
     interface Progress {void update(int processed,int total)throws Exception;}
     private final ContentResolver resolver;
     final ThumbnailScanIndex index;
     private final int workers;
     private final AtomicInteger active=new AtomicInteger(),peak=new AtomicInteger();
     int inspected,reused,processed,total,metadataQueries;
+    long queryNanos,listingNanos;
+    final ImageCodec.Timings timings=new ImageCodec.Timings();
     ThumbnailScanner(Context context,File root) {this(context,root,WORKERS);}
     ThumbnailScanner(Context context,File root,int workers) {
         if(workers<1 || workers>4)throw new IllegalArgumentException("Scan worker limit");
@@ -30,12 +32,12 @@ final class ThumbnailScanner implements AutoCloseable {
         ExecutorService pool=Executors.newFixedThreadPool(workers,r->{Thread t=new Thread(r,"thumbnail-scan");t.setDaemon(true);return t;});
         String[] columns={DocumentsContract.Document.COLUMN_DOCUMENT_ID,DocumentsContract.Document.COLUMN_DISPLAY_NAME,DocumentsContract.Document.COLUMN_SIZE,DocumentsContract.Document.COLUMN_LAST_MODIFIED,DocumentsContract.Document.COLUMN_MIME_TYPE};
         try {
-            metadataQueries++;
+            metadataQueries++;long queryStarted=System.nanoTime();
             try(Cursor cursor=resolver.query(DocumentsContract.buildChildDocumentsUriUsingTree(tree,directory),columns,null,null,null,cancel)) {
                 if(cursor==null)throw new IOException("Folder could not be read. Completed scan checkpoints are preserved.");
-                total=cursor.getCount();progress.update(0,total);
+                total=cursor.getCount();queryNanos+=System.nanoTime()-queryStarted;progress.update(0,total);
                 List<ThumbnailScanIndex.Entry> batch=new ArrayList<>(BATCH_SIZE);
-                while(cursor.moveToNext()) {
+                while(advance(cursor)) {
                     cancel.throwIfCanceled();if(Thread.currentThread().isInterrupted())throw new InterruptedException();
                     String name=cursor.getString(1);
                     if(!DocumentsContract.Document.MIME_TYPE_DIR.equals(cursor.getString(4)) && ThumbnailPolicy.supported(name)) {
@@ -79,7 +81,7 @@ final class ThumbnailScanner implements AutoCloseable {
                 int count=active.incrementAndGet();peak.accumulateAndGet(count,Math::max);
                 try {
                     if(e.size>64L*1024*1024){e.readable=false;return e;}
-                    ImageCodec.Inspection result=ImageCodec.inspect(resolver,Uri.parse(e.uri),cancel);
+                    ImageCodec.Inspection result=ImageCodec.inspect(resolver,Uri.parse(e.uri),cancel,timings);
                     e.width=result.width;e.height=result.height;e.readable=result.readable;return e;
                 } catch(FileNotFoundException disappeared) {
                     // A stale listing or temporarily unavailable file must be retried on the next scan.
@@ -99,10 +101,11 @@ final class ThumbnailScanner implements AutoCloseable {
         if(failure instanceof Exception)throw (Exception)failure;
         cancel.throwIfCanceled();
     }
+    private boolean advance(Cursor cursor){long started=System.nanoTime();try{return cursor.moveToNext();}finally{listingNanos+=System.nanoTime()-started;}}
     JSONObject metrics()throws JSONException {
         return new JSONObject().put("metadataQueries",metadataQueries).put("inspected",inspected).put("reused",reused)
             .put("workers",workers).put("peakValidations",peak.get()).put("batchSize",BATCH_SIZE)
-            .put("transactions",index.transactions).put("resumed",index.resumed);
+            .put("safQueryNanos",queryNanos).put("safCursorNanos",listingNanos).put("sourceOpenNanos",timings.opens.get()).put("validationDecodeNanos",timings.decodes.get()).put("sqliteTransactionNanos",index.transactionNanos).put("transactions",index.transactions).put("resumed",index.resumed);
     }
     @Override public void close(){index.close();}
 }

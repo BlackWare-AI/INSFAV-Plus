@@ -25,16 +25,17 @@ public final class InsfavApplication extends Application implements Fetcher.Host
    if(!tree.equals(tree()))return;
    android.graphics.BitmapFactory.Options bounds=ImageCodec.bounds(getContentResolver(),uri);
    if(!ImageCodec.validate(getContentResolver(),uri,bounds))throw new java.io.IOException("Written thumbnail validation failed");
-   JSONObject profiles=store.index.optJSONObject("profiles");if(profiles==null){profiles=new JSONObject();store.index.put("profiles",profiles);}
-   boolean added=!profiles.has(user);
    long size=-1,modified=System.currentTimeMillis();
    try(android.database.Cursor c=getContentResolver().query(uri,new String[]{android.provider.DocumentsContract.Document.COLUMN_SIZE},null,null,null)){if(c!=null&&c.moveToFirst()&&!c.isNull(0))size=c.getLong(0);}
-   JSONObject old=profiles.optJSONObject(user);boolean replacing=old!=null&&(user+".webp").equals(old.optString("name"));long oldSize=replacing?Math.max(0,old.optLong("size")):0;
-   if(!added&&!replacing)store.index.put("duplicates",store.index.optInt("duplicates")+1);
-   if(replacing&&!old.optBoolean("readable"))store.index.put("unreadable",Math.max(0,store.index.optInt("unreadable")-1));
-   profiles.put(user,new JSONObject().put("uri",uri.toString()).put("name",user+".webp").put("readable",true).put("width",bounds.outWidth).put("height",bounds.outHeight).put("size",size).put("modified",modified));
-   store.index.put("treeUri",tree).put("revision",Math.max(System.currentTimeMillis(),store.index.optLong("revision")+1)).put("bytes",Math.max(0,store.index.optLong("bytes")-oldSize+Math.max(0,size))).put("files",store.index.optInt("files")+(added||!replacing?1:0));
-   store.replaceIndex(store.index);
+   store.updateProfile(user,new JSONObject().put("uri",uri.toString()).put("name",user+".webp").put("readable",true).put("width",bounds.outWidth).put("height",bounds.outHeight).put("size",size).put("modified",modified),tree);
   }
  }
+ public void flushImages()throws Exception {store.flushIndex();}
+ public boolean catalogContains(Fetcher.ImageRecord image){
+  synchronized(store){JSONObject profiles=store.index.optJSONObject("profiles"),old=profiles==null?null:profiles.optJSONObject(image.user);
+   return old!=null&&old.optBoolean("readable")&&image.uri.toString().equals(old.optString("uri"))&&image.name.equals(old.optString("name"))&&old.optInt("width")==image.width&&old.optInt("height")==image.height&&old.optLong("size",-1)==image.size&&old.optLong("modified")==image.modified;
+  }
+ }
+ public void imageWritten(Fetcher.ImageRecord image,String tree)throws Exception {if(!catalogContains(image))store.updateProfile(image.user,image.profile(),tree);}
+ public void sourceChanged(){synchronized(store){store.externalRevision++;}}
 }

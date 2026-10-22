@@ -46,7 +46,7 @@ public final class FetchService extends Service {
         QueueEngine current = engine; if (current != null) current.cancel(state);
         try (QueueStore queue = new QueueStore(this)) { queue.deferClaims("SERVICE_TIMEOUT"); }
         catch (RuntimeException error) { new Diagnostics(this).unexpected("SERVICE", error); }
-        stopForeground(STOP_FOREGROUND_REMOVE); DownloadNotification.finish(this); Fetcher.publish(); stopSelf();
+        stopForeground(STOP_FOREGROUND_REMOVE); DownloadNotification.finish(this); Fetcher.publish(true); stopSelf();
     }
     @Override public void onTaskRemoved(Intent rootIntent) {
         // Removing the UI task is not Pause or Stop. The foreground worker stays owned by this service.

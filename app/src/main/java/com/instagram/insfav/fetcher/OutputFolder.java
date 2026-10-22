@@ -96,6 +96,11 @@ final class OutputFolder {
         catch(FileNotFoundException error){throw new IOException("OUTPUT_UNAVAILABLE",error);}
         catch(IOException error){if("OUTPUT_SIZE_REJECTED".equals(error.getMessage()))return false;throw error;}
     }
+    Fetcher.ImageRecord metadata(String user)throws IOException {
+        QueueStore.Image image=catalog==null?null:catalog.image(user);
+        if(image==null||!image.readable||image.uri.isEmpty())throw new IOException("OUTPUT_METADATA_MISSING");
+        return new Fetcher.ImageRecord(user,image.uri,image.name,image.size,image.width,image.height,image.modified);
+    }
     private QueueStore.Image inspect(String user,String name,Uri uri,long size,long modified)throws IOException {
         android.graphics.BitmapFactory.Options bounds=new android.graphics.BitmapFactory.Options();bounds.inJustDecodeBounds=true;
         try(InputStream in=resolver.openInputStream(uri)){if(in==null)throw new IOException("OUTPUT_UNAVAILABLE");FetcherCatalog.opens.incrementAndGet();FetcherCatalog.decodes.incrementAndGet();android.graphics.BitmapFactory.decodeStream(in,null,bounds);}

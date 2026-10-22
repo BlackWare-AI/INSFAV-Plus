@@ -16,8 +16,8 @@ window.nativeEvent=(event,data)=>{
   }
   if(event==='status'){
    if(data.folderMessage&&data.folderMessage!==state.folderMessage)message(data.folderMessage);
-   const oldProfiles=profiles;if(data.profiles)profiles=data.profiles;state=data;
-   const revision=[data.revision,data.matched,data.missing,data.unreadable,data.folderStatus].join(':');
+   const oldProfiles=profiles;if(data.profiles)profiles=data.profiles;else if(data.profileChanges)profiles={...profiles,...data.profileChanges};state={...state,...data};
+   const revision=[data.revision,data.matched,data.missing,data.unreadable,data.folderStatus,data.scopeRevision].join(':');
    if(revision!==lastRevision){lastRevision=revision;cacheVersion++;refreshAvatars(oldProfiles);}
    updateSettings();
   }
@@ -158,33 +158,42 @@ function hideScreen(element,done){
 }
 function openSettings(){previousFocus=document.activeElement;$('settings').hidden=false;document.body.classList.add('overlay-open');updateSettings();request('status');$('settings-back').focus();}
 function closeSettings(){hideScreen($('settings'),()=>{document.body.classList.remove('overlay-open');previousFocus?.focus?.();});}
-const actions=[['Select Thumbnail Folder','select-folder'],['Rescan Thumbnails','rescan'],['Clear Image Cache','clear-cache'],['Clear Thumbnail Index','clear-index']];
+const actions=[['Select Thumbnail Folder','select-folder'],['Rescan Thumbnails','rescan'],['Cancel Scan','cancel-scan'],['Clear Image Cache','clear-cache'],['Clear Thumbnail Index','clear-index']];
 for(const [label,action]of actions){const button=document.createElement('button');button.textContent=label;button.dataset.action=action;$('profile-actions').append(button);}
 function bytes(value){return (Number(value||0)/1048576).toFixed(2)+' MiB';}
+const metricPools=new WeakMap();
+function changedText(node,value){const text=String(value);if(node.textContent!==text)node.textContent=text;}
+function metricNode(container,label){
+ let pool=metricPools.get(container);if(!pool){pool=new Map();metricPools.set(container,pool);}
+ let node=pool.get(label);if(!node){node=document.createElement('div');node.className='metric';node.dataset.metric=label;const count=document.createElement('b'),name=document.createElement('span');name.textContent=label;node.append(count,name);node._count=count;node._label=name;pool.set(label,node);container.append(node);}return node;
+}
 function updateSettings(){
  if($('settings').hidden)return;
- const scan=state.scan||{},busy=state.scanState==='scanning',date=state.lastScan?new Date(state.lastScan).toLocaleString():'Never';
+ const scan=state.scan||{},busy=!!state.scanPending||state.scanState==='scanning',date=state.lastScan?new Date(state.lastScan).toLocaleString():'Never';
  const values=[['Total Accounts',doc?.total||0],['Unique Accounts',doc?.unique.length||0],['Matched Images',state.matched||0],['Missing Images',state.missing??doc?.unique.length??0],['Indexed Folder Size',bytes(state.folderBytes)+(state.unknownSizes?' + unknown sizes':'')],['Image Cache Size',bytes(state.cacheBytes)],['Thumbnail Index Size',bytes(state.storage?.thumbnailIndex)],['WebView Storage',bytes(state.storage?.app_webview)],['Scan Checkpoint Index Size',bytes(state.storage?.thumbnailCheckpoint)],['Invalid Resolution Images',state.resolution?.count||0],['Last Scan Date',date],['Selected Folder',state.folder||'Not selected']];
- $('metrics').replaceChildren();
- for(const [label,value]of values){
-  const metric=document.createElement('div');metric.className='metric';metric.dataset.metric=label;
-  const detail=document.createElement('b');detail.textContent=value;const name=document.createElement('span');name.textContent=label;
-  if(label==='Missing Images'){
-   const head=document.createElement('div');head.className='metric-head';const copy=document.createElement('button');copy.id='copy-missing-users';copy.className='copy-missing';copy.setAttribute('aria-label','Copy missing usernames');copy.title='Copy missing usernames';copy.disabled=Number(value)===0;
-   copy.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';
-   copy.onclick=()=>request('copy-missing-users');head.append(detail,copy);metric.append(head,name);
-  }else metric.append(detail,name);
-  if(label==='Selected Folder'){metric.classList.add('folder-metric');detail.title=String(value);}
-  if(label==='Invalid Resolution Images'&&(!state.resolution?.complete||state.resolution?.unknown)){const note=document.createElement('span');note.className='resolution-note';note.textContent=!state.resolution?.complete?'Rescan for full folder count':state.resolution.unknown+' unknown dimensions';metric.append(note);}
-  if(label==='Invalid Resolution Images')metric.title='Target: 256×256 · '+(state.resolution?.complete?'All images in the last completed scan':'Saved dimensions; Rescan includes every folder image')+(state.resolution?.unknown?' · '+state.resolution.unknown+' unknown dimensions':'');
-  $('metrics').append(metric);
- }
- $('scan-state').textContent=(state.scanState||'idle').replaceAll('_',' ').replace(/^./,value=>value.toUpperCase());
+   for(const [label,value]of values){
+   const metric=metricNode($('metrics'),label),detail=metric._count;
+   changedText(detail,value);
+   if(label==='Missing Images'){
+    let copy=metric.querySelector('.copy-missing');
+    if(!copy){const head=document.createElement('div');head.className='metric-head';copy=document.createElement('button');copy.id='copy-missing-users';copy.className='copy-missing';copy.setAttribute('aria-label','Copy missing usernames');copy.title='Copy missing usernames';copy.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';copy.onclick=()=>request('copy-missing-users');head.append(detail,copy);metric.prepend(head);}
+    copy.disabled=Number(value)===0;
+   }
+   if(label==='Selected Folder'){metric.classList.add('folder-metric');if(detail.title!==String(value))detail.title=String(value);}
+   if(label==='Invalid Resolution Images'){
+    const visible=!state.resolution?.complete||state.resolution?.unknown;
+    let note=metric.querySelector('.resolution-note');
+    if(!note&&visible){note=document.createElement('span');note.className='resolution-note';metric.append(note);}
+    if(note){if(note.hidden===!!visible)note.hidden=!visible;changedText(note,!state.resolution?.complete?'Rescan for full folder count':state.resolution.unknown+' unknown dimensions');}
+    const title='Target: 256×256 · '+(state.resolution?.complete?'All images in the last completed scan':'Saved dimensions; Rescan includes every folder image')+(state.resolution?.unknown?' · '+state.resolution.unknown+' unknown dimensions':'');if(metric.title!==title)metric.title=title;
+   }
+  }
+$('scan-state').textContent=(state.scanState||'idle').replaceAll('_',' ').replace(/^./,value=>value.toUpperCase());
  $('progress').max=busy?Math.max(1,scan.total||1):1;$('progress').value=busy?(scan.processed||0):state.scanState==='completed'?1:0;
  $('progress-detail').textContent=scan.message||(busy?`${scan.processed||0} / ${scan.total||0} folder entries checked`:'Rescan updates the index without changing source files. Retry an interrupted scan to resume saved work. Image Cache Size counts legacy app image copies; WebView Storage includes browser-managed assets and data. Rescan after external changes.');
  $('folder-warning').hidden=!state.folderMessage;$('folder-warning').textContent=state.folderMessage||'';
  $('version-info').textContent=`INSFAV Plus ${appInfo.version||''} · Build ${appInfo.build??'—'} · BlackWare`;
- for(const button of $('profile-actions').querySelectorAll('button'))button.disabled=busy&&button.dataset.action!=='clear-cache';
+ for(const button of $('profile-actions').querySelectorAll('button')){button.disabled=button.dataset.action==='cancel-scan'?!busy:busy&&button.dataset.action!=='clear-cache';button.hidden=button.dataset.action==='cancel-scan'&&!busy;}
 }
 document.addEventListener('click',event=>{
  const action=event.target.closest('[data-action]')?.dataset.action;if(!action)return;
@@ -194,7 +203,7 @@ document.addEventListener('click',event=>{
 $('info-btn').onclick=showInfo;$('import-btn').onclick=()=>closeDialog(()=>request('import'));$('clear-btn').onclick=()=>closeDialog(()=>confirmAction('Reset collections?','The collection database will be cleared. Profile images are managed separately.',()=>request('clear-data')));$('settings-back').onclick=closeSettings;
 function openFetcher(){
  previousFocus=document.activeElement;$('settings').inert=true;$('fetcher-screen').hidden=false;$('fetcher-back').focus();request('fetcher-status');
- clearInterval(fetcherPoll);fetcherPoll=setInterval(()=>request('fetcher-status'),1500);
+ clearInterval(fetcherPoll);fetcherPoll=0;
 }
 function closeFetcher(){clearInterval(fetcherPoll);fetcherPoll=0;$('cookie-text').value='';hideScreen($('fetcher-screen'),()=>{$('settings').inert=false;$('fetcher-menu').focus();});}
 function updateFetcher(){
@@ -205,7 +214,7 @@ function updateFetcher(){
  if(!$('fetcher-background').dataset.edited)$('fetcher-background').checked=!!f.background;
  $('fetcher-capacity').textContent='Requested WebViews: '+(f.requestedViews||1)+' · Effective WebViews: '+(f.effectiveViews||1)+' · Active WebViews: '+(f.activeViews||0)+(f.effectiveViews<f.requestedViews?' · Reduced by the memory budget':'');
  const values=[['Active Accounts',f.activeAccounts||0],['Accounts / Minute',Number(f.completedPerMinute||0).toFixed(1)],['Peak Active Accounts',f.peakAccounts||0],['App PSS (MiB)',((f.memoryPssKiB||0)/1024).toFixed(1)],['Total Unique Accounts',f.total||0],['Successful',f.success||0],['Existing',f.existing||0],['Failed',f.failed||0],['Skipped Profiles',f.skipped||0],['Retry Later',f.retry||0],['Pending',f.pending||0],['Processed',f.processed||0]];
- $('fetcher-metrics').replaceChildren();for(const [label,value]of values){const row=document.createElement('div');row.className='metric';const name=document.createElement('span'),count=document.createElement('b');name.textContent=label;count.textContent=value;row.append(count,name);$('fetcher-metrics').append(row);}
+ for(const [label,value]of values)changedText(metricNode($('fetcher-metrics'),label)._count,value);
  $('fetcher-progress').max=Math.max(1,f.total||0);$('fetcher-progress').value=f.processed||0;
  const process=f.process||{},reviewed=Math.min(f.total||0,(f.processed||0)+(f.held||0));
  $('fetcher-process-phase').textContent=process.phase||f.state||'Idle';
@@ -250,4 +259,4 @@ window.handleBack=()=>{if(!$('dialog').hidden&&!$('fetcher-screen').hidden){clos
 document.addEventListener('keydown',e=>{if(e.key==='Escape')window.handleBack();if(e.key==='Tab'){const surface=!$('dialog').hidden&&!$('fetcher-screen').hidden?$('dialog'):!$('fetcher-screen').hidden?$('fetcher-screen'):!$('features-screen').hidden?$('features-screen'):!$('viewer').hidden?$('viewer'):!$('dialog').hidden?$('dialog'):!$('settings').hidden?$('settings'):null;if(!surface)return;const focus=[...surface.querySelectorAll('button:not(:disabled),input')].filter(el=>!el.hidden);const first=focus[0],last=focus[focus.length-1];if(e.shiftKey&&document.activeElement===first){last.focus();e.preventDefault();}else if(!e.shiftKey&&document.activeElement===last){first.focus();e.preventDefault();}}});
 function previewCommand(command,p){if(command==='bootstrap'){appInfo={version:'Browser preview',build:'—'};try{const raw=localStorage.getItem('insfav-preview-data');window.nativeEvent('bootstrap',{raw:raw||'',profiles:{},stats:{usage:1,load:0,clear:0}});}catch(e){window.nativeEvent('error',e.message);$('splash').hidden=true;}}else if(command==='import'){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.onchange=async()=>{try{const raw=await input.files[0].text();C.parseDocument(raw);localStorage.setItem('insfav-preview-data',raw);window.nativeEvent('imported',{raw,profiles:{}});}catch(e){message(e.message);}};input.click();}else if(command==='export'){if(!doc)return;const u=URL.createObjectURL(new Blob([doc.raw],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='INSFAV-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}else if(command==='clear-data'){localStorage.removeItem('insfav-preview-data');window.nativeEvent('cleared','');}else if(command==='copy-missing-users'){const users=(doc?.unique||[]).filter(user=>/^[a-z0-9._]{1,30}$/.test(user)&&!profiles[user]?.file);if(!users.length){message('No missing usernames.');return;}navigator.clipboard.writeText(users.join('\n')).then(()=>message(users.length+' usernames copied.')).catch(()=>message('Clipboard unavailable. Try again.'));}else if(command==='open')window.open('https://www.instagram.com/'+encodeURIComponent(p.user)+'/','_blank','noopener');else if(command!=='status'&&command!=='image-failed')message('This feature uses the Android application.');}
 window.addEventListener('error',e=>{if(native)request('frontend-error',{code:'script_line_'+e.lineno});});window.addEventListener('unhandledrejection',()=>{if(native)request('frontend-error',{code:'unhandled_promise'});});
-request('bootstrap');
+request('bootstrap',{profileDeltas:true});

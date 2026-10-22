@@ -9,7 +9,7 @@ import java.util.*;
 /** Private, replaceable scan checkpoints. Never writes the SAF source or the Fetcher database. */
 final class ThumbnailScanIndex extends SQLiteOpenHelper {
     long generation;
-    int transactions;
+    int transactions;long transactionNanos;
     boolean resumed;
     // Retain compact local row IDs, not thousands of potentially long SAF document IDs/URIs.
     private final Set<Long> seen=new HashSet<>();
@@ -25,7 +25,7 @@ final class ThumbnailScanIndex extends SQLiteOpenHelper {
     @Override public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion) {throw new SQLiteException("Unsupported thumbnail checkpoint schema");}
     void begin(String scope) {
         seen.clear();removed.clear();resumed=false;
-        SQLiteDatabase db=getWritableDatabase();db.beginTransaction();
+        SQLiteDatabase db=getWritableDatabase();long transactionStarted=System.nanoTime();db.beginTransaction();
         try {
             generation=1;
             try(Cursor c=db.rawQuery("SELECT scope,generation,completed FROM state WHERE id=1",null)) {
@@ -34,7 +34,7 @@ final class ThumbnailScanIndex extends SQLiteOpenHelper {
             }
             db.execSQL("INSERT OR REPLACE INTO state VALUES (1,?,?,0)",new Object[]{scope,generation});
             db.setTransactionSuccessful();transactions++;
-        } finally {db.endTransaction();}
+        } finally {db.endTransaction();transactionNanos+=System.nanoTime()-transactionStarted;}
     }
     Map<String,Entry> lookup(List<Entry> batch) {
         String[] ids=new String[batch.size()];Arrays.setAll(ids,i->batch.get(i).id);
@@ -54,7 +54,7 @@ final class ThumbnailScanIndex extends SQLiteOpenHelper {
         for(Entry e:batch) {if(e.cached)seen.add(e.rowId);else changed=true;}
         // Unchanged rows need no durable write. Keep only compact row IDs for this listing.
         if(!changed)return;
-        SQLiteDatabase db=getWritableDatabase();db.beginTransaction();
+        SQLiteDatabase db=getWritableDatabase();long transactionStarted=System.nanoTime();db.beginTransaction();
         List<Long> inserted=new ArrayList<>();
         try(SQLiteStatement insert=db.compileStatement("INSERT OR REPLACE INTO entries VALUES (?,?,?,?,?,?,?,?,?)")) {
             for(Entry e:batch) {
@@ -64,7 +64,7 @@ final class ThumbnailScanIndex extends SQLiteOpenHelper {
                 }
             }
             db.setTransactionSuccessful();transactions++;
-        } finally {db.endTransaction();}
+        } finally {db.endTransaction();transactionNanos+=System.nanoTime()-transactionStarted;}
         seen.addAll(inserted);
     }
     ThumbnailPolicy.Catalog catalog() {
@@ -87,16 +87,16 @@ final class ThumbnailScanIndex extends SQLiteOpenHelper {
     }
 
     void complete() {
-        SQLiteDatabase db=getWritableDatabase();db.beginTransaction();
+        SQLiteDatabase db=getWritableDatabase();long transactionStarted=System.nanoTime();db.beginTransaction();
         try(SQLiteStatement delete=db.compileStatement("DELETE FROM entries WHERE rowid=?")) {
             for(long id:removed){delete.bindLong(1,id);delete.executeUpdateDelete();}
             db.execSQL("UPDATE state SET completed=1 WHERE id=1");db.setTransactionSuccessful();transactions++;
-        } finally {db.endTransaction();}
+        } finally {db.endTransaction();transactionNanos+=System.nanoTime()-transactionStarted;}
     }
     void clear() {
-        SQLiteDatabase db=getWritableDatabase();db.beginTransaction();
+        SQLiteDatabase db=getWritableDatabase();long transactionStarted=System.nanoTime();db.beginTransaction();
         try {db.delete("entries",null,null);db.delete("state",null,null);db.setTransactionSuccessful();}
-        finally {db.endTransaction();}
+        finally {db.endTransaction();transactionNanos+=System.nanoTime()-transactionStarted;}
     }
     static final class Entry {
         final String id,name,uri;

@@ -19,12 +19,14 @@ final class ImageCodec {
     static Inspection inspect(ContentResolver resolver, Uri uri) throws IOException {
         return inspect(resolver,uri,null);
     }
-    static Inspection inspect(ContentResolver resolver, Uri uri, CancellationSignal cancellation) throws IOException {
+    static Inspection inspect(ContentResolver resolver, Uri uri, CancellationSignal cancellation) throws IOException {return inspect(resolver,uri,cancellation,null);}
+    static final class Timings {final java.util.concurrent.atomic.AtomicLong opens=new java.util.concurrent.atomic.AtomicLong(),decodes=new java.util.concurrent.atomic.AtomicLong();}
+    static Inspection inspect(ContentResolver resolver,Uri uri,CancellationSignal cancellation,Timings timings)throws IOException{
         BitmapFactory.Options bounds = new BitmapFactory.Options(); bounds.inJustDecodeBounds = true;
-        try (InputStream raw = open(resolver, uri, cancellation);
+        try (InputStream raw = timedOpen(resolver,uri,cancellation,timings);
              BufferedInputStream input = new BufferedInputStream(raw, 65536)) {
             input.mark(65536);
-            BitmapFactory.decodeStream(input, null, bounds);
+            timedDecode(input,bounds,timings);
             if(cancellation!=null)cancellation.throwIfCanceled();
             if (!validBounds(bounds)) return new Inspection(0, 0, false);
             BitmapFactory.Options options = sampled(bounds, 128);
@@ -32,13 +34,15 @@ final class ImageCodec {
             try {input.reset();}
             catch (IOException headerExceedsBuffer) {
                 // Unusual large headers retain the existing bounded two-open path.
-                try (InputStream retry = open(resolver, uri, cancellation)) {image = BitmapFactory.decodeStream(retry, null, options);}
+                try (InputStream retry = timedOpen(resolver,uri,cancellation,timings)) {image = timedDecode(retry,options,timings);}
                 return inspected(bounds, image);
             }
-            image = BitmapFactory.decodeStream(input, null, options);
+            image = timedDecode(input,options,timings);
             return inspected(bounds, image);
         }
     }
+    private static InputStream timedOpen(ContentResolver resolver,Uri uri,CancellationSignal cancellation,Timings timings)throws IOException {long began=System.nanoTime();try{return open(resolver,uri,cancellation);}finally{if(timings!=null)timings.opens.addAndGet(System.nanoTime()-began);}}
+    private static Bitmap timedDecode(InputStream input,BitmapFactory.Options options,Timings timings){long began=System.nanoTime();try{return BitmapFactory.decodeStream(input,null,options);}finally{if(timings!=null)timings.decodes.addAndGet(System.nanoTime()-began);}}
     private static Inspection inspected(BitmapFactory.Options bounds, Bitmap image) {
         boolean readable = image != null;
         if (image != null) image.recycle();
@@ -57,7 +61,7 @@ final class ImageCodec {
     static InputStream open(ContentResolver resolver, Uri uri) throws IOException {
         return bounded(resolver.openInputStream(uri),null);
     }
-    private static InputStream open(ContentResolver resolver,Uri uri,CancellationSignal cancellation)throws IOException {
+    static InputStream open(ContentResolver resolver,Uri uri,CancellationSignal cancellation)throws IOException {
         if(cancellation==null)return open(resolver,uri);
         cancellation.throwIfCanceled();
         AssetFileDescriptor descriptor=resolver.openAssetFileDescriptor(uri,"r",cancellation);
@@ -70,10 +74,11 @@ final class ImageCodec {
         if (source == null) throw new IOException("Image is not readable");
         return new FilterInputStream(source) {
             long left = 64L * 1024 * 1024;
-            @Override public int read() throws IOException {if(cancellation!=null)cancellation.throwIfCanceled();if (left <= 0) throw new IOException("Image size limit"); int n = super.read(); if (n >= 0) left--; return n;}
+            @Override public int read() throws IOException {if(cancellation!=null)cancellation.throwIfCanceled();if (left <= 0) {if(in.read()<0)return -1;throw new IOException("Image size limit");} int n = super.read(); if (n >= 0) left--; return n;}
             @Override public int read(byte[] b, int offset, int length) throws IOException {
                 if(cancellation!=null)cancellation.throwIfCanceled();
-                if (left <= 0) throw new IOException("Image size limit");
+                if(length==0)return 0;
+                if (left <= 0) {if(in.read()<0)return -1;throw new IOException("Image size limit");}
                 int n = in.read(b, offset, (int)Math.min(length, left)); if (n > 0) left -= n; return n;
             }
         };

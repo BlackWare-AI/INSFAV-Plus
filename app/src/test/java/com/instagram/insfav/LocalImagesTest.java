@@ -242,4 +242,20 @@ public class LocalImagesTest {
         @Override public int delete(Uri uri,String where,String[] args){writes++;throw new UnsupportedOperationException();}
         @Override public int update(Uri uri,ContentValues values,String where,String[] args){writes++;throw new UnsupportedOperationException();}
     }
+    @Test public void revisionResponsesAreLightAndSingleProfileUpdatesAreIncremental()throws Exception{
+        selectAndScan();JSONObject full=images.snapshotChanges(-1,"",true);long revision=full.getLong("revision");String scope=full.getString("scopeRevision");
+        JSONObject unchanged=images.snapshotChanges(revision,scope,false);assertFalse(unchanged.has("profiles"));assertFalse(unchanged.has("profileChanges"));
+        provider.add("root/missing.png","missing.png",256,256);File file=provider.files.get("root/missing.png");
+        JSONObject profile=new JSONObject().put("uri",DocumentsContract.buildDocumentUriUsingTree(root,"root/missing.png").toString()).put("name","missing.png").put("readable",true).put("width",256).put("height",256).put("size",file.length()).put("modified",file.lastModified());
+        store.updateProfile("missing",profile,root.toString());JSONObject delta=images.snapshotChanges(revision,scope,false);
+        assertFalse(delta.has("profiles"));assertEquals(1,delta.getJSONObject("profileChanges").length());assertTrue(delta.getJSONObject("profileChanges").getJSONObject("missing").getBoolean("file"));assertEquals(2,delta.getInt("matched"));store.flushIndex();
+    }
+    @Test public void sourceChangeInvalidatesVersionsEvenWhenIndexRevisionIsUnchanged()throws Exception{
+        selectAndScan();JSONObject full=images.snapshotChanges(-1,"",true);String before=full.getJSONObject("profiles").getJSONObject("example").getString("version");store.externalRevision++;
+        JSONObject refreshed=images.snapshotChanges(full.getLong("revision"),full.getString("scopeRevision"),false);assertTrue(refreshed.has("profiles"));assertNotEquals(before,refreshed.getJSONObject("profiles").getJSONObject("example").getString("version"));
+    }
+    @Test public void cancellationBeforeScanStartsPreservesCheckpointAndDoesNotOpenSources()throws Exception{
+        selectAndScan();int opens=provider.opens;android.os.CancellationSignal cancelled=new android.os.CancellationSignal();cancelled.cancel();images.scan((event,value)->{},false,cancelled);
+        assertEquals("interrupted",store.settings.optString("scanState"));assertEquals(opens,provider.opens);images.scan((event,value)->{});assertEquals("completed",store.settings.optString("scanState"));assertEquals(opens,provider.opens);assertEquals(0,provider.writes);assertEquals(0,provider.deletes);
+    }
 }

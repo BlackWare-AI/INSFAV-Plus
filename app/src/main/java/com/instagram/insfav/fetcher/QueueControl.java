@@ -15,7 +15,7 @@ final class QueueControl {
     static void pause(Context context, boolean stop) {
         requestedState = stop ? "Stopped" : "Paused"; requested = true;
         SharedPreferences.Editor e = SessionState.prefs(context).edit().putBoolean("userPaused", true).putString("state", requestedState);
-        if (stop) e.putBoolean("armed", false); e.commit(); WorkScheduler.cancel(context); FetchBroker.get(context).cancelBulk(); Fetcher.publish();
+        if (stop) e.putBoolean("armed", false); e.commit(); WorkScheduler.cancel(context); FetchBroker.get(context).cancelBulk(); Fetcher.publish(true);
         if(!lock.get())DownloadNotification.publish(context,3,requestedState);
         new Diagnostics(context).log("QUEUE", stop ? "STOP" : "PAUSE", 0);
     }
