@@ -12,3 +12,14 @@ test('directional overscan stays bounded and reverses priorities',()=>{for(const
 test('very fast flings skip wasteful intermediate preloading',()=>{assert.ok(C.overscanFor(50).after<C.overscanFor(5).after);assert.ok(C.overscanFor(-50).before<C.overscanFor(-5).before);});
 
 test('all account rows use 65px and have contiguous coordinates',()=>{const d=C.parseDocument(JSON.stringify(sample));const rows=C.rowsFor(d.indexed,new Set([0,1]),false),off=C.offsets(rows);for(let i=0;i<rows.length;i++)if(rows[i].type==='account'){assert.equal(rows[i].height,65);assert.equal(off[i+1]-off[i],65);if(rows[i+1]?.type==='account')assert.equal(off[i+1],off[i]+65);}});
+
+test('Turkish display-name search preserves Instagram identity normalization and memberships',()=>{
+ const d=C.parseDocument(JSON.stringify([{name:'One',items:[{pageId:'ISTANBUL',name:'IŞIK İpek'},{pageId:'ipek',name:'Other'}]},{name:'Two',items:[{pageId:'ISTANBUL',name:'IŞIK'}]}]));
+ assert.equal(C.normalize('ISTANBUL'),'istanbul');
+ for(const query of ['ışık','IŞIK','isik','İPEK','ipek']){
+  const names=C.filterCollections(d,query).flatMap(c=>c.items.map(i=>i.name));
+  if(query==='isik')assert.equal(names.length,0);else assert.ok(names.length>0,query);
+ }
+ assert.deepEqual(C.filterCollections(d,'ışık').map(c=>c.items[0].user),['istanbul','istanbul']);
+ assert.equal(C.filterCollections(d,'IŞIK').length,2);
+});

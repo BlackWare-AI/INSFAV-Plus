@@ -1,0 +1,164 @@
+<!-- Generated from web/i18n/catalog.tsv by tools/i18n.cjs -->
+<resources>
+    <string name="ui_74a883a037bc" formatted="false">Ayarlar</string>
+    <string name="ui_bc7bc9104fbf" formatted="false">Temel ayarlar</string>
+    <string name="ui_2130ca1fe222" formatted="false">Gelişmiş / Tanılama</string>
+    <string name="ui_a4fe65264ef7" formatted="false">Dil</string>
+    <string name="ui_6ae0ffc6f1b7" formatted="false">Sistem dili</string>
+    <string name="ui_ba118bf7fc9c" formatted="false">İngilizce</string>
+    <string name="ui_f417b11c5f21" formatted="false">Küçük görsel klasörü</string>
+    <string name="ui_e543f62d7ce9" formatted="false">Profil görselleri</string>
+    <string name="ui_523caef291f5" formatted="false">Küçük görsel klasörünü seç</string>
+    <string name="ui_a9581f23ca22" formatted="false">Küçük görselleri yeniden tara</string>
+    <string name="ui_5085d45a3a7c" formatted="false">Taramayı iptal et</string>
+    <string name="ui_ac94dce12454" formatted="false">Küçük görsel indirici</string>
+    <string name="ui_81f27b9339cc" formatted="false">Yedekle / Geri yükle</string>
+    <string name="ui_aa4277ced790" formatted="false">Bakım / Temizlik</string>
+    <string name="ui_91ea7d01cf16" formatted="false">Görsel önbelleğini temizle</string>
+    <string name="ui_71b1be94a25f" formatted="false">Küçük görsel indeksini temizle</string>
+    <string name="ui_4ac20a03fb4a" formatted="false">Koleksiyonları temizle</string>
+    <string name="ui_12dd2e2eda81" formatted="false">JSON içe aktar</string>
+    <string name="ui_27561979c897" formatted="false">Özgün JSON dışa aktar</string>
+    <string name="ui_06aaeb3af9e0" formatted="false">Tanılama raporunu dışa aktar</string>
+    <string name="ui_89d8e0714b34" formatted="false">Tanılama raporunu dışa aktar</string>
+    <string name="ui_477775555da7" formatted="false">Tüm ayarları dışa aktar</string>
+    <string name="ui_45ac357334fc" formatted="false">Tüm ayarları içe aktar</string>
+    <string name="ui_ae9dfb3785af" formatted="false">Eski INSFAV ayarlarını içe aktar</string>
+    <string name="ui_bc30561c61fa" formatted="false">Toplam hesap</string>
+    <string name="ui_2e750a6ba13d" formatted="false">Benzersiz hesap</string>
+    <string name="ui_6a5e7a36dd7e" formatted="false">Görseli bulunan</string>
+    <string name="ui_2f9a1af7798b" formatted="false">Eksik görseller</string>
+    <string name="ui_95e318e8ca0e" formatted="false">İndekslenen klasör boyutu</string>
+    <string name="ui_7430c0ae9762" formatted="false">Görsel önbelleği boyutu</string>
+    <string name="ui_80b886fc2802" formatted="false">Küçük görsel indeksi boyutu</string>
+    <string name="ui_cdf4fff0c5b4" formatted="false">WebView depolaması</string>
+    <string name="ui_ad00bb761e88" formatted="false">Tarama kontrol noktası boyutu</string>
+    <string name="ui_b7271da3ad6b" formatted="false">256×256 olmayan görseller</string>
+    <string name="ui_b3e45307d786" formatted="false">Son tarama tarihi</string>
+    <string name="ui_0f35f9de1656" formatted="false">Seçilen klasör</string>
+    <string name="ui_df12aeba9bb9" formatted="false">Seçilmedi</string>
+    <string name="ui_6300ef800bb8" formatted="false">Hiçbir zaman</string>
+    <string name="ui_4294207616e4" formatted="false">Taranmadı</string>
+    <string name="ui_bb85378cd455" formatted="false">Eksik görsellerin kullanıcı adlarını kopyala</string>
+    <string name="ui_9f9feade761d" formatted="false">Koleksiyonlar</string>
+    <string name="ui_bc0a7c2355d6" formatted="false">Uygulama bilgisi</string>
+    <string name="ui_7f55382219f0" formatted="false">Ara...</string>
+    <string name="ui_904f3f107245" formatted="false">Hesap ara</string>
+    <string name="ui_3b7ea51793e9" formatted="false">Aramayı temizle</string>
+    <string name="ui_474ffc6a82c9" formatted="false">Liste ekle</string>
+    <string name="ui_ed620ecff0da" formatted="false">Liste sil</string>
+    <string name="ui_76900f1bfd16" formatted="false">Geri</string>
+    <string name="ui_ea37ec29c386" formatted="false">Ayarlara dön</string>
+    <string name="ui_5d72eb6d899f" formatted="false">Uygulama bilgisine dön</string>
+    <string name="ui_1650f88d2021" formatted="false">Özellikler ve işlevler</string>
+    <string name="ui_3fb7b39416f1" formatted="false">Geliştirici</string>
+    <string name="ui_dd167905de0d" formatted="false">Sürüm</string>
+    <string name="ui_bdd254b65baa" formatted="false">Derleme</string>
+    <string name="ui_05b7906ca4ac" formatted="false">Kullanım sayısı</string>
+    <string name="ui_8c0039327f0f" formatted="false">Yükleme sayısı</string>
+    <string name="ui_38912fa1421e" formatted="false">Sıfırlama sayısı</string>
+    <string name="ui_ca1844969742" formatted="false">Kullanılamıyor</string>
+    <string name="ui_7d9eb7acb13e" formatted="false">Kapat</string>
+    <string name="ui_eebdd24a77d9" formatted="false">Onayla</string>
+    <string name="ui_19766ed6ccb2" formatted="false">İptal</string>
+    <string name="ui_31fbef162594" formatted="false">Devam et</string>
+    <string name="ui_fa57243dc0dd" formatted="false">Temizlemeyi onayla</string>
+    <string name="ui_a671f8a7497a" formatted="false">Koleksiyonlar sıfırlansın mı?</string>
+    <string name="ui_56e2be0b8476" formatted="false">Koleksiyon verileri temizlenecek. Profil görselleri ayrı yönetilir.</string>
+    <string name="ui_76164d150208" formatted="false">Koleksiyon belgesi kaldırılsın mı? Yerel fotoğraflar ve indeks korunur.</string>
+    <string name="ui_3dae651dd30a" formatted="false">Tarayıcı ve eski görsel önbellekleri temizlensin mi? Kaynak fotoğraflar, koleksiyonlar, çerezler ve küçük görsel indeksi korunur.</string>
+    <string name="ui_286c4051c648" formatted="false">Küçük görsel bilgileri ve tarama kontrol noktaları temizlensin mi? Kaynak fotoğraflar, koleksiyonlar ve çerezler korunur. Yeniden tarama indeksi oluşturur.</string>
+    <string name="ui_4aa70a38c6d2" formatted="false">SONUÇ</string>
+    <string name="ui_225214b0c264" formatted="false">{name} (@{user}) için profil görselini aç</string>
+    <string name="ui_a18be045dee8" formatted="false">Başlamak için JSON yedeğinizi içe aktarın.</string>
+    <string name="ui_b6141baed9aa" formatted="false">Instagram çerezleri</string>
+    <string name="ui_dd1841d29502" formatted="false">Yapılandırılmadı</string>
+    <string name="ui_095547d78ff6" formatted="false">Çerezleri buraya yapıştırın</string>
+    <string name="ui_f3380f7b44bd" formatted="false">Yapıştır</string>
+    <string name="ui_1509f561f241" formatted="false">Kaydet</string>
+    <string name="ui_c3812fc4acb8" formatted="false">Kaldır</string>
+    <string name="ui_7a1ec9fe6c3b" formatted="false">İşçiler</string>
+    <string name="ui_4eee1a372884" formatted="false">Eşzamanlı WebView sayısı</string>
+    <string name="ui_8fd9b4d3c5db" formatted="false">İşçi başına gecikme ve çalışma saatleri</string>
+    <string name="ui_ac1004f8bd6b" formatted="false">En kısa gecikme (saniye)</string>
+    <string name="ui_73257bebae29" formatted="false">En uzun gecikme (saniye)</string>
+    <string name="ui_271189ae389a" formatted="false">Başlangıç saati</string>
+    <string name="ui_48bccddd89a9" formatted="false">Bitiş saati</string>
+    <string name="ui_8912e50e3b13" formatted="false">Arka planda çalışma</string>
+    <string name="ui_ce5706dd94d3" formatted="false">Çalışma saatlerini kaydet</string>
+    <string name="ui_9f901a6f3d61" formatted="false">Geçerli INSFAV klasörü</string>
+    <string name="ui_8f9084fca021" formatted="false">Seçili klasöre yazma izni ver</string>
+    <string name="ui_1c3d1a7d17bf" formatted="false">İndirme</string>
+    <string name="ui_ab0171ca0494" formatted="false">Boşta</string>
+    <string name="ui_170f1ed765ae" formatted="false">Geçerli işlem</string>
+    <string name="ui_81b2c761ee4e" formatted="false">Geçerli işlem</string>
+    <string name="ui_01661be1921f" formatted="false">İncelenen hesaplar</string>
+    <string name="ui_fe9c5b17e675" formatted="false">Eksik görselleri başlat</string>
+    <string name="ui_858e4ba7a29f" formatted="false">Duraklat</string>
+    <string name="ui_d640c7421da0" formatted="false">Devam et</string>
+    <string name="ui_cae7d57bc067" formatted="false">Durdur</string>
+    <string name="ui_2d5127825c46" formatted="false">Atlanan / başarısız profilleri yeniden dene</string>
+    <string name="ui_a7591c85e2ff" formatted="false">İndirici indeksini doğrula / onar</string>
+    <string name="ui_4e2c4e6f508a" formatted="false">Etkin hesaplar</string>
+    <string name="ui_4f971a3cccd8" formatted="false">Hesap / dakika</string>
+    <string name="ui_34b888d46dd8" formatted="false">En yüksek etkin hesap sayısı</string>
+    <string name="ui_ed98c8b7dd78" formatted="false">Uygulama PSS (MiB)</string>
+    <string name="ui_5b696e92fa9a" formatted="false">Toplam benzersiz hesap</string>
+    <string name="ui_f3686bb328c6" formatted="false">Başarılı</string>
+    <string name="ui_f0b0738f75b8" formatted="false">İndirilen</string>
+    <string name="ui_0a597385b8be" formatted="false">Mevcut</string>
+    <string name="ui_031a8f0f659d" formatted="false">Başarısız</string>
+    <string name="ui_cc7aca94eec3" formatted="false">Atlanan profiller</string>
+    <string name="ui_7afd87b5a427" formatted="false">Daha sonra dene</string>
+    <string name="ui_331551b0de41" formatted="false">Bekleyen</string>
+    <string name="ui_6071b9b565c9" formatted="false">İşlenen</string>
+    <string name="ui_c3042da5d3ed" formatted="false">Erişilemediği için atlanan</string>
+    <string name="ui_2453b849a552" formatted="false">Görsel olmadığı için atlanan</string>
+    <string name="ui_f4f6813aa30f" formatted="false">Tüm hesaplar</string>
+    <string name="ui_c10c5bb960b8" formatted="false">Profil görseli</string>
+    <string name="ui_790fb1b462df" formatted="false">Görseli kapat</string>
+    <string name="ui_3bee10827989" formatted="false">Instagram çerezleri kaldırılsın mı?</string>
+    <string name="ui_b7de788ad2bf" formatted="false">İndirme durur. Koleksiyonlar ve yerel fotoğraflar korunur.</string>
+    <string name="ui_2dafb977fb99" formatted="false">İndirici indeksi doğrulansın mı?</string>
+    <string name="ui_828d337fcf1b" formatted="false">Seçili klasörü doğrular ve indirici bilgilerini onarır. Fotoğraflar, INSFAV indeksi ve koleksiyonlar korunur.</string>
+    <string name="ui_6e2a6876132d" formatted="false">Koleksiyonları kapatmak için aramayı temizleyin.</string>
+    <string name="ui_7d05c500cecd" formatted="false">JSON içe aktarıldı. Tüm özgün alanlar korundu.</string>
+    <string name="ui_e8d77a57aca1" formatted="false">Koleksiyonlar temizlendi. Yerel fotoğraflar korundu.</string>
+    <string name="ui_eb23bae361c4" formatted="false">Okunabilir yerel görsel yok. Ayarlardan küçük görsel klasörünü seçin veya yeniden tarayın.</string>
+    <string name="ui_9efabc6fc2a8" formatted="false">Eksik görseli olan kullanıcı yok.</string>
+    <string name="ui_16b3918a53bd" formatted="false">Çerez alanında Android Yapıştır komutunu kullanın.</string>
+    <string name="ui_777a06220d72" formatted="false">Çerezler güvenli biçimde kaydedildi.</string>
+    <string name="ui_37491799c35d" formatted="false">Görsel önbelleği temizlendi. Kaynak fotoğraflar ve koleksiyonlar korundu.</string>
+    <string name="ui_f7b9673e3299" formatted="false">Küçük görsel indeksi temizlendi. Kaynak fotoğraflar ve koleksiyonlar korundu.</string>
+    <string name="ui_9d3cd03c5632" formatted="false">Taramanın iptali istendi. Tamamlanan kontrol noktaları korunur.</string>
+    <string name="ui_c62892cdc87e" formatted="false">Taramanın bitmesini bekleyin.</string>
+    <string name="ui_1cef6df361a4" formatted="false">Yeniden taramadan önce indiriciyi duraklatın.</string>
+    <string name="ui_ccbd92065ba8" formatted="false">Klasörü değiştirmeden önce indiriciyi duraklatın.</string>
+    <string name="ui_5a0097cbc9c1" formatted="false">Parola (en az 8 karakter)</string>
+    <string name="ui_3e39703b6e87" formatted="false">Yedek parolası</string>
+    <string name="ui_5ac265f396a2" formatted="false">Parolayı doğrula</string>
+    <string name="ui_4d30c69a5b4f" formatted="false">Yalnızca şifreli ayarlar ve çerezler. Koleksiyonlar ve hesap listeleri dahil değildir. Parolayı ayrı saklayın.</string>
+    <string name="ui_e71e35bfc311" formatted="false">En az 8 karakterli, birbiriyle eşleşen parolalar kullanın.</string>
+    <string name="ui_4c0594b79c07" formatted="false">Ayarlar dışa aktarılamadı. Mevcut ayarlar korundu.</string>
+    <string name="ui_156b9ecadfc2" formatted="false">Şifreli ayarlar dışa aktarıldı.</string>
+    <string name="ui_aa36883dc189" formatted="false">Ayarlar dışa aktarılamadı.</string>
+    <string name="ui_973c79956f46" formatted="false">Ayarlar geri yüklendi. İndirme durduruldu; klasörü kontrol edip hazır olduğunuzda Devam et seçeneğine dokunun.</string>
+    <string name="ui_d559928a8402" formatted="false">Ayarlar içe aktarılamadı: yanlış parola, uyumsuz yedek veya etkin indirme. Mevcut ayarlar korundu.</string>
+    <string name="ui_57a9eda190aa" formatted="false">Instagram hesap koleksiyonları</string>
+    <string name="ui_d1306f93f0e8" formatted="false">JSON içe ve dışa aktarma</string>
+    <string name="ui_fcdbfa0a6363" formatted="false">Koleksiyon yönetimi</string>
+    <string name="ui_17ac3668f1eb" formatted="false">Hesap arama</string>
+    <string name="ui_d21163da34b7" formatted="false">Yerel profil görselleri</string>
+    <string name="ui_c6885f589717" formatted="false">İsteğe bağlı oturumla görsel indirme</string>
+    <string name="ui_35432a767cbd" formatted="false">Harici küçük görsel klasörü desteği</string>
+    <string name="ui_c31076779888" formatted="false">Tam ekran görsel görüntüleyici</string>
+    <string name="ui_6808c907b778" formatted="false">Verimli büyük liste gösterimi</string>
+    <string name="ui_a24a0ec7778a" formatted="false">Kalıcı ayarlar</string>
+    <string name="ui_bdfc5a5453f0" formatted="false">AMOLED arayüz</string>
+    <string name="ui_035b0db1f5a1" formatted="false">Çerezler şifreli özel depoda saklanır ve tanılamaya dahil edilmez. Kaydetmek oturumun geçerli olduğunu göstermez.</string>
+    <string name="ui_8b35277a6cec" formatted="false">Yerel fotoğraflar için .thumbnails klasörünüzü seçin. İsteğe bağlı indirme, Küçük görsel indirici bölümünde yönetilir.</string>
+    <string name="ui_be2315032a4f" formatted="false">Her WebView için ayrı başlangıç aralığı vardır. Bekleyen işçi diğerlerini engellemez. Sunucu beklemesi ve erişim kısıtları tüm havuza uygulanır. Toplu işler gece yarısını aşan saatlere de uyar. Görüntüleyici etkin işlemlerden sonra öncelik alır ve kısıtlara uyar. Android arka plan işlerini geciktirebilir.</string>
+    <string name="ui_d929bad69456" formatted="false">Android izin isterse seçili küçük görsel klasörünü onaylayın. İkinci bir çıktı klasörü kullanılmaz.</string>
+    <string name="ui_211e5e68cd74" formatted="false">İndeksi veya önbelleği temizlemek fotoğraf ve koleksiyonları silmez. Yeniden tarama kaynakları yalnızca okur ve sahipsiz görselleri korur. İsteğe bağlı indirici yalnızca doğrulanmış yeni görseller yazar.</string>
+    <string name="ui_a23b53d0f98e" formatted="false">Klasör değişiklikleri yeniden taramada algılanır. Erişim izni kaybolursa klasörü yeniden seçin.</string>
+</resources>

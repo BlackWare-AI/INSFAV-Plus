@@ -112,11 +112,16 @@ public final class MainActivity extends Activity {
     private void send(String event, Object data) {
         runOnUiThread(() -> {
             if (web == null || isDestroyed()) return;
-            String value = data instanceof JSONObject ? data.toString() : JSONObject.quote(String.valueOf(data));
+            Object localized=data instanceof String&&(event.equals("message")||event.equals("error"))?UiText.text(MainActivity.this,(String)data):data;
+            String value = localized instanceof JSONObject ? localized.toString() : JSONObject.quote(String.valueOf(localized));
             web.evaluateJavascript("window.nativeEvent&&window.nativeEvent(" + JSONObject.quote(event) + "," + value + ")", null);
         });
     }
     private void error(Exception error) {store.log("operation_error", error.getClass().getSimpleName()); send("error", error.getMessage() == null ? "Operation failed" : error.getMessage());}
+    private String diagnostics()throws Exception {
+        JSONObject diagnostic=images.snapshot(false);
+        return "INSFAV Plus "+appInfo()+"\nAndroid SDK: "+Build.VERSION.SDK_INT+"\n"+store.logs()+"\nStorage bytes: "+images.storageAudit()+"\nImage I/O: "+diagnostic.optJSONObject("imageIO")+"\nScan I/O: "+diagnostic.getJSONObject("scan").optJSONObject("io")+"\nIndex writes: "+store.writeMetrics()+"\n"+Fetcher.diagnostics();
+    }
     private JSONObject appInfo() throws Exception {
         PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
         return new JSONObject().put("version", info.versionName).put("build", Build.VERSION.SDK_INT >= 28 ? info.getLongVersionCode() : info.versionCode);
@@ -131,9 +136,10 @@ public final class MainActivity extends Activity {
                         case "bootstrap": {
                             clientProfileDeltas=input.optBoolean("profileDeltas",false);
                             images.checkAccess(); JSONObject result = imageSnapshot(true);
-                            result.put("raw", store.original()).put("app", appInfo()).put("stats", new JSONObject().put("usage", incrementUsage()).put("load", getPreferences(0).getInt("load", 0)).put("clear", getPreferences(0).getInt("clear", 0)));
+                            result.put("language",UiLanguage.choice(MainActivity.this)).put("raw", store.original()).put("app", appInfo()).put("stats", new JSONObject().put("usage", incrementUsage()).put("load", getPreferences(0).getInt("load", 0)).put("clear", getPreferences(0).getInt("clear", 0)));
                             send("bootstrap", result); break;
                         }
+                        case "language": UiLanguage.save(MainActivity.this,input.getString("choice"));send("language",new JSONObject().put("choice",UiLanguage.choice(MainActivity.this)));break;
                         case "status": send("status", imageSnapshot(false)); break;
                         case "copy-missing-users": {
                             String text=images.missingUsernames();
@@ -154,7 +160,7 @@ public final class MainActivity extends Activity {
                         case "fetcher-config": Fetcher.configure(input.getInt("minimum"),input.getInt("maximum"),input.getString("start"),input.getString("end"),input.optBoolean("background"),input.optInt("concurrentWebViews",1));send("fetcher-status",Fetcher.snapshot());break;
                         case "fetcher-action": if(images.scanning())throw new IOException("Wait for the thumbnail scan to finish.");runOnUiThread(()->{if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},24);});Fetcher.action(input.getString("action"));break;
                         case "fetcher-write-access": grantFetcherWrite();break;
-                        case "fetcher-logs": export(Fetcher.diagnostics(),"INSFAV-fetcher-diagnostics.txt","text/plain");break;
+                        case "fetcher-logs": export(diagnostics(),"INSFAV-Plus-diagnostics.txt","text/plain");break;
                         case "view-remote": Fetcher.view(Store.normalize(input.getString("user")),input.getString("token"));break;
                         case "view-closed": Fetcher.closeViewer();runOnUiThread(()->{if(web!=null)web.clearCache(true);});break;
                         case "select-folder": selectFolder(); break;
@@ -171,11 +177,7 @@ public final class MainActivity extends Activity {
                         case "export": if (store.original().isEmpty()) throw new IOException("No collections to export"); export(store.original(), "INSFAV-backup.json", "application/json"); break;
                         case "settings-export": settingsBackup.start(true); break;
                         case "settings-import": settingsBackup.start(false); break;
-                        case "logs": {
-                            JSONObject diagnostic=images.snapshot(false);
-                            export(store.logs()+"\nStorage bytes: "+images.storageAudit()+"\nImage I/O: "+diagnostic.optJSONObject("imageIO")
-                                +"\nScan I/O: "+diagnostic.getJSONObject("scan").optJSONObject("io"),"INSFAV-diagnostics.txt","text/plain");break;
-                        }
+                        case "logs": export(diagnostics(),"INSFAV-Plus-diagnostics.txt","text/plain");break;
                         case "frontend-error": store.log("web_error", input.optString("code", "script")); break;
                         case "clear-data": if(images.scanning()||scanPending.get())throw new IOException("Wait for the scan to finish.");if(Fetcher.running())throw new IOException("Pause the fetcher before clearing collections.");store.clearDocument(); getPreferences(0).edit().putInt("clear", getPreferences(0).getInt("clear", 0) + 1).apply(); send("cleared", ""); break;
                         case "open": openInstagram(input.getString("user")); break;
