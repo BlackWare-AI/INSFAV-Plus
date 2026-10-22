@@ -275,6 +275,7 @@
     <item>Authentication Required</item>
     <item>Completed with failures</item>
     <item>Completed — Retry available</item>
+    <item>Paused: settings rollback could not be confirmed</item>
   </string-array>
   <string-array name="ui_values">
     <item>@string/ui_74a883a037bc</item>
@@ -552,5 +553,6 @@
     <item>@string/ui_732c5220f394</item>
     <item>@string/ui_3ee1e3292f27</item>
     <item>@string/ui_41f55ca840f7</item>
+    <item>@string/ui_31a3c27bf2f0</item>
   </string-array>
 </resources>

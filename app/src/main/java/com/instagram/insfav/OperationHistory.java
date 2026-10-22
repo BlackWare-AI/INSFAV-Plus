@@ -33,6 +33,7 @@ final class OperationHistory {
                 "OUTPUT_EXISTING_PRESERVED",
                 "PERMISSION_LOST",
                 "INDEX_SNAPSHOT_FAILED",
+                "ROLLBACK_UNCONFIRMED",
                 "SESSION_VERIFIED",
                 "SESSION_UNVERIFIED",
                 "SESSION_UNKNOWN",

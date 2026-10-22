@@ -206,7 +206,11 @@ public final class Fetcher {
       }
       lastSynced = users;
     }
-    watchSource();
+    try {
+      watchSource();
+    } catch (RuntimeException unavailable) {
+      new Diagnostics(context).log("INDEX", "OBSERVER_UNAVAILABLE", 0);
+    }
     try (QueueStore q = new QueueStore(context)) {
       FetcherCatalog.seed(q);
     }

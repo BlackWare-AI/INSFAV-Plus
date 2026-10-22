@@ -131,4 +131,35 @@ public class InventoryTest {
             .getJSONObject(0)
             .getBoolean("measured"));
   }
+
+  @Test
+  public void restoringAnUngrantableFolderCannotKeepDisplayingThePreviouslySelectedFolder()
+      throws Exception {
+    images.scan((e, v) -> {});
+    String document = store.original();
+    MainActivity.restoreFolderSelection(
+        store,
+        new JSONObject()
+            .put("treeUri", "content://other.test/tree/new")
+            .put("directoryId", "new")
+            .put("folderLabel", "Imported folder"));
+    images.checkAccess();
+    assertEquals("unavailable", images.snapshot(false).getString("folderStatus"));
+    assertEquals(0, images.snapshot(true).getJSONObject("profiles").length());
+    assertEquals(document, store.original());
+    assertEquals(0, provider.writes);
+  }
+
+  @Test
+  public void restoringAnotherDirectoryUnderTheSameSafTreeInvalidatesOldMetadata()
+      throws Exception {
+    images.scan((e, v) -> {});
+    assertTrue(store.index.getJSONObject("profiles").length() > 0);
+    String tree = store.settings.getString("treeUri");
+    MainActivity.restoreFolderSelection(
+        store, new JSONObject().put("treeUri", tree).put("directoryId", "root/another"));
+    assertFalse(store.index.has("profiles"));
+    assertEquals("root/another", store.settings.getString("directoryId"));
+    assertEquals(0, provider.writes);
+  }
 }

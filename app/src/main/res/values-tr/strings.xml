@@ -275,4 +275,5 @@
     <string name="ui_732c5220f394" formatted="false">Oturum doğrulaması gerekiyor</string>
     <string name="ui_3ee1e3292f27" formatted="false">Başarısız sonuçlarla tamamlandı</string>
     <string name="ui_41f55ca840f7" formatted="false">Tamamlandı — yeniden denenebilir</string>
+    <string name="ui_31a3c27bf2f0" formatted="false">Duraklatıldı: ayarların geri alınması doğrulanamadı</string>
 </resources>

@@ -157,21 +157,13 @@ public final class MainActivity extends Activity {
                 for (UriPermission grant : getContentResolver().getPersistedUriPermissions())
                   if (grant.getUri().toString().equals(tree) && grant.isReadPermission())
                     granted = true;
-                final boolean folderGranted = granted;
                 Fetcher.restoreSettings(
                     data,
                     new SettingsArchive.Extras() {
                       public void apply() throws Exception {
                         if (extra.has("language"))
                           UiLanguage.save(MainActivity.this, extra.getString("language"));
-                        if (folderGranted)
-                          synchronized (store) {
-                            for (String k : new String[] {"treeUri", "directoryId", "folderLabel"})
-                              if (extra.has(k)) store.settings.put(k, extra.get(k));
-                            store.saveSettings();
-                            if (!beforeSettings.optString("treeUri").equals(tree))
-                              store.replaceIndex(new JSONObject());
-                          }
+                        restoreFolderSelection(store, extra);
                       }
 
                       public void rollback() throws Exception {
@@ -191,9 +183,9 @@ public final class MainActivity extends Activity {
                       "message",
                       "Settings restored. Select the thumbnail folder again to grant access.");
                 images.checkAccess();
+                send("status", imageSnapshot(false));
                 Fetcher.sync();
                 send("fetcher-status", Fetcher.snapshot());
-                send("status", imageSnapshot(false));
               }
 
               public void message(String text) {
@@ -330,6 +322,22 @@ public final class MainActivity extends Activity {
     setContentView(root);
     root.requestApplyInsets();
     web.loadUrl("https://insfav.local/index.html");
+  }
+
+  /**
+   * Restores the selected URI, never its permissions. Readers/writers still verify real SAF grants.
+   */
+  static void restoreFolderSelection(Store store, JSONObject extra) throws Exception {
+    synchronized (store) {
+      String oldTree = store.settings.optString("treeUri"),
+          oldDirectory = store.settings.optString("directoryId");
+      for (String key : new String[] {"treeUri", "directoryId", "folderLabel"})
+        if (extra.has(key)) store.settings.put(key, extra.getString(key));
+      store.saveSettings();
+      if (!oldTree.equals(store.settings.optString("treeUri"))
+          || !oldDirectory.equals(store.settings.optString("directoryId")))
+        store.replaceIndex(new JSONObject());
+    }
   }
 
   private void nativeRecovery() {

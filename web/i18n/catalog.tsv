@@ -273,3 +273,4 @@ Waiting: session verification retry	Bekleniyor: oturum doğrulaması yeniden den
 Authentication Required	Oturum doğrulaması gerekiyor
 Completed with failures	Başarısız sonuçlarla tamamlandı
 Completed — Retry available	Tamamlandı — yeniden denenebilir
+Paused: settings rollback could not be confirmed	Duraklatıldı: ayarların geri alınması doğrulanamadı
