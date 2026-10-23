@@ -9,21 +9,33 @@ on:
         default: release
       version:
         description: VERSION_NAME in the reviewed source
-        default: '1.1.0'
+        default: '1.1.1'
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '2'
+        default: '3'
         required: true
+      artifact_commit:
+        description: Optional commit containing an owner-signed APK and public metadata
+        required: false
+        default: ''
+      source_sha:
+        description: Reviewed app source SHA for an owner-signed APK
+        required: false
+        default: ''
+      validation_run:
+        description: Successful current-source checks workflow run
+        required: false
+        default: ''
 permissions:
   contents: read
 jobs:
   checks:
-    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && startsWith(github.ref, 'refs/heads/')
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && startsWith(github.ref, 'refs/heads/') && inputs.artifact_commit == ''
     uses: ./.github/workflows/ci.yml
   publish:
     needs: checks
-    if: github.repository == 'BlackWare-AI/INSFAV-Plus'
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.artifact_commit == ''
     runs-on: ubuntu-latest
     environment: plus-release
     permissions:
@@ -104,3 +116,69 @@ jobs:
       - name: Remove temporary signing file
         if: always()
         run: rm -f "$RUNNER_TEMP/plus-release.jks"
+  publish-owner-signed:
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.kind == 'release' && inputs.artifact_commit != ''
+    runs-on: ubuntu-latest
+    environment: plus-release
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REVIEWED_SOURCE: ${{ inputs.source_sha }}
+      ARTIFACT_COMMIT: ${{ inputs.artifact_commit }}
+      VALIDATION_RUN: ${{ inputs.validation_run }}
+      EXPECTED_VERSION: ${{ inputs.version }}
+      EXPECTED_CODE: ${{ inputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify source and completed CI gates
+        run: |
+          python3 - <<'PY'
+          import json,os,re,subprocess
+          def api(path):return json.loads(subprocess.check_output(['gh','api',path],text=True))
+          source=os.environ['REVIEWED_SOURCE'];run=os.environ['VALIDATION_RUN']
+          assert re.fullmatch('[0-9a-f]{40}',source)
+          assert re.fullmatch('[0-9a-f]{40}',os.environ['ARTIFACT_COMMIT'])
+          assert run.isdecimal()
+          subprocess.run(['git','diff','--exit-code',source,'--','app/src/main','web','version.properties'],check=True)
+          record=api('repos/BlackWare-AI/INSFAV-Plus/actions/runs/'+run)
+          assert record['head_sha']==source and record['conclusion']=='success'
+          assert record['path']=='.github/workflows/ci.yml'
+          jobs=api('repos/BlackWare-AI/INSFAV-Plus/actions/runs/'+run+'/jobs')['jobs']
+          for required in ['verify','emulator']:
+              assert any(job['name']==required and job['conclusion']=='success' for job in jobs)
+          props=dict(line.split('=',1) for line in open('version.properties').read().splitlines() if '=' in line)
+          assert props['VERSION_NAME']==os.environ['EXPECTED_VERSION']
+          assert props['VERSION_CODE']==os.environ['EXPECTED_CODE']
+          PY
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.artifact_commit }}
+          path: .private/release-input
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - name: Verify owner-signed APK and public metadata
+        run: |
+          mkdir -p app/build/outputs/apk/release
+          cp .private/release-input/app-release.apk app/build/outputs/apk/release/app-release.apk
+          python3 tools/verify-apk.py app/build/outputs/apk/release/app-release.apk --release --version "$EXPECTED_VERSION" --code "$EXPECTED_CODE" --output artifacts/apk.json
+          python3 - <<'PY'
+          import json,os
+          current=json.load(open('artifacts/apk.json'))
+          assert current==json.load(open('.private/release-input/apk.json'))
+          assert current['certificateSha256']==['9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f']
+          assert json.load(open('.private/release-input/source.json'))['sourceCommit']==os.environ['REVIEWED_SOURCE']
+          PY
+      - name: Publish verified signed release
+        env:
+          PLUS_SOURCE_SHA: ${{ inputs.source_sha }}
+        run: python3 tools/publish-plus.py

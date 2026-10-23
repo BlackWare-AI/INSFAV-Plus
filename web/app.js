@@ -4,10 +4,10 @@ let bootstrapReady=false,bootstrapTimer;
 let choiceOpener=null;
 const listScroll=createListScroll();
 let viewMode=native?0:(()=>{try{return Number(localStorage.getItem('insfav-plus-columns'))||0;}catch(_){return 0;}})();
-if(![0,2,3,4].includes(viewMode))viewMode=0;
+if(![0,2,3,4,5].includes(viewMode))viewMode=0;
 function releaseRow(node){for(const button of node.querySelectorAll('.avatar'))releaseAvatar(button);}
 function gridGeometry(){if(!viewMode)return null;const width=$('list').clientWidth,tile=(width-18-8*(viewMode-1))/viewMode,label=Math.max(24,Math.ceil(parseFloat(getComputedStyle(document.documentElement).fontSize)*.8125*1.45+6));$('list').style.setProperty('--grid-columns',viewMode);$('list').style.setProperty('--tile-size',tile+'px');$('list').style.setProperty('--grid-label-height',label+'px');return {columns:viewMode,height:tile+label+8};}
-function applyViewMode(columns){viewMode=[0,2,3,4].includes(Number(columns))?Number(columns):0;$('app').classList.toggle('matrix-mode',!!viewMode);rebuild();updateViewChoice();}
+function applyViewMode(columns){viewMode=[0,2,3,4,5].includes(Number(columns))?Number(columns):0;$('app').classList.toggle('matrix-mode',!!viewMode);rebuild();updateViewChoice();}
 
 let doc=null,profiles={},stats={usage:0,load:0,clear:0},state={},opened=new Set(),query='',rows=[],positions=[0],mounted=new Map(),scheduled=false,previousFocus=null,lastFocus=null,viewerUser='',toastTimer=0,cacheVersion=0,lastRevision='',imageFailureTimer=0,fullLoader=null,appInfo={},fetcherState={},viewerToken='',remoteLoader=null,remoteShown=false,fetcherPoll=0;
 function placeholder(button){const icon=document.createElement('span');icon.className='person-placeholder';icon.setAttribute('aria-hidden','true');button.replaceChildren(icon);}
@@ -18,7 +18,7 @@ function setDocument(raw){const next=C.parseDocument(raw);doc=next;opened.clear(
 window.nativeEvent=(event,data)=>{
  try{
   if(event==='bootstrap'||event==='imported'){
-   if(event==='bootstrap'&&data.columns!==undefined)viewMode=[0,2,3,4].includes(data.columns)?data.columns:0;
+   if(event==='bootstrap'&&data.columns!==undefined)viewMode=[0,2,3,4,5].includes(data.columns)?data.columns:0;
    if(data.language)I.choose(data.language);profiles=data.profiles||{};state=data;if(data.app)appInfo=data.app;if(data.stats)stats=data.stats;
    if(data.raw)setDocument(data.raw);else{doc=null;rebuild();}
    if(event==='imported'){stats.load++;message('JSON imported. All original fields preserved.');}
@@ -330,7 +330,7 @@ const resultOptions=[['All accounts',''],['Downloaded','SUCCESS'],['Existing','E
 function languageOptions(){return [[t('System language'),'system'],['English','en'],['Türkçe','tr']];}
 function updateChoiceLabels(){$('language-value').textContent=languageOptions().find(([,code])=>code===I.choice())[0];uiText($('result-filter-value'),resultOptions.find(([,code])=>code===resultFilter)[0]);}
 $('language-choice').onclick=()=>showChoice($('language-choice'),'Language',languageOptions(),I.choice(),choice=>{if(native)request('language',{choice});else{try{localStorage.setItem('insfav-plus-language',choice);}catch(_){}I.choose(choice);}});
-const viewOptions=[['List',0],['Matrix · 2 columns',2],['Matrix · 3 columns',3],['Matrix · 4 columns',4]];
+const viewOptions=[['List',0],['Matrix · 2 columns',2],['Matrix · 3 columns',3],['Matrix · 4 columns',4],['Matrix · 5 columns',5]];
 function updateViewChoice(){uiText($('view-value'),viewOptions.find(([,value])=>value===viewMode)[0]);}
 $('view-choice').onclick=()=>showChoice($('view-choice'),'View mode',viewOptions.map(([label,value])=>[t(label),value]),viewMode,columns=>{if(native)request('view-mode',{columns});else{try{localStorage.setItem('insfav-plus-columns',columns);}catch(_){}applyViewMode(columns);}});
 I.onChange=()=>{listScroll.refresh();updateChoiceLabels();updateViewChoice();updateSettings();updateFetcher();for(const node of mounted.values()){const r=rows.find(row=>row.key===node.dataset.key);if(!r)continue;for(const button of node.querySelectorAll('.avatar')){const item=r.item||r.items?.find(item=>item.user===button.dataset.user);if(item){button.setAttribute('aria-label',t('View profile image for {name} (@{user})',{name:item.name,user:item.user}));const link=node.querySelector('.card-link');if(link)bindAccountDetails(link,item);}}}};

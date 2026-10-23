@@ -13,11 +13,11 @@ public class UiLayoutTest {
   @Test
   public void listAndEveryMatrixSizePersistAndRejectInvalidColumns() throws Exception {
     android.content.Context c = RuntimeEnvironment.getApplication();
-    for (int columns : new int[] {0, 2, 3, 4}) {
+    for (int columns : new int[] {0, 2, 3, 4, 5}) {
       UiLayout.save(c, columns);
       assertEquals(columns, UiLayout.choice(c));
     }
-    assertThrows(java.io.IOException.class, () -> UiLayout.save(c, 5));
-    assertEquals(4, UiLayout.choice(c));
+    assertThrows(java.io.IOException.class, () -> UiLayout.save(c, 6));
+    assertEquals(5, UiLayout.choice(c));
   }
 }

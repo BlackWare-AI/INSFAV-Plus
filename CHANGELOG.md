@@ -1,11 +1,18 @@
 # Changelog
 
+## 1.1.1 (build 3)
+
+Restore the original person placeholder, enlarged inside the existing avatar.
+Replace the scrollbar marker with a fixed gray/black ball that remains visible
+and easy to grab; its rail stays invisible. The 250ms hold and list layout remain.
+
 ## 1.1.0 (build 2)
 
 Folder chevrons point down when collapsed and up when expanded.
 
-Larger scroll arrows and thumb fade when idle, with a 15px grip and one-second
-drag hold. Settings offer persistent list or 2/3/4-column square matrix views,
+Overlay scroll arrows and thumb slide/fade after 440ms idle, with a 250ms drag
+hold and no protruding grip. Settings begin with persistent list or
+2/3/4/5-column square matrix views,
 usernames below images, and a language selector in the upper-right toolbar.
 Cold process startup and stale service intents leave retrieval paused until an
 explicit start/resume; completed work and pending accounts are preserved.
@@ -19,8 +26,8 @@ bounded shared encoded-image streams; cancellable 256-record scan checkpoints af
 English/Turkish presentation, consolidated settings and diagnostics; explicit
 authenticated migration of original INSFAV settings. Source files remain intact.
 
-No official release has been published from this work until its release gates
-and signing requirements have passed.
+1.1.0 / build 2 is published as a verified signed release; see
+`docs/verification/release-1.1.0.json` for its source, CI and checksum records.
 
 Owner review: preserve conservative 45-second profile deadlines after offline
 15/30/45 comparison; validate all unflushed successful metadata on recovery;

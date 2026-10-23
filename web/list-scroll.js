@@ -5,7 +5,7 @@ root.createListScroll=function(){
  const rail=document.getElementById('main-scroll'),track=document.getElementById('scroll-track'),thumb=document.getElementById('scroll-thumb'),mark=thumb.firstElementChild;
  const up=document.getElementById('scroll-start'),down=document.getElementById('scroll-end'),app=document.getElementById('app'),nav=document.querySelector('.bottom-nav');
  const pointers=new Set();let accounts=false,frame=0,hold=null,maximum=0,travel=0,viewport=0,viewportWidth=0,trackHeight=0,hideTimer=0,keyboard=false;
- function hideLater(){clearTimeout(hideTimer);if(!rail.hidden&&!hold&&!(keyboard&&rail.contains(document.activeElement)))hideTimer=setTimeout(()=>rail.classList.add('idle'),2200);}
+ function hideLater(){clearTimeout(hideTimer);if(!rail.hidden&&!hold&&!(keyboard&&rail.contains(document.activeElement)))hideTimer=setTimeout(()=>rail.classList.add('idle'),440);}
  function wake(){rail.classList.remove('idle');hideLater();}
  const scroller=()=>document.scrollingElement;
  const locked=()=>document.body.classList.contains('overlay-open');
@@ -21,19 +21,18 @@ root.createListScroll=function(){
   const page=scroller(),nextViewport=page.clientHeight,nextWidth=page.clientWidth,nextMaximum=Math.max(0,page.scrollHeight-nextViewport);
   rail.style.bottom=Math.max(15,innerHeight-nav.getBoundingClientRect().top+12)+'px';
   const available=accounts&&nextMaximum>0&&nav.getBoundingClientRect().top-12-parseFloat(getComputedStyle(rail).top)>=176;
-  app.classList.toggle('has-scroll-controls',available);
   rail.hidden=!available||locked();
   const nextHeight=rail.hidden?0:track.clientHeight;
   if(nextMaximum!==maximum||nextViewport!==viewport||nextWidth!==viewportWidth||nextHeight!==trackHeight)cancel();
   maximum=nextMaximum;viewport=nextViewport;viewportWidth=nextWidth;trackHeight=nextHeight;
   if(rail.hidden){cancel();return;}
-  const proportional=trackHeight*viewport/(maximum+viewport),hitHeight=Math.min(trackHeight,Math.max(56,proportional));
+  const hitHeight=56;
   travel=Math.max(0,trackHeight-hitHeight);
   const top=clamp(page.scrollTop),ratio=top/maximum;
-  const markHeight=Math.min(hitHeight,Math.max(40,proportional));
+  const markHeight=40;
   thumb.style.height=hitHeight+'px';thumb.style.top=ratio*travel+'px';mark.style.height=markHeight+'px';
-  // The thin mark reaches both track endpoints even when its touch target is larger.
-  mark.style.top=ratio*(hitHeight-markHeight)+'px';
+  // Keep the visible ball centered in its fixed-size touch target at every position.
+  mark.style.top=(hitHeight-markHeight)/2+'px';
   thumb.setAttribute('aria-valuemax',String(maximum));thumb.setAttribute('aria-valuenow',String(Math.round(top)));
   thumb.setAttribute('aria-valuetext',root.InsfavI18n.text('List position: {percent}%',{percent:Math.round(ratio*100)}));
   up.disabled=top<=0;down.disabled=top>=maximum;
@@ -51,7 +50,7 @@ root.createListScroll=function(){
   event.preventDefault();keyboard=true;cancel();wake();move(target);
  };
  document.addEventListener('pointerdown',event=>{
-  keyboard=false;if(!locked())wake();pointers.add(event.pointerId);if(pointers.size>1||!event.isPrimary)cancel();
+  keyboard=false;if(rail.contains(event.target)&&!locked())wake();pointers.add(event.pointerId);if(pointers.size>1||!event.isPrimary)cancel();
  },true);
  thumb.onpointerdown=event=>{
   if(event.button!==0||!event.isPrimary||pointers.size!==1||rail.hidden||locked()||travel<=0)return;
@@ -64,7 +63,7 @@ root.createListScroll=function(){
    refresh();if(hold!==pending||document.hidden||locked())return;
    pending.active=true;pending.anchorY=pending.lastY;pending.anchorTop=scroller().scrollTop;
    thumb.classList.add('dragging');
-  },1000);
+  },250);
  };
  document.addEventListener('pointermove',event=>{
   if(!hold||event.pointerId!==hold.id)return;
@@ -75,15 +74,15 @@ root.createListScroll=function(){
  function release(event){pointers.delete(event.pointerId);if(hold?.id===event.pointerId)cancel();}
  document.addEventListener('pointerup',release);document.addEventListener('pointercancel',release);
  thumb.addEventListener('lostpointercapture',cancel);thumb.oncontextmenu=event=>event.preventDefault();
- document.addEventListener('keydown',event=>{if(event.key==='Tab'){keyboard=true;wake();}});
+ document.addEventListener('keydown',event=>{if(event.key==='Tab')keyboard=true;});
  rail.addEventListener('focusin',wake);rail.addEventListener('focusout',()=>queueMicrotask(hideLater));rail.addEventListener('pointerenter',wake);
  root.addEventListener('blur',suspend);root.addEventListener('pagehide',suspend);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();});
- root.addEventListener('scroll',()=>{schedule();wake();},{passive:true});
+ root.addEventListener('scroll',schedule,{passive:true});
  root.addEventListener('resize',()=>{cancel();schedule();},{passive:true});
  root.visualViewport?.addEventListener('resize',()=>{cancel();schedule();},{passive:true});
  new ResizeObserver(schedule).observe(app);new ResizeObserver(schedule).observe(nav);
  new MutationObserver(()=>{if(locked())suspend();schedule();}).observe(document.body,{attributes:true,attributeFilter:['class']});
- return {contentChanged(hasAccounts){cancel();accounts=hasAccounts;refresh();wake();},cancel:suspend,refresh:schedule};
+ return {contentChanged(hasAccounts){cancel();accounts=hasAccounts;rail.classList.add('idle');refresh();},cancel:suspend,refresh:schedule};
 };
 })(window);

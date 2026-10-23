@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Manual workflow only. No key creation, no uploads to the original project."""
+"""Publish a verified Plus APK. No key creation or uploads to the original project."""
 import json, os, subprocess, tempfile
 from pathlib import Path
 REPOSITORY='BlackWare-AI/INSFAV-Plus'
@@ -10,7 +10,13 @@ def gh(*args):
     result=subprocess.run(['gh',*args],text=True,capture_output=True)
     if result.returncode:raise SystemExit('GitHub release API failed; no credentials exported')
     return result.stdout
-pages=json.loads(gh('api','--paginate','--slurp','repos/'+REPOSITORY+'/releases?per_page=100'))
+# Older gh versions paginate as adjacent JSON arrays and lack --slurp.
+raw=gh('api','--paginate','repos/'+REPOSITORY+'/releases?per_page=100')
+pages=[];decoder=json.JSONDecoder()
+while raw.strip():
+    raw=raw.lstrip();page,end=decoder.raw_decode(raw)
+    assert isinstance(page,list),'Unexpected release pagination response'
+    pages.append(page);raw=raw[end:]
 for release in [r for page in pages for r in page]:
     assets=release.get('assets',[])
     if not any(a['name'].endswith('.apk') for a in assets):continue
@@ -26,4 +32,4 @@ tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
 notes='Independent INSFAV Plus package.\n\nPackage: '+meta['package']+'\nVersion: '+meta['version']+'\nBuild: '+str(meta['versionCode'])+'\nSHA-256: '+meta['sha256']+'\n\nSee MIGRATION.md before importing original INSFAV settings.\n'
 with tempfile.NamedTemporaryFile(mode='w',suffix='.md') as f:
     f.write(notes);f.flush()
-    subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',os.environ['GITHUB_SHA'],'--title','INSFAV Plus '+meta['version'],'--notes-file',f.name],check=True)
+    subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']),'--title','INSFAV Plus '+meta['version'],'--notes-file',f.name],check=True)

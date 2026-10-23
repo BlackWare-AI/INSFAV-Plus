@@ -76,17 +76,19 @@ operation is exposed. User-supplied logo bytes are generated from one web source
 into Web and Android assets without re-encoding.
 
 The main list keeps document scrolling and its existing virtual rows. A fixed
-52px strip stays at least 15px from the viewport edge; list row geometry is retained.
+52px overlay sits 6px from the viewport edge without reserving list width.
 Its arrows jump to the document's actual bounds; the scrollbar derives its
-position and length from scrollHeight/clientHeight. Only pointer dragging needs
-a continuous one-second hold, with an 8px cancellation threshold before
+position from scrollHeight/clientHeight; its 40px ball and 52×56px touch target stay fixed. Only pointer dragging needs
+a continuous 250ms hold, with an 8px cancellation threshold before
 activation. Scroll/resize events and observers update geometry without polling.
 Rebuilding the list, opening an overlay, losing focus/visibility or pausing the
 Android Activity cancels the hold and its glow. CSS and the WebView disable the
 main document's standard scrollbar while overflow panels retain their scrolling.
 
-The controls fade after inactivity, leaving a 15px grip. Matrices use full list
-width and virtualize groups of 2/3/4 square cells, with ellipsized usernames below
+The arrows slide and fade after 440ms of inactivity, with no protruding grip.
+The fixed round thumb remains visible while idle; the rail is always invisible.
+Only control interaction reveals them; ordinary list scrolling does not. Matrices use full list
+width and virtualize groups of 2/3/4/5 square cells, with ellipsized usernames below
 each image. Their choice shares the private UI preference store with language.
 On cold process initialization, Fetcher disarms saved work without modifying its
 queue. Stale/paused service requests and null sticky restarts cannot publish a
