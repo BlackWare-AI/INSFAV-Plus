@@ -28,7 +28,7 @@ const {chromium}=require('playwright');
   await page.goto('http://127.0.0.1:'+server.address().port);await page.locator('#splash').waitFor({state:'hidden'});
   async function settings(){await page.evaluate(()=>openSettings());}
   async function mode(columns){
-   await settings();await page.locator('#view-settings').evaluate(node=>node.open=true);await page.locator('#view-choice').click();
+   await settings();check(await page.locator('#view-choice').isVisible(),'View selector is directly visible without expanding a section');await page.locator('#view-choice').click();
    await page.getByRole('radio',{name:columns?'Matrix · '+columns+' columns':'List',exact:true}).click();
    check(await page.evaluate(()=>commands.filter(c=>c.command==='view-mode').at(-1).columns)===columns,'One selection persists '+columns+' mode');
    await page.locator('#settings-back').click();await settle(page);
@@ -82,9 +82,14 @@ const {chromium}=require('playwright');
   await page.evaluate(()=>nativeEvent('status',{profiles:{},revision:'missing-avatar-check'}));
   check(await page.locator('.person-placeholder').first().evaluate(node=>Math.abs(node.getBoundingClientRect().width-48)<.1&&decodeURIComponent(getComputedStyle(node).backgroundImage).includes('M4 21v-2a8')&&getComputedStyle(node.parentElement).backgroundColor==='rgb(0, 0, 0)'),'Restored silhouette is larger (48px inside a 60px avatar) on pure black');
   await settings();check(await page.locator('#settings .screen-content').evaluate(node=>node.firstElementChild.id==='view-settings'),'View mode is the first settings section');const language=await page.locator('#language-choice').boundingBox(),header=await page.locator('#settings header').boundingBox();
+  check(await page.locator('#view-settings').evaluate(node=>node.tagName!=='DETAILS'&&!node.querySelector('summary')),'View mode has no disclosure control');
+  check(await page.locator('#view-label').isVisible(),'View mode label is visible inside its selection box');
   check(language.y>=header.y&&language.y+language.height<=header.y+header.height&&language.x>header.x+header.width/2,'Language choice is at the upper right of settings');
+  await page.setViewportSize({width:320,height:640});await page.evaluate(()=>document.documentElement.style.fontSize='32px');await settle(page);
+  check(await page.locator('#view-choice').evaluate(node=>{const r=node.getBoundingClientRect();return r.width>=48&&r.height>=48&&r.left>=0&&r.right<=innerWidth&&node.scrollWidth<=node.clientWidth;}),'Direct view box has a large touch target and no overflow at 320px / 200% text');
+  await page.evaluate(()=>document.documentElement.style.fontSize='');await page.setViewportSize({width:393,height:850});await settle(page);
   await page.locator('#language-choice').click();await page.getByRole('radio',{name:'Türkçe',exact:true}).click();
-  await page.locator('#view-settings').evaluate(node=>node.open=true);await page.locator('#view-choice').click();
+  await page.locator('#view-choice').click();
   check(await page.getByRole('radio',{name:'Matris · 5 sütun',exact:true}).count()===1,'View options follow Turkish');
   await page.getByRole('button',{name:'Kapat',exact:true}).click();await page.locator('#language-choice').click();await page.getByRole('radio',{name:'English',exact:true}).click();
   check(await page.locator('html').getAttribute('lang')==='en','Upper-right language choice also applies English');

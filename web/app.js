@@ -232,7 +232,7 @@ function updateSettings(){
    changedText(detail,value);
    if(label==='Missing Images'){
     let copy=metric.querySelector('.copy-missing');
-    if(!copy){const head=document.createElement('div');head.className='metric-head';copy=document.createElement('button');copy.id='copy-missing-users';copy.className='copy-missing';copy.setAttribute('aria-label',t('Copy missing usernames'));copy.title=t('Copy missing usernames');copy.setAttribute('data-i18n-title','Copy missing usernames');copy.setAttribute('data-i18n-aria-label','Copy missing usernames');copy.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';copy.onclick=()=>request('copy-missing-users');head.append(detail,copy);metric.prepend(head);}
+    if(!copy){const head=document.createElement('div');head.className='metric-head';copy=document.createElement('button');copy.id='copy-missing-users';copy.className='copy-missing';copy.setAttribute('aria-label',t('Copy missing usernames'));copy.title=t('Copy missing usernames');copy.setAttribute('data-i18n-title','Copy missing usernames');copy.setAttribute('data-i18n-aria-label','Copy missing usernames');copy.innerHTML='<svg viewBox="0 0 24 24" preserveAspectRatio="none" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';copy.onclick=()=>request('copy-missing-users');head.append(detail,copy);metric.prepend(head);}
     copy.disabled=Number(value)===0;
    }
    if(label==='Selected Folder'){metric.classList.add('folder-metric');if(detail.title!==String(value))detail.title=String(value);}

@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.4 (build 6)
+
+Give all six basic settings information cards equal dimensions, matching the
+tallest Matched Images / Missing Images row without fixed-height text clipping.
+
+## 1.1.3 (build 5)
+
+Enlarge and extend the Missing Images copy icon downward while preserving the
+existing card, count, label and button dimensions.
+
+## 1.1.2 (build 4)
+
+Show the view-mode selector directly in a labeled settings box, without an
+expandable section. One tap opens the existing List / 2–5 column choices.
+
 ## 1.1.1 (build 3)
 
 Restore the original person placeholder, enlarged inside the existing avatar.

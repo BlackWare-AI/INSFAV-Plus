@@ -22,3 +22,10 @@ The release reuses the permanent Plus certificate documented in RELEASE.md,
 with versionCode increasing from 2 to 3. Current-source CI/emulator gates and
 signed-download verification are required before publication. Physical-device
 behavior remains unverified.
+
+Published: [INSFAV Plus 1.1.1 / build 3](https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.1-build.3).
+Current-source CI and emulator jobs and the signed publication workflow passed.
+The published APK was downloaded and its bytes/metadata match the verified local
+artifact. It has the same certificate as 1.1.0 with a higher versionCode. Public
+source, workflow and checksum records are in release-1.1.1.json. The first CI
+attempt was retried after its Ubuntu package-mirror download stalled.
