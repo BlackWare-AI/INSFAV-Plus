@@ -5,15 +5,15 @@ on:
       kind:
         description: Artifact kind (debug never creates a release)
         type: choice
-        options: [debug, release]
-        default: debug
+        options: [release, debug]
+        default: release
       version:
         description: VERSION_NAME in the reviewed source
-        default: '1.0.0'
+        default: '1.1.0'
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '1'
+        default: '2'
         required: true
 permissions:
   contents: read
