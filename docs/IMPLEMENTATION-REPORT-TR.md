@@ -17,9 +17,10 @@ Kullanıcının netleştirdiği ölçü **60×60 CSS px avatar, 65 px hesap sat�
   son kullanıcı raporunda verilir. İlk teslim PR'ı main'e alınmıştır; yeni
   güvenlik ve logo değişiklikleri `plus/1.0.0` dalından ayrı bir takip PR'ında
   incelenir. Bu takip PR'ı otomatik birleştirilmez.
-- Kaynak `0a4ba915418e0652618879d4af2c0745ef9ca4f0` değiştirilmedi. Son salt okunur
-  kontrolünde eski `main` hâlâ bu SHA'dır. Eski depoya push/PR/merge/release/sync
-  yapılmadı. Yeni depo `fork=false`, `parent=null` olarak kontrol edildi.
+- Kaynak `0a4ba915418e0652618879d4af2c0745ef9ca4f0` değiştirilmedi. Başlangıçta eski `main` bu SHA'daydı. Sonraki salt okunur
+  kontrolde uzak `main` `e06e6e4` olarak gözlendi; bu kaynak değişikliği Plus'a
+  alınmadı. Bu çalışmada eski depoya push/PR/merge/release/sync yapılmadı. Sabit
+  baseline ve gözlem zamanı `verification/source-read-only-audit.json` içindedir. Yeni depo `fork=false`, `parent=null` olarak kontrol edildi.
 - Yazılabilir origin yalnız Plus'tır. Kaynak remote push adresi
   `disabled://source-read-only`; yerel pre-push kontrolü yalnız Plus hedefini kabul
   eder. Eski Git geçmişi, lisanslar, testler ve APK'lar tam Git bundle içinde
