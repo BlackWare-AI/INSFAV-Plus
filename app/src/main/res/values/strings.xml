@@ -281,4 +281,15 @@
     <string name="ui_19371e0bec7c" formatted="false">Press and hold to read the full name and username.</string>
     <string name="ui_522331719bf2" formatted="false">Orphan candidates are relative to loaded collections. Missing or incomplete imports can misclassify existing images. Nothing is deleted.</string>
     <string name="ui_87611ccf72f0" formatted="false">Import all collections before interpreting orphan candidates.</string>
+    <string name="ui_2130a69f4720" formatted="false">List scrolling</string>
+    <string name="ui_74eeec78327a" formatted="false">Go to start of list</string>
+    <string name="ui_8ad46c01adea" formatted="false">Go to end of list</string>
+    <string name="ui_8344488a9327" formatted="false">List position</string>
+    <string name="ui_3a3f10d74419" formatted="false">List position: {percent}%</string>
+    <string name="ui_7d13deba1100" formatted="false">Hold for 1 second to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.</string>
+    <string name="ui_18997f2413b5" formatted="false">View mode</string>
+    <string name="ui_6f202f54a7b2" formatted="false">List</string>
+    <string name="ui_d74070804226" formatted="false">Matrix · 2 columns</string>
+    <string name="ui_91c507c9e8d7" formatted="false">Matrix · 3 columns</string>
+    <string name="ui_102849e5319d" formatted="false">Matrix · 4 columns</string>
 </resources>

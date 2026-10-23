@@ -279,3 +279,14 @@ Open profile	Profili aç
 Press and hold to read the full name and username.	Tam adı ve kullanıcı adını okumak için basılı tutun.
 Orphan candidates are relative to loaded collections. Missing or incomplete imports can misclassify existing images. Nothing is deleted.	Sahipsiz adayları yalnızca yüklenmiş koleksiyonlara göre belirlenir. Eksik veya tamamlanmamış içe aktarmalar mevcut görselleri yanlış sınıflandırabilir. Hiçbir dosya silinmez.
 Import all collections before interpreting orphan candidates.	Sahipsiz adaylarını değerlendirmeden önce tüm koleksiyonları içe aktarın.
+List scrolling	Liste kaydırma
+Go to start of list	Listenin başına git
+Go to end of list	Listenin sonuna git
+List position	Liste konumu
+List position: {percent}%	Liste konumu: %{percent}
+Hold for 1 second to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.	Sürüklemek için 1 saniye basılı tutun. Kaydırmak için yön tuşlarını, Page Up, Page Down, Home veya End tuşlarını kullanın.
+View mode	Görünüm modu
+List	Liste
+Matrix · 2 columns	Matris · 2 sütun
+Matrix · 3 columns	Matris · 3 sütun
+Matrix · 4 columns	Matris · 4 sütun

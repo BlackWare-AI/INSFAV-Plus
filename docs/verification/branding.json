@@ -14,7 +14,6 @@
   "uses": [
     "Android adaptive launcher foreground",
     "Web splash",
-    "About",
     "README"
   ],
   "processing": "Original bytes preserved; display bounds retain aspect ratio; no image generation or re-encoding"

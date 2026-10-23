@@ -18,9 +18,14 @@ public final class DownloadWorker extends Worker {
   @Override
   public Result doWork() {
     Context c = getApplicationContext();
-    if (!WorkScheduler.enabled(SessionState.prefs(c))) return Result.success();
+    if (!SessionState.userStarted(c) || !WorkScheduler.enabled(SessionState.prefs(c)))
+      return Result.success();
     if (!QueueControl.lock.compareAndSet(false, true)) return Result.success();
-    QueueControl.requested = false;
+    // Recheck after claiming ownership; a queued worker must not undo Pause/Stop.
+    if (!SessionState.userStarted(c) || !WorkScheduler.enabled(SessionState.prefs(c))) {
+      QueueControl.lock.set(false);
+      return Result.success();
+    }
     boolean foregroundReady = false;
     try {
       c.getSystemService(android.app.NotificationManager.class).cancel(3);

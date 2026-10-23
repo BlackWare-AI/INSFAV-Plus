@@ -5,6 +5,7 @@ from pathlib import Path
 REPOSITORY='BlackWare-AI/INSFAV-Plus'
 assert os.environ['GITHUB_REPOSITORY']==REPOSITORY
 meta=json.loads(Path('artifacts/apk.json').read_text());assert meta['officialRelease'] and not meta['debuggable'] and meta['signatureVerified']
+assert meta.get('certificateSha256'),'Release signing certificate is missing'
 def gh(*args):
     result=subprocess.run(['gh',*args],text=True,capture_output=True)
     if result.returncode:raise SystemExit('GitHub release API failed; no credentials exported')
@@ -19,6 +20,8 @@ for release in [r for page in pages for r in page]:
         assert asset['size']<16384
         prior=json.loads(gh('api','repos/'+REPOSITORY+'/releases/assets/'+str(asset['id']),'-H','Accept: application/octet-stream'))
         assert prior['package']==meta['package'] and prior['versionCode']<meta['versionCode'],'versionCode must increase for every published APK'
+        assert prior.get('certificateSha256'),'Cannot verify the previous Plus signing certificate'
+        assert {v.lower() for v in prior['certificateSha256']}=={v.lower() for v in meta['certificateSha256']},'Plus signing certificate must match previous releases for in-place updates'
 tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
 notes='Independent INSFAV Plus package.\n\nPackage: '+meta['package']+'\nVersion: '+meta['version']+'\nBuild: '+str(meta['versionCode'])+'\nSHA-256: '+meta['sha256']+'\n\nSee MIGRATION.md before importing original INSFAV settings.\n'
 with tempfile.NamedTemporaryFile(mode='w',suffix='.md') as f:

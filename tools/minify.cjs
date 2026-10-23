@@ -9,7 +9,7 @@ const sha=data=>crypto.createHash('sha256').update(data).digest('hex');
  const logo=fs.readFileSync(path.join(source,'static/logo.jpg'));
  fs.writeFileSync(path.join(root,'app/src/main/res/drawable-nodpi/insfav_plus_logo.jpg'),logo);
  const oldLogo=path.join(assets,'logo.webp');if(fs.existsSync(oldLogo))fs.unlinkSync(oldLogo);
- for(const file of ['i18n-catalog.js','i18n.js','core.js','app.js','profile-probe.js','profile-probe-hd.js','style.css','fonts.css']){
+ for(const file of ['i18n-catalog.js','i18n.js','core.js','list-scroll.js','app.js','profile-probe.js','profile-probe-hd.js','style.css','fonts.css']){
   const input=fs.readFileSync(path.join(source,file),'utf8');let output;
   if(file.endsWith('.js')){
    const probe=file.startsWith('profile-probe');
