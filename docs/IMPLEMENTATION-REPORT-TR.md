@@ -8,11 +8,15 @@ Kullanıcının netleştirdiği ölçü **60×60 CSS px avatar, 65 px hesap sat�
 ## 1. Depo, geçmiş ve PR
 
 - Hedef: <https://github.com/BlackWare-AI/INSFAV-Plus>;
-  PR: <https://github.com/BlackWare-AI/INSFAV-Plus/pull/1>.
+  İlk teslim PR'ı: <https://github.com/BlackWare-AI/INSFAV-Plus/pull/1>.
+  Bu PR `74d3ee9` ile Plus main'ine birleştirilmiştir. Son güvenlik/logo
+  değişikliklerinin karşılaştırması:
+  <https://github.com/BlackWare-AI/INSFAV-Plus/compare/main...plus/1.0.0>.
 - Native güvenlik kontrol noktası: `357b6f7`; teslim dokümanları ve CI düzenlemesi
-  sonraki mantıklı commit'tedir. Kesin teslim SHA'sı PR başlığındaki head commit ve
-  son kullanıcı raporunda verilir. PR birleştirilmedi; çalışma `plus/1.0.0`
-  dalında, yeni deponun `main` dalına incelenebilir durumdadır.
+  sonraki mantıklı commit'tedir (`bc9e4ad` arayüz/logo). Kesin teslim SHA'sı
+  son kullanıcı raporunda verilir. İlk teslim PR'ı main'e alınmıştır; yeni
+  güvenlik ve logo değişiklikleri `plus/1.0.0` dalından ayrı bir takip PR'ında
+  incelenir. Bu takip PR'ı otomatik birleştirilmez.
 - Kaynak `0a4ba915418e0652618879d4af2c0745ef9ca4f0` değiştirilmedi. Son salt okunur
   kontrolünde eski `main` hâlâ bu SHA'dır. Eski depoya push/PR/merge/release/sync
   yapılmadı. Yeni depo `fork=false`, `parent=null` olarak kontrol edildi.
@@ -246,7 +250,9 @@ Fetcher'ı kendiniz başlatın; import otomatik başlamaz. Ayrıntılar
 
 ## 12. Teslim bağlantıları
 
-PR ve son commit: <https://github.com/BlackWare-AI/INSFAV-Plus/pull/1>.
+İlk teslim (birleştirildi): <https://github.com/BlackWare-AI/INSFAV-Plus/pull/1>.
+Güncel güvenlik/logo takip PR'ı: <https://github.com/BlackWare-AI/INSFAV-Plus/pulls>.
+Son kullanıcı raporu kesin PR ve commit bağlantısını verir.
 Debug APK, test sonuçları ve coverage: PR Checks → **INSFAV Plus checks** →
 **INSFAV-Plus-debug-test-and-coverage** artifact'i. Emülatör kanıtı ayrı
 **INSFAV-Plus-emulator-evidence** artifact'idir. Son rapor kesin artifact URL'sini
