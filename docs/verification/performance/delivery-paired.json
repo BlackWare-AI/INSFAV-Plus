@@ -1,0 +1,110 @@
+[
+  {
+    "variant": "original",
+    "round": 0,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 1,
+        "burstCallNanos": 179756,
+        "streamEvents": 110,
+        "streamDurationMs": 2200,
+        "streamDrainMs": 1100,
+        "streamDeliveries": 11,
+        "twoCriticalEventsDeliveredSynchronously": false
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 0,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 2,
+        "burstCallNanos": 1171243,
+        "streamEvents": 110,
+        "streamDurationMs": 2200,
+        "streamDrainMs": 1100,
+        "streamDeliveries": 3,
+        "twoCriticalEventsDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "original",
+    "round": 1,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 1,
+        "burstCallNanos": 157658,
+        "streamEvents": 110,
+        "streamDurationMs": 2200,
+        "streamDrainMs": 1100,
+        "streamDeliveries": 11,
+        "twoCriticalEventsDeliveredSynchronously": false
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 1,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 2,
+        "burstCallNanos": 1215013,
+        "streamEvents": 110,
+        "streamDurationMs": 2200,
+        "streamDrainMs": 1100,
+        "streamDeliveries": 3,
+        "twoCriticalEventsDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "original",
+    "round": 2,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 1,
+        "burstCallNanos": 181004,
+        "streamEvents": 110,
+        "streamDurationMs": 2200,
+        "streamDrainMs": 1100,
+        "streamDeliveries": 11,
+        "twoCriticalEventsDeliveredSynchronously": false
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 2,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 2,
+        "burstCallNanos": 1201888,
+        "streamEvents": 110,
+        "streamDurationMs": 2200,
+        "streamDrainMs": 1100,
+        "streamDeliveries": 3,
+        "twoCriticalEventsDeliveredSynchronously": true
+      }
+    }
+  }
+]

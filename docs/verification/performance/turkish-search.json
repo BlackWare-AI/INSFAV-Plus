@@ -1,0 +1,113 @@
+{
+  "environment": "Host Chromium, fresh page per sample; same full app before and after hoisting Turkish query normalization; same display-name index, no I/O",
+  "samples": [
+    {
+      "variant": "before",
+      "count": 10000,
+      "repeat": 0,
+      "parseMs": 62,
+      "firstTurkishSearchMs": 6.399999998509884,
+      "secondTurkishSearchMs": 10.5,
+      "matched": 100
+    },
+    {
+      "variant": "after",
+      "count": 10000,
+      "repeat": 0,
+      "parseMs": 50.69999999925494,
+      "firstTurkishSearchMs": 0.8000000007450581,
+      "secondTurkishSearchMs": 0.5,
+      "matched": 100
+    },
+    {
+      "variant": "before",
+      "count": 15000,
+      "repeat": 0,
+      "parseMs": 86.80000000074506,
+      "firstTurkishSearchMs": 11.099999999627471,
+      "secondTurkishSearchMs": 22.199999999254942,
+      "matched": 150
+    },
+    {
+      "variant": "after",
+      "count": 15000,
+      "repeat": 0,
+      "parseMs": 77.59999999962747,
+      "firstTurkishSearchMs": 3.200000001117587,
+      "secondTurkishSearchMs": 1.5,
+      "matched": 150
+    },
+    {
+      "variant": "before",
+      "count": 10000,
+      "repeat": 1,
+      "parseMs": 31.699999999254942,
+      "firstTurkishSearchMs": 5.400000000372529,
+      "secondTurkishSearchMs": 8.400000000372529,
+      "matched": 100
+    },
+    {
+      "variant": "after",
+      "count": 10000,
+      "repeat": 1,
+      "parseMs": 58,
+      "firstTurkishSearchMs": 1.400000000372529,
+      "secondTurkishSearchMs": 1,
+      "matched": 100
+    },
+    {
+      "variant": "before",
+      "count": 15000,
+      "repeat": 1,
+      "parseMs": 88.90000000037253,
+      "firstTurkishSearchMs": 12.900000000372529,
+      "secondTurkishSearchMs": 19.09999999962747,
+      "matched": 150
+    },
+    {
+      "variant": "after",
+      "count": 15000,
+      "repeat": 1,
+      "parseMs": 93.30000000074506,
+      "firstTurkishSearchMs": 5.199999999254942,
+      "secondTurkishSearchMs": 1.400000000372529,
+      "matched": 150
+    },
+    {
+      "variant": "before",
+      "count": 10000,
+      "repeat": 2,
+      "parseMs": 23.800000000745058,
+      "firstTurkishSearchMs": 5.099999999627471,
+      "secondTurkishSearchMs": 8.299999998882413,
+      "matched": 100
+    },
+    {
+      "variant": "after",
+      "count": 10000,
+      "repeat": 2,
+      "parseMs": 77.59999999962747,
+      "firstTurkishSearchMs": 1,
+      "secondTurkishSearchMs": 1,
+      "matched": 100
+    },
+    {
+      "variant": "before",
+      "count": 15000,
+      "repeat": 2,
+      "parseMs": 80.69999999925494,
+      "firstTurkishSearchMs": 15.900000000372529,
+      "secondTurkishSearchMs": 16.5,
+      "matched": 150
+    },
+    {
+      "variant": "after",
+      "count": 15000,
+      "repeat": 2,
+      "parseMs": 79.5,
+      "firstTurkishSearchMs": 1.599999999627471,
+      "secondTurkishSearchMs": 1.200000001117587,
+      "matched": 150
+    }
+  ]
+}

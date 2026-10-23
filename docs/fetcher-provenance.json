@@ -1,0 +1,28 @@
+{
+  "repository": "BlackWare-AI/INSFAV-Thumb-Fetcher",
+  "ref": "dcfd070",
+  "branch": "cookie-background",
+  "originalSha256": {
+    "AccessWall": "440a92ae33ad018646963319c604e597bcd9e31c769ce91e60e60cc9fc35f52e",
+    "CookieJar": "040333119047f713e0ab22f537d07e2fcbf88228aa7c0bc7f1dc09ace224aeb5",
+    "CookieVault": "c86b6efd1860eeee4c969b0cf30f47570b79c1f1e155ac15e10d9d8ff64001b7",
+    "Diagnostics": "8af119f5cb0c229a489dd913c40cbfd578d8e3341ebfb773d8df4193951efe32",
+    "DownloadNotification": "6ef45066f74489b4e0674af284de7a3b7c04ea28f14340841b5e0a7321ab64d9",
+    "DownloadWorker": "9acc48bda1b84f812ce49897c040fc9df66f1c0aee42fc5eae3e0792ed921fba",
+    "FetchService": "0bb5d2ba7eb67d866731f83c984c5de16890fc672eaaba1195fde54e08a79235",
+    "Identity": "8e56934e2d7de156999bee9ed8653bc237c972bd8b3cd1527c3a9ed51748d34f",
+    "OutputFolder": "42da67b46c2582e6a64012b7f98fb182b20b4a72d3313f210c42b4f246dabf20",
+    "ProfileProvider": "84d63ea7160cf1b47d7a9c075dfa9b3831289303c6d8cf4f2673ecefd3fa5cff",
+    "PublicProfileProvider": "f1ce1ca0ffdcce58ba954e7963fd5dc327f12902b8552e94dab183bbc536da17",
+    "QueueControl": "493817cae0365fb4e0b92b36a8b041ddeb7abe162edf63bdec14f2d293a4a733",
+    "QueueControlReceiver": "8dc16a0a550a4a659aec19b11c915eba21e5cd15d477c85bbac47e13f4d0063d",
+    "QueueStore": "69498133fa53b1837a9bd85e197f906f18514f595507283a5effea22f9fc6b35",
+    "RecoveryWorker": "a66e9586d45119cc1acfe2a6e1749433f7dbc9e09b599f3aced7bf80da9d7eae",
+    "RunPolicy": "2825dcd81d2085e40ba8f9a944c389ad0a0c50055e8bcdee421015547bef91c0",
+    "SessionState": "7b45e4edefb17079a6d3a02d6ee9af8090e18339a2b5f63d19ab4f1fc51d29b3",
+    "ThumbnailCodec": "4219d5f020ec83708dd5c8ecd710a5e6ec91f9714ad40dd32420bcef1ff509b6",
+    "WebProfilePolicy": "fce333839062a0c8ed1067aa696c9fb8cb980fe533e7fbd4460c39314ed0834b",
+    "WebViewProfileProvider": "e9f8d074001dcbcde1c48a128fda973de3852ea484537e5712e5a5ca9b80284a",
+    "WorkScheduler": "9da228cc7cb0c7e7899ac7eda03983fedf964d48f2251091477f5e6d801c2b5a"
+  }
+}

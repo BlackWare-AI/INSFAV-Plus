@@ -1,0 +1,39 @@
+{
+  "tool": "JaCoCo 0.8.13",
+  "scope": "Debug unit tests with Robolectric; application Java only, generated R/BuildConfig excluded; no device coverage claimed",
+  "unitTests": 268,
+  "counters": {
+    "INSTRUCTION": {
+      "missed": 9965,
+      "covered": 20802,
+      "percent": 67.61
+    },
+    "BRANCH": {
+      "missed": 1666,
+      "covered": 2125,
+      "percent": 56.05
+    },
+    "LINE": {
+      "missed": 2085,
+      "covered": 4170,
+      "percent": 66.67
+    },
+    "COMPLEXITY": {
+      "missed": 1449,
+      "covered": 1129,
+      "percent": 43.79
+    },
+    "METHOD": {
+      "missed": 229,
+      "covered": 434,
+      "percent": 65.46
+    },
+    "CLASS": {
+      "missed": 9,
+      "covered": 77,
+      "percent": 89.53
+    }
+  },
+  "xml": "app/build/reports/jacoco/jacocoDebugReport/jacocoDebugReport.xml",
+  "html": "app/build/reports/jacoco/jacocoDebugReport/html/index.html"
+}

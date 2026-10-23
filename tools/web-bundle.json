@@ -1,0 +1,104 @@
+{
+  "i18n-catalog.js": {
+    "sourceBytes": 20085,
+    "bundleBytes": 19964,
+    "sourceSha256": "27f8b86dd5b9e851aeae4b1c22f12efded4c44475fe30419f773942fc5458aef",
+    "bundleSha256": "16edc870f99f9d53baf2a843fe8228c4dab8507cbba3673ce4724c36aec7c2c1"
+  },
+  "i18n.js": {
+    "sourceBytes": 1187,
+    "bundleBytes": 891,
+    "sourceSha256": "cea9855ca13183e196a450a3a9cd41a769612220c89b517bce7067f66ac22adc",
+    "bundleSha256": "721ac08d31f45b8b837aa082a2179c93f70f8324b50e9b398189852cf33723d2"
+  },
+  "core.js": {
+    "sourceBytes": 3040,
+    "bundleBytes": 2414,
+    "sourceSha256": "3e2d0d9c373a7e003ac069381112a12fecc0129121373b72866fd49a8ccd984c",
+    "bundleSha256": "32fec3720d25ddaac086f98464b60cb4e6146c2e4a4d04c9bfdc4d5efadcab38"
+  },
+  "app.js": {
+    "sourceBytes": 45651,
+    "bundleBytes": 40464,
+    "sourceSha256": "05bff4fd2b38ceed8b74f30824bafadbe55a77819cac97b0928e94de5e8d83a1",
+    "bundleSha256": "ae71173f1b1ae161e23c1042967207ef3d97c60bd2e0aed6268d12dd798ce66a"
+  },
+  "profile-probe.js": {
+    "sourceBytes": 8645,
+    "bundleBytes": 5560,
+    "sourceSha256": "131253f1a03863b046227de9a060f25165ba366169757a3f51cf8484e00a2665",
+    "bundleSha256": "95b5f04c592b4a38f1321d6cb63d7d5c495557a8d370788772d4a67570237edb"
+  },
+  "profile-probe-hd.js": {
+    "sourceBytes": 6699,
+    "bundleBytes": 4718,
+    "sourceSha256": "9a941d687c6d61c7814c65ebc7f7a9b15ad6090536d0f4d3fd47e306ff3cd6b0",
+    "bundleSha256": "6c66b5a09a8874acf75e8debf4cf5611ac2feeffafc8a30821d4aef2abdcccc8"
+  },
+  "style.css": {
+    "sourceBytes": 13444,
+    "bundleBytes": 13301,
+    "sourceSha256": "fc929f6f38b5b7f93de677701b48c3431b95a5b8131e044cbb6767cc4edba17f",
+    "bundleSha256": "1931bc4e7c23d11aae8eaef198e4d1e8badda23a01520f234eb58810171072fe"
+  },
+  "fonts.css": {
+    "sourceBytes": 2012,
+    "bundleBytes": 1636,
+    "sourceSha256": "b10eab37596327f5d8f96c602ac3d17505dca0dba93cb7568e788014ca3f8f35",
+    "bundleSha256": "0ee53b9b817fc788221b65a6ba9eb01dd27a55e84960deed61fd928b6aaecec5"
+  },
+  "index.html": {
+    "sourceBytes": 12998,
+    "bundleBytes": 12998,
+    "sourceSha256": "f267e51858358a12aeb8d82afb62648a8523b15f687d5a91247391a1845ccde5",
+    "bundleSha256": "f267e51858358a12aeb8d82afb62648a8523b15f687d5a91247391a1845ccde5"
+  },
+  "inter-0.woff2": {
+    "sourceBytes": 25088,
+    "bundleBytes": 25088,
+    "sourceSha256": "227726f347b6fb19a2f21fe25fe7762ec593df271c4ddbfd4073745f95663a30",
+    "bundleSha256": "227726f347b6fb19a2f21fe25fe7762ec593df271c4ddbfd4073745f95663a30"
+  },
+  "inter-1.woff2": {
+    "sourceBytes": 18100,
+    "bundleBytes": 18100,
+    "sourceSha256": "97cd57f92823f4a306e30514348a411d40db93dde59a52ec05fe97f6decc5862",
+    "bundleSha256": "97cd57f92823f4a306e30514348a411d40db93dde59a52ec05fe97f6decc5862"
+  },
+  "inter-2.woff2": {
+    "sourceBytes": 10556,
+    "bundleBytes": 10556,
+    "sourceSha256": "2d9139acd6edc572cffb1d01ca350919457e7a6eae8d44ebe94f2cef4a1f7cbe",
+    "bundleSha256": "2d9139acd6edc572cffb1d01ca350919457e7a6eae8d44ebe94f2cef4a1f7cbe"
+  },
+  "inter-3.woff2": {
+    "sourceBytes": 18268,
+    "bundleBytes": 18268,
+    "sourceSha256": "064f41f5f4afa2a5aeb8dc39b8d6a49b196477c053854197078d5b2b3f3a0fa9",
+    "bundleSha256": "064f41f5f4afa2a5aeb8dc39b8d6a49b196477c053854197078d5b2b3f3a0fa9"
+  },
+  "inter-4.woff2": {
+    "sourceBytes": 9584,
+    "bundleBytes": 9584,
+    "sourceSha256": "448e3939a2dd0029163109df85a542a1c2857659bbc36e14715697565d6015f7",
+    "bundleSha256": "448e3939a2dd0029163109df85a542a1c2857659bbc36e14715697565d6015f7"
+  },
+  "inter-5.woff2": {
+    "sourceBytes": 81532,
+    "bundleBytes": 81532,
+    "sourceSha256": "7c0674ca20d414e231c56a3e331c375de63ebeb33b30899267984c4d4911ea8a",
+    "bundleSha256": "7c0674ca20d414e231c56a3e331c375de63ebeb33b30899267984c4d4911ea8a"
+  },
+  "inter-6.woff2": {
+    "sourceBytes": 46624,
+    "bundleBytes": 46624,
+    "sourceSha256": "4ac363dd4e58cabdc124b5bfcde895276593e7835fbb6c5fb259b51808187170",
+    "bundleSha256": "4ac363dd4e58cabdc124b5bfcde895276593e7835fbb6c5fb259b51808187170"
+  },
+  "logo.webp": {
+    "sourceBytes": 36906,
+    "bundleBytes": 36906,
+    "sourceSha256": "9fc9832b724a58cf1c729384dc2ec9f8adabdb7870844e464f32bb722131dacc",
+    "bundleSha256": "9fc9832b724a58cf1c729384dc2ec9f8adabdb7870844e464f32bb722131dacc"
+  }
+}

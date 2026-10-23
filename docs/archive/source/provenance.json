@@ -1,0 +1,9 @@
+{
+  "sourceRepository": "https://github.com/BlackWare-AI/INSFAV",
+  "sourceCommit": "0a4ba915418e0652618879d4af2c0745ef9ca4f0",
+  "targetInitialCommit": "383d1e0918f1633c83760a40fbb8c93655e0609d",
+  "baselineRef": "refs/tags/baseline/insfav-0a4ba91",
+  "bundleSha256": "1a686967b945c5de3c50c716f04358d82c911bc8b8a53a3908416602c4075ec5",
+  "fork": false,
+  "sourceReadOnly": true
+}

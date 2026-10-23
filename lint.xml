@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Runtime dependencies are deliberately retained from the API35 baseline.
+         Upgrades require a separate Android lifecycle compatibility evaluation. -->
+    <issue id="GradleDependency"><ignore path="app/build.gradle"/></issue>
+    <!-- Keep the established three-dot search label in both languages for UI compatibility. -->
+    <issue id="TypographyEllipsis"><ignore path="app/src/main/res/values/strings.xml"/><ignore path="app/src/main/res/values-tr/strings.xml"/></issue>
+</lint>

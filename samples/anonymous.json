@@ -1,0 +1,6 @@
+{
+  "examplePreference": {
+    "preserved": true
+  },
+  "favorite_page_pref": "[{\"name\": \"Collection One\", \"items\": [{\"pageId\": \"sample_user_001\", \"name\": \"Example Account\", \"extraField\": \"preserved\"}, {\"pageId\": \"sample_user_002\", \"name\": \"Another Example\"}]}, {\"name\": \"Collection Two\", \"items\": [{\"pageId\": \"sample_user_001\", \"name\": \"Example Account\"}]}]"
+}

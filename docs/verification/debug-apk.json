@@ -1,0 +1,14 @@
+{
+  "file": "app-debug.apk",
+  "bytes": 3256037,
+  "sha256": "5eaaa7c782901f782d1b115e9fb465579a214244e914f618747c0dcd1e707287",
+  "package": "com.instagram.insfav.plus",
+  "version": "1.0.0-debug",
+  "versionCode": 1,
+  "debuggable": true,
+  "signatureVerified": true,
+  "certificateSha256": [
+    "0067d4aecf1fe41f3b0536bb18a89d6916d153d6013cd95ed90b24be74faf877"
+  ],
+  "officialRelease": false
+}

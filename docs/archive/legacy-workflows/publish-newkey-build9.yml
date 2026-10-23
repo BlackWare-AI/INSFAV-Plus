@@ -1,0 +1,84 @@
+name: Publish INSFAV build 9 with explicitly authorized new key
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: insfav-release-5.0.0-build9
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'BlackWare-AI/INSFAV' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Validate source, signature and public candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          INSFAV_RELEASE_CERT_SHA256: 705e090084a4e50c47a8eb122d1605963276e5bb76f873d6f185b965c01e8641
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tools/release/tests -v
+          test "$(gh api "repos/$GH_REPO/actions/runs/39706736573" --jq .conclusion)" = success
+          test "$(gh api "repos/$GH_REPO/actions/runs/39706736573" --jq .head_sha)" = 4b0adcdb63545a32a64e78ccb2a036799feb97a8
+          git diff --exit-code e33c09d224628ae50bbae5bba3bba43d6a91210c HEAD -- app web version.properties build.gradle settings.gradle gradle gradlew gradlew.bat package.json package-lock.json
+          git show 931059e7b9a003c02d51d991c3a8d5674a9d48b8 > public-candidate.zip
+          echo '25760990f493d586cd613f2a99ac98a0bfa304619f0958f001a4c48636888ed8  public-candidate.zip' | sha256sum --check
+          unzip -q public-candidate.zip -d candidate
+          (cd candidate && sha256sum --check SHA256SUMS)
+          mkdir previous
+          gh release download v5.0.0 --pattern INSFAV-5.0.0.apk --dir previous
+          python3 - <<'PY'
+          import hashlib,json,os,sys
+          from pathlib import Path
+          sys.path.insert(0,'tools/release')
+          import release_gate_500 as signing
+          import newkey_build9 as gate
+          record=json.loads(Path('candidate/verification.json').read_text())
+          gate.validate_record(record)
+          signing.verify(Path('candidate/INSFAV-5.0.0.apk'),Path('checked'),dict(os.environ,GITHUB_SHA=gate.SOURCE))
+          old=Path('previous/INSFAV-5.0.0.apk')
+          assert hashlib.sha256(old.read_bytes()).hexdigest()=='62a999f7fe8488005c0dc0952cb31e67c4cb0924e809f07fb5c97cc249fa89a4'
+          sdk=Path(os.environ.get('ANDROID_HOME') or os.environ['ANDROID_SDK_ROOT'])
+          signer=sorted(sdk.glob('build-tools/*/apksigner'))[-1]
+          assert signing.apk_certificate(signer,old)==gate.OLD_CERTIFICATE
+          assert gate.OLD_CERTIFICATE!=gate.NEW_CERTIFICATE
+          PY
+      - name: Upload draft, verify download and publish latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          gh api "repos/$GH_REPO/releases/420234842" > draft.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('draft.json'))
+          assert r['draft'] and r['tag_name']=='v5.0.0-build.9'
+          assert r['target_commitish']=='e33c09d224628ae50bbae5bba3bba43d6a91210c'
+          assert all(a['name'] in {p.name for p in __import__('pathlib').Path('candidate').iterdir()} for a in r['assets'])
+          PY
+          gh release upload v5.0.0-build.9 candidate/* --clobber
+          verify_dir=$(mktemp -d "$RUNNER_TEMP/insfav-build9-download.XXXXXX")
+          trap 'rm -rf "$verify_dir"' EXIT
+          gh release download v5.0.0-build.9 --dir "$verify_dir"
+          (cd "$verify_dir" && sha256sum --check SHA256SUMS)
+          test "$(gh api "repos/$GH_REPO/releases/tags/v5.0.0" --jq '.assets[] | select(.name == "INSFAV-5.0.0.apk") | .digest')" = 'sha256:62a999f7fe8488005c0dc0952cb31e67c4cb0924e809f07fb5c97cc249fa89a4'
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          gh release edit v5.0.0-build.9 --draft=false --latest
+          gh release view v5.0.0-build.9 --json url --jq .url

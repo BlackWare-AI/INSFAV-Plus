@@ -1,0 +1,16 @@
+{
+  "name": "insfav-plus-build-tools",
+  "private": true,
+  "scripts": {
+    "web": "node tools/minify.cjs",
+    "test": "node --test tests/core.test.cjs",
+    "test:chromium": "node tools/chromium-tests.cjs",
+    "test:performance": "node tools/chromium-tests.cjs --performance",
+    "web:check": "npm run web && git diff --exit-code -- app/src/main/assets app/src/main/res/values/strings.xml app/src/main/res/values-tr/strings.xml app/src/main/res/values/ui_catalog.xml web/maps web/i18n-catalog.js tools/web-bundle.json"
+  },
+  "devDependencies": {
+    "clean-css": "5.3.3",
+    "playwright": "1.64.1",
+    "terser": "5.51.2"
+  }
+}

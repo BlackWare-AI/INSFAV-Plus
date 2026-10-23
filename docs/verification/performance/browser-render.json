@@ -1,0 +1,22 @@
+{
+  "current": {
+    "frames": 99,
+    "renderCalls": 97,
+    "peakAccountNodes": 19,
+    "renderP50Ms": 0.6,
+    "renderP95Ms": 1.1,
+    "frameP50Ms": 16.7,
+    "frameP95Ms": 16.7,
+    "framesOver32Ms": 0
+  },
+  "baseline": {
+    "frames": 99,
+    "renderCalls": 97,
+    "peakAccountNodes": 18,
+    "renderP50Ms": 0.5,
+    "renderP95Ms": 0.8,
+    "frameP50Ms": 16.7,
+    "frameP95Ms": 16.7,
+    "framesOver32Ms": 0
+  }
+}

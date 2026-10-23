@@ -1,0 +1,279 @@
+<!-- Generated from web/i18n/catalog.tsv by tools/i18n.cjs -->
+<resources>
+    <string name="ui_74a883a037bc" formatted="false">Settings</string>
+    <string name="ui_bc7bc9104fbf" formatted="false">Basic Settings</string>
+    <string name="ui_2130ca1fe222" formatted="false">Advanced / Diagnostics</string>
+    <string name="ui_a4fe65264ef7" formatted="false">Language</string>
+    <string name="ui_6ae0ffc6f1b7" formatted="false">System language</string>
+    <string name="ui_ba118bf7fc9c" formatted="false">English</string>
+    <string name="ui_f417b11c5f21" formatted="false">Thumbnail Folder</string>
+    <string name="ui_e543f62d7ce9" formatted="false">Profile Images</string>
+    <string name="ui_523caef291f5" formatted="false">Select Thumbnail Folder</string>
+    <string name="ui_a9581f23ca22" formatted="false">Rescan Thumbnails</string>
+    <string name="ui_5085d45a3a7c" formatted="false">Cancel Scan</string>
+    <string name="ui_ac94dce12454" formatted="false">Thumbnail Fetcher</string>
+    <string name="ui_81f27b9339cc" formatted="false">Backup / Restore</string>
+    <string name="ui_aa4277ced790" formatted="false">Maintenance / Cleanup</string>
+    <string name="ui_91ea7d01cf16" formatted="false">Clear Image Cache</string>
+    <string name="ui_71b1be94a25f" formatted="false">Clear Thumbnail Index</string>
+    <string name="ui_4ac20a03fb4a" formatted="false">Clear Collections</string>
+    <string name="ui_12dd2e2eda81" formatted="false">Import JSON</string>
+    <string name="ui_27561979c897" formatted="false">Export Original JSON</string>
+    <string name="ui_06aaeb3af9e0" formatted="false">Export Diagnostic Logs</string>
+    <string name="ui_89d8e0714b34" formatted="false">Export Diagnostics</string>
+    <string name="ui_477775555da7" formatted="false">Export All Settings</string>
+    <string name="ui_45ac357334fc" formatted="false">Import All Settings</string>
+    <string name="ui_ae9dfb3785af" formatted="false">Import settings from original INSFAV</string>
+    <string name="ui_bc30561c61fa" formatted="false">Total Accounts</string>
+    <string name="ui_2e750a6ba13d" formatted="false">Unique Accounts</string>
+    <string name="ui_6a5e7a36dd7e" formatted="false">Matched Images</string>
+    <string name="ui_2f9a1af7798b" formatted="false">Missing Images</string>
+    <string name="ui_95e318e8ca0e" formatted="false">Indexed Folder Size</string>
+    <string name="ui_7430c0ae9762" formatted="false">Image Cache Size</string>
+    <string name="ui_80b886fc2802" formatted="false">Thumbnail Index Size</string>
+    <string name="ui_cdf4fff0c5b4" formatted="false">WebView Storage</string>
+    <string name="ui_ad00bb761e88" formatted="false">Scan Checkpoint Index Size</string>
+    <string name="ui_b7271da3ad6b" formatted="false">Non-256×256 Images</string>
+    <string name="ui_b3e45307d786" formatted="false">Last Scan Date</string>
+    <string name="ui_0f35f9de1656" formatted="false">Selected Folder</string>
+    <string name="ui_df12aeba9bb9" formatted="false">Not selected</string>
+    <string name="ui_6300ef800bb8" formatted="false">Never</string>
+    <string name="ui_4294207616e4" formatted="false">Not scanned</string>
+    <string name="ui_bb85378cd455" formatted="false">Copy missing usernames</string>
+    <string name="ui_9f9feade761d" formatted="false">Collections</string>
+    <string name="ui_bc0a7c2355d6" formatted="false">Application information</string>
+    <string name="ui_7f55382219f0" formatted="false">Search...</string>
+    <string name="ui_904f3f107245" formatted="false">Search accounts</string>
+    <string name="ui_3b7ea51793e9" formatted="false">Clear search</string>
+    <string name="ui_474ffc6a82c9" formatted="false">Add List</string>
+    <string name="ui_ed620ecff0da" formatted="false">Delete List</string>
+    <string name="ui_76900f1bfd16" formatted="false">Back</string>
+    <string name="ui_ea37ec29c386" formatted="false">Back to Settings</string>
+    <string name="ui_5d72eb6d899f" formatted="false">Back to Application Information</string>
+    <string name="ui_1650f88d2021" formatted="false">Features &amp; Functions</string>
+    <string name="ui_3fb7b39416f1" formatted="false">Developer</string>
+    <string name="ui_dd167905de0d" formatted="false">Version</string>
+    <string name="ui_bdd254b65baa" formatted="false">Build</string>
+    <string name="ui_05b7906ca4ac" formatted="false">Usage Count</string>
+    <string name="ui_8c0039327f0f" formatted="false">Load Count</string>
+    <string name="ui_38912fa1421e" formatted="false">Reset Count</string>
+    <string name="ui_ca1844969742" formatted="false">Unavailable</string>
+    <string name="ui_7d9eb7acb13e" formatted="false">Close</string>
+    <string name="ui_eebdd24a77d9" formatted="false">Confirm</string>
+    <string name="ui_19766ed6ccb2" formatted="false">Cancel</string>
+    <string name="ui_31fbef162594" formatted="false">Continue</string>
+    <string name="ui_fa57243dc0dd" formatted="false">Confirm deletion</string>
+    <string name="ui_a671f8a7497a" formatted="false">Reset collections?</string>
+    <string name="ui_56e2be0b8476" formatted="false">The collection database will be cleared. Profile images are managed separately.</string>
+    <string name="ui_76164d150208" formatted="false">Remove the collection document? Local photos and their index are unchanged.</string>
+    <string name="ui_3dae651dd30a" formatted="false">Clear browser and legacy image caches? Source photos, collections, cookies and the thumbnail index are preserved.</string>
+    <string name="ui_286c4051c648" formatted="false">Clear thumbnail metadata and scan checkpoints? Source photos, collections and cookies are preserved. Rescan rebuilds the index.</string>
+    <string name="ui_4aa70a38c6d2" formatted="false">RESULTS</string>
+    <string name="ui_225214b0c264" formatted="false">View profile image for {name} (@{user})</string>
+    <string name="ui_a18be045dee8" formatted="false">Import your JSON backup to get started.</string>
+    <string name="ui_b6141baed9aa" formatted="false">Instagram Cookies</string>
+    <string name="ui_dd1841d29502" formatted="false">Not configured</string>
+    <string name="ui_095547d78ff6" formatted="false">Paste cookies here</string>
+    <string name="ui_f3380f7b44bd" formatted="false">Paste</string>
+    <string name="ui_1509f561f241" formatted="false">Save</string>
+    <string name="ui_c3812fc4acb8" formatted="false">Remove</string>
+    <string name="ui_7a1ec9fe6c3b" formatted="false">Workers</string>
+    <string name="ui_4eee1a372884" formatted="false">Concurrent WebViews</string>
+    <string name="ui_8fd9b4d3c5db" formatted="false">Per-worker delay and working hours</string>
+    <string name="ui_ac1004f8bd6b" formatted="false">Minimum Delay (seconds)</string>
+    <string name="ui_73257bebae29" formatted="false">Maximum Delay (seconds)</string>
+    <string name="ui_271189ae389a" formatted="false">Start Time</string>
+    <string name="ui_48bccddd89a9" formatted="false">End Time</string>
+    <string name="ui_8912e50e3b13" formatted="false">Background Processing</string>
+    <string name="ui_ce5706dd94d3" formatted="false">Save Schedule</string>
+    <string name="ui_9f901a6f3d61" formatted="false">Current INSFAV folder</string>
+    <string name="ui_8f9084fca021" formatted="false">Allow Writing to Selected Folder</string>
+    <string name="ui_1c3d1a7d17bf" formatted="false">Retrieval</string>
+    <string name="ui_ab0171ca0494" formatted="false">Idle</string>
+    <string name="ui_170f1ed765ae" formatted="false">Current process</string>
+    <string name="ui_81b2c761ee4e" formatted="false">Current Process</string>
+    <string name="ui_01661be1921f" formatted="false">Accounts reviewed</string>
+    <string name="ui_fe9c5b17e675" formatted="false">Start Missing</string>
+    <string name="ui_858e4ba7a29f" formatted="false">Pause</string>
+    <string name="ui_d640c7421da0" formatted="false">Resume</string>
+    <string name="ui_cae7d57bc067" formatted="false">Stop</string>
+    <string name="ui_2d5127825c46" formatted="false">Retry Skipped / Failed Profiles</string>
+    <string name="ui_a7591c85e2ff" formatted="false">Verify / Repair Fetcher Index</string>
+    <string name="ui_4e2c4e6f508a" formatted="false">Active Accounts</string>
+    <string name="ui_4f971a3cccd8" formatted="false">Accounts / Minute</string>
+    <string name="ui_34b888d46dd8" formatted="false">Peak Active Accounts</string>
+    <string name="ui_ed98c8b7dd78" formatted="false">App PSS (MiB)</string>
+    <string name="ui_5b696e92fa9a" formatted="false">Total Unique Accounts</string>
+    <string name="ui_f3686bb328c6" formatted="false">Successful</string>
+    <string name="ui_f0b0738f75b8" formatted="false">Downloaded</string>
+    <string name="ui_0a597385b8be" formatted="false">Existing</string>
+    <string name="ui_031a8f0f659d" formatted="false">Failed</string>
+    <string name="ui_cc7aca94eec3" formatted="false">Skipped Profiles</string>
+    <string name="ui_7afd87b5a427" formatted="false">Retry Later</string>
+    <string name="ui_331551b0de41" formatted="false">Pending</string>
+    <string name="ui_6071b9b565c9" formatted="false">Processed</string>
+    <string name="ui_c3042da5d3ed" formatted="false">Skipped Unavailable</string>
+    <string name="ui_2453b849a552" formatted="false">Skipped No Image</string>
+    <string name="ui_f4f6813aa30f" formatted="false">All accounts</string>
+    <string name="ui_c10c5bb960b8" formatted="false">Profile image</string>
+    <string name="ui_790fb1b462df" formatted="false">Close image</string>
+    <string name="ui_3bee10827989" formatted="false">Remove Instagram Cookies?</string>
+    <string name="ui_b7de788ad2bf" formatted="false">Retrieval stops. Collections and local photos stay unchanged.</string>
+    <string name="ui_2dafb977fb99" formatted="false">Verify Fetcher Index?</string>
+    <string name="ui_828d337fcf1b" formatted="false">Explicitly validate the selected folder and repair Fetcher metadata. Photos, normal INSFAV indexing and collections are unchanged.</string>
+    <string name="ui_6e2a6876132d" formatted="false">Clear search to collapse collections.</string>
+    <string name="ui_7d05c500cecd" formatted="false">JSON imported. All original fields preserved.</string>
+    <string name="ui_e8d77a57aca1" formatted="false">Collections cleared. Local photos are unchanged.</string>
+    <string name="ui_eb23bae361c4" formatted="false">No readable local image. Select a thumbnail folder or rescan in Settings.</string>
+    <string name="ui_9efabc6fc2a8" formatted="false">No missing usernames.</string>
+    <string name="ui_16b3918a53bd" formatted="false">Use the Android Paste command in the cookie field.</string>
+    <string name="ui_777a06220d72" formatted="false">Cookies saved securely.</string>
+    <string name="ui_37491799c35d" formatted="false">Image cache cleared. Source photos and collections are unchanged.</string>
+    <string name="ui_f7b9673e3299" formatted="false">Thumbnail index cleared. Source photos and collections are unchanged.</string>
+    <string name="ui_9d3cd03c5632" formatted="false">Scan cancellation requested. Completed checkpoints are preserved.</string>
+    <string name="ui_c62892cdc87e" formatted="false">Wait for the scan to finish.</string>
+    <string name="ui_1cef6df361a4" formatted="false">Pause the fetcher before rescanning.</string>
+    <string name="ui_ccbd92065ba8" formatted="false">Pause the fetcher before changing folders.</string>
+    <string name="ui_5a0097cbc9c1" formatted="false">Password (at least 8 characters)</string>
+    <string name="ui_3e39703b6e87" formatted="false">Backup password</string>
+    <string name="ui_5ac265f396a2" formatted="false">Confirm password</string>
+    <string name="ui_4d30c69a5b4f" formatted="false">Encrypted settings and cookies only. Favorites and account lists are excluded. Keep the password separately.</string>
+    <string name="ui_e71e35bfc311" formatted="false">Use matching passwords of at least 8 characters.</string>
+    <string name="ui_4c0594b79c07" formatted="false">Settings export failed. Existing settings are unchanged.</string>
+    <string name="ui_156b9ecadfc2" formatted="false">Encrypted settings exported.</string>
+    <string name="ui_aa36883dc189" formatted="false">Settings export failed.</string>
+    <string name="ui_973c79956f46" formatted="false">Settings restored. Retrieval is stopped; review the folder and tap Resume when ready.</string>
+    <string name="ui_d559928a8402" formatted="false">Settings import failed: wrong password, incompatible backup or active retrieval. Existing settings were preserved.</string>
+    <string name="ui_57a9eda190aa" formatted="false">Instagram account collections</string>
+    <string name="ui_d1306f93f0e8" formatted="false">JSON import and export</string>
+    <string name="ui_fcdbfa0a6363" formatted="false">Collection management</string>
+    <string name="ui_17ac3668f1eb" formatted="false">Account search</string>
+    <string name="ui_d21163da34b7" formatted="false">Local profile thumbnails</string>
+    <string name="ui_c6885f589717" formatted="false">Optional session-based thumbnail retrieval</string>
+    <string name="ui_35432a767cbd" formatted="false">External thumbnail folder integration</string>
+    <string name="ui_c31076779888" formatted="false">Fullscreen image viewer</string>
+    <string name="ui_6808c907b778" formatted="false">Efficient large-list rendering</string>
+    <string name="ui_a24a0ec7778a" formatted="false">Persistent settings</string>
+    <string name="ui_bdfc5a5453f0" formatted="false">AMOLED interface</string>
+    <string name="ui_035b0db1f5a1" formatted="false">Cookies stay in encrypted private storage and are excluded from diagnostics. Saving cookies does not prove that the session is valid.</string>
+    <string name="ui_8b35277a6cec" formatted="false">Select your .thumbnails folder for local photos. Optional retrieval is managed separately in Thumbnail Fetcher.</string>
+    <string name="ui_be2315032a4f" formatted="false">Each WebView has its own start-to-start delay. A waiting worker does not block other ready workers. Server cooldown and access restrictions apply to the whole pool. Batch work follows these hours, including overnight windows. Viewer requests take priority after active operations finish and still obey delays and access restrictions. Android may delay background work.</string>
+    <string name="ui_d929bad69456" formatted="false">If Android requests permission, confirm the same folder already selected in Profile Images. No second output folder is used.</string>
+    <string name="ui_211e5e68cd74" formatted="false">Clearing the index or image cache never deletes your photos or collections. Rescan only reads source files and preserves orphan thumbnails. The optional fetcher writes only validated profile thumbnails.</string>
+    <string name="ui_a23b53d0f98e" formatted="false">Folder changes are recognized when you select Rescan Thumbnails. If permission or access is lost, select the folder again.</string>
+    <string name="ui_d91280edbbba" formatted="false">Settings restored. Select the thumbnail folder again to grant access.</string>
+    <string name="ui_ecdfade5daef" formatted="false">Thumbnail management</string>
+    <string name="ui_7934c1ce4abb" formatted="false">Missing images</string>
+    <string name="ui_e07071572936" formatted="false">Images available</string>
+    <string name="ui_12337460153b" formatted="false">Orphan thumbnails</string>
+    <string name="ui_863ee877ea3e" formatted="false">Read-only. Orphans are never deleted. Inventory reflects the last completed rescan.</string>
+    <string name="ui_179fed85ec50" formatted="false">Search files</string>
+    <string name="ui_a57b08a480b8" formatted="false">Previous</string>
+    <string name="ui_1ff57a29d7c9" formatted="false">Next</string>
+    <string name="ui_222ec0a9c342" formatted="false">{total} files</string>
+    <string name="ui_94275ce3181b" formatted="false">Rescan first to inspect orphan thumbnails.</string>
+    <string name="ui_9269427d5a83" formatted="false">Local image preview</string>
+    <string name="ui_4cc94b55bb02" formatted="false">Performance diagnostics</string>
+    <string name="ui_da6d32a00f72" formatted="false">Recent operations</string>
+    <string name="ui_67682dc63bff" formatted="false">No recorded operations</string>
+    <string name="ui_9ae3e12cb149" formatted="false">Fetcher results</string>
+    <string name="ui_04cc9c1a86c0" formatted="false">Refresh results</string>
+    <string name="ui_47c062d35d2c" formatted="false">No matching accounts</string>
+    <string name="ui_be771527f1f3" formatted="false">Unable to start INSFAV Plus. Your source files are preserved.</string>
+    <string name="ui_942087cc2d41" formatted="false">Retry</string>
+    <string name="ui_973909caa1c5" formatted="false">Unable to read data</string>
+    <string name="ui_9455aa0e9b66" formatted="false">Checked {processed} / {total} files</string>
+    <string name="ui_d66ad173db90" formatted="false">Rescan reads source files. Cancel preserves completed work; rescan again to resume. Scan after external folder changes.</string>
+    <string name="ui_040f7884d3b5" formatted="false">Not measured</string>
+    <string name="ui_eb46702054ff" formatted="false">Not sampled</string>
+    <string name="ui_18f325e102ac" formatted="false">Previous scan comparison</string>
+    <string name="ui_dfc8c7661bc9" formatted="false">Average browser image load</string>
+    <string name="ui_75cad0cd2868" formatted="false">Current browser session</string>
+    <string name="ui_c49a7639e346" formatted="false">Peak process RAM</string>
+    <string name="ui_57cd9d544975" formatted="false">SAF query</string>
+    <string name="ui_be7bcd791126" formatted="false">Source open</string>
+    <string name="ui_b46f7129326e" formatted="false">Validation / decode</string>
+    <string name="ui_54002a09daee" formatted="false">SQLite transactions</string>
+    <string name="ui_a114a260719f" formatted="false">JSON snapshot</string>
+    <string name="ui_3aeaa8ab5aed" formatted="false">Rescan duration</string>
+    <string name="ui_93e40026333a" formatted="false">Active WebViews</string>
+    <string name="ui_0ba2c8f42ff4" formatted="false">Fetcher workers</string>
+    <string name="ui_41cfda6c07d6" formatted="false">Process PSS</string>
+    <string name="ui_1b125351ac42" formatted="false">Java heap used</string>
+    <string name="ui_ae00bc783f40" formatted="false">Average native image read</string>
+    <string name="ui_0e6a2bb7493c" formatted="false">Last scan; decode includes source reading</string>
+    <string name="ui_a75411826fbe" formatted="false">Last completed scan</string>
+    <string name="ui_9333cc288215" formatted="false">Current pool</string>
+    <string name="ui_4e7cf2486d1c" formatted="false">Current effective limit</string>
+    <string name="ui_32da92e685e3" formatted="false">Android process sample</string>
+    <string name="ui_a0d363833b35" formatted="false">Current Java heap; not total native RAM</string>
+    <string name="ui_cf4339a66132" formatted="false">Source I/O; not browser decode</string>
+    <string name="ui_b5f0400a8642" formatted="false">Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.</string>
+    <string name="ui_6fba0c4df42e" formatted="false">Cookies saved · session checked during retrieval</string>
+    <string name="ui_4252bd1fdeeb" formatted="false">Requested WebViews: {requested} · Effective WebViews: {effective} · Active WebViews: {active}</string>
+    <string name="ui_279a21b306a4" formatted="false">Reduced by the memory budget</string>
+    <string name="ui_a40543daab22" formatted="false">{active} active · {queued} queued · {handled} handled this run</string>
+    <string name="ui_45b9f8f24dbf" formatted="false">Next request in {seconds} s</string>
+    <string name="ui_ab9c681a6929" formatted="false">Last result</string>
+    <string name="ui_70af0feadb70" formatted="false">Waiting for the next result</string>
+    <string name="ui_4651689436a8" formatted="false">{reviewed} / {total} accounts reviewed · {saved} saved outcomes · Retried only with Retry Skipped / Failed Profiles</string>
+    <string name="ui_a194a68a45d3" formatted="false">Elapsed</string>
+    <string name="ui_27dbcb4760dd" formatted="false">Write access granted</string>
+    <string name="ui_8ac767353080" formatted="false">Read only</string>
+    <string name="ui_2cd67c195757" formatted="false">Current INSFAV thumbnail folder</string>
+    <string name="ui_474ad819c8ba" formatted="false">Scanning</string>
+    <string name="ui_22a970d2e5b1" formatted="false">Completed</string>
+    <string name="ui_132d124d6bb3" formatted="false">Interrupted</string>
+    <string name="ui_95edf3f37798" formatted="false">Outside Schedule</string>
+    <string name="ui_21df3623fcc2" formatted="false">Stopped — User Disabled</string>
+    <string name="ui_317c26b3d34f" formatted="false">Paused — Outside Schedule</string>
+    <string name="ui_0b1bdf64294e" formatted="false">Working — Within Schedule</string>
+    <string name="ui_c0ba1e8575ab" formatted="false">Waiting — Android Background Restrictions</string>
+    <string name="ui_6d5b69e88a07" formatted="false">Rate Limited — Cooldown</string>
+    <string name="ui_265d7968817f" formatted="false">Finishing active profiles</string>
+    <string name="ui_a04fd974b71b" formatted="false">Verifying Instagram session</string>
+    <string name="ui_37a3c197898b" formatted="false">Loading profiles / downloading images</string>
+    <string name="ui_4e3a7fc9e5c5" formatted="false">Waiting for configured worker delay</string>
+    <string name="ui_47e3f21079ad" formatted="false">Preparing next profiles</string>
+    <string name="ui_37b345555d7e" formatted="false">Downloading</string>
+    <string name="ui_6e293a8c009e" formatted="false">Waiting</string>
+    <string name="ui_e159b06187d3" formatted="false">Paused</string>
+    <string name="ui_1a4f630ac1b6" formatted="false">Stopped</string>
+    <string name="ui_1121b3591cf3" formatted="false">Rate Limited</string>
+    <string name="ui_d528b8e106ea" formatted="false">{count} usernames copied.</string>
+    <string name="ui_4e1af7c74096" formatted="false">Operation failed</string>
+    <string name="ui_8876aba3314e" formatted="false">Android background restrictions are active. Try again in the next working window.</string>
+    <string name="ui_201fc457d46e" formatted="false">Settings import failed: wrong password, incompatible backup, active retrieval, or storage error. Review settings and diagnostics.</string>
+    <string name="ui_56ed4459c30e" formatted="false">INSFAV Plus is an independent Instagram account collection manager and is not affiliated with Meta or Instagram.</string>
+    <string name="ui_1e48c3501bb0" formatted="false">Instagram image</string>
+    <string name="ui_8aac189afc32" formatted="false">Local image</string>
+    <string name="ui_006edcfc4a24" formatted="false">Preview up to 2048 px</string>
+    <string name="ui_8c34b8e31fbb" formatted="false">Online image unavailable; local image retained</string>
+    <string name="ui_cbc3a800344a" formatted="false">unknown sizes</string>
+    <string name="ui_98f0c3e4330b" formatted="false">Folder permission was lost. Select the thumbnail folder again.</string>
+    <string name="ui_7e3ef40525ea" formatted="false">Thumbnail folder is unavailable. Check its location or select it again.</string>
+    <string name="ui_a390a70e88b4" formatted="false">Select a thumbnail folder first.</string>
+    <string name="ui_99046bdd8d6b" formatted="false">Pause retrieval before changing the schedule or worker count.</string>
+    <string name="ui_d46c733f3a0e" formatted="false">Pause retrieval and close the viewer before importing settings.</string>
+    <string name="ui_11af4d234d68" formatted="false">Paste and save Instagram cookies first.</string>
+    <string name="ui_450fa9547e3e" formatted="false">Select the thumbnail folder in Profile Images first.</string>
+    <string name="ui_16808651cbe9" formatted="false">Grant write access to the selected thumbnail folder first.</string>
+    <string name="ui_9ab656eafa8e" formatted="false">Retry cooldown is still active.</string>
+    <string name="ui_55df2ca5c331" formatted="false">Starting — Loading persistent index</string>
+    <string name="ui_3409582ebdbc" formatted="false">Starting — Verifying thumbnail index</string>
+    <string name="ui_a2bcee37d283" formatted="false">Checking existing thumbnails</string>
+    <string name="ui_0473bd22ce8c" formatted="false">Paused — Fetcher index verified</string>
+    <string name="ui_def3c47495c0" formatted="false">Paused: folder write permission required</string>
+    <string name="ui_4f3e880702b5" formatted="false">Paused: database error; queue preserved</string>
+    <string name="ui_3282a4c230ba" formatted="false">Paused: storage access error; queue preserved</string>
+    <string name="ui_2cd248addb4e" formatted="false">Paused: memory limit; queue preserved</string>
+    <string name="ui_11ea4d898d46" formatted="false">Paused: processing error; queue preserved</string>
+    <string name="ui_52b32f9a24be" formatted="false">Paused: session not verified</string>
+    <string name="ui_698360589400" formatted="false">Paused: Android service time limit; queue preserved</string>
+    <string name="ui_bb7c6e4b05a8" formatted="false">Finished: previous failures saved; use Retry to try again</string>
+    <string name="ui_ffaf4a1ce8b3" formatted="false">Waiting: session verification retry</string>
+    <string name="ui_732c5220f394" formatted="false">Authentication Required</string>
+    <string name="ui_3ee1e3292f27" formatted="false">Completed with failures</string>
+    <string name="ui_41f55ca840f7" formatted="false">Completed — Retry available</string>
+    <string name="ui_31a3c27bf2f0" formatted="false">Paused: settings rollback could not be confirmed</string>
+</resources>

@@ -1,0 +1,3 @@
+# Optional offline asset optimization only; not an Android dependency.
+fonttools[woff]==4.67.0
+brotli==1.2.1

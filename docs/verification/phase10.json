@@ -1,0 +1,79 @@
+{
+  "phase": "phase10-complete",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "exitCode": 0,
+      "seconds": 0.476
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "web"
+      ],
+      "exitCode": 0,
+      "seconds": 0.696
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 0.249
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:testDebugUnitTest"
+      ],
+      "exitCode": 0,
+      "seconds": 60.741
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:lintDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 4.486
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:assembleDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 1.483
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:chromium"
+      ],
+      "exitCode": 0,
+      "seconds": 37.062
+    }
+  ],
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false,
+  "unitTests": {
+    "tests": 268,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unitTestCommandSucceeded": true,
+  "unitCountsMayBeStale": false,
+  "lint": {
+    "Error": 0,
+    "Warning": 0,
+    "Information": 0,
+    "categories": {}
+  }
+}

@@ -1,0 +1,76 @@
+name: Publish signed INSFAV 4.0.0 double-back update
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: insfav-official-release-v4.0.0
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'BlackWare-AI/INSFAV' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify source provenance, signed APK and upload before publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          INSFAV_RELEASE_CERT_SHA256: a3058fab8d03c1549abb04ae4660ff2256296967e6291bd7a751ecb9b32e82c2
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_commit=bb95c183b84e88e60e53525b87d0b4753e3f8c04
+          test "$(gh api "repos/$GH_REPO/actions/runs/39613094473" --jq .conclusion)" = success
+          test "$(gh api "repos/$GH_REPO/actions/runs/39613094473" --jq .head_sha)" = "$source_commit"
+          git diff --exit-code "$source_commit" HEAD -- app web version.properties build.gradle settings.gradle gradle gradlew gradlew.bat
+          test "$(gh api "repos/$GH_REPO/releases/tags/v4.0.0" --jq '.assets[] | select(.name == "INSFAV-4.0.0.apk") | .digest')" = 'sha256:fa8f63dbf1b773bac113144c3730d0ceee1e48a3789c960e282043a8c4167b78'
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/release-binaries/v4.0.0" --jq .object.sha)" = 5b37e2a4ed8e4397b3eb440baf19b247f3cfeb95
+          mkdir downloaded
+          gh api "repos/$GH_REPO/git/blobs/9e2e49f5265c14164ec4b5d265a049be9d68a17c" --jq .content | base64 --decode > downloaded/INSFAV-4.0.0.apk
+          echo '061c568f3878e78a951a00d0ec5061b616ac2cd51d988b91a24244457bf824fa  downloaded/INSFAV-4.0.0.apk' | sha256sum --check
+          python3 - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools/release')
+          import release_gate
+          env = dict(os.environ, GITHUB_SHA='bb95c183b84e88e60e53525b87d0b4753e3f8c04')
+          release_gate.verify(Path('downloaded/INSFAV-4.0.0.apk'), Path('candidate'), env)
+          record = json.loads(Path('candidate/verification.json').read_text())
+          record.update(releaseCommit=os.environ['GITHUB_SHA'], buildRun=39613094473,
+                        testRun=39613094473, previousDebugUpdateCompatible=False)
+          Path('candidate/verification.json').write_text(json.dumps(record, indent=2) + '\n')
+          note = ('\n## Double-back exit update\n\n'
+                  'On the main screen, press Back twice within two seconds to exit. The first press displays a message. Existing screen and dialog navigation is preserved. '
+                  'Version 4.0.0 and build 7 are unchanged. This APK uses the same release certificate as the original 4.0.0 APK. '
+                  'The previous APK is preserved on branch `release-binaries/v4.0.0`. The original release tag is unchanged. '
+                  'Updated APK source: `bb95c183b84e88e60e53525b87d0b4753e3f8c04`. No new signing key was generated.\n')
+          with Path('candidate/RELEASE-NOTES.md').open('a') as output:
+              output.write(note)
+          PY
+          cd candidate
+          sha256sum --check SHA256SUMS
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          # Verify the new asset publicly before replacing the canonical download.
+          cp INSFAV-4.0.0.apk INSFAV-4.0.0-double-back.apk
+          gh release upload v4.0.0 INSFAV-4.0.0-double-back.apk
+          verify_dir=$(mktemp -d "$RUNNER_TEMP/insfav-published.XXXXXX")
+          trap 'rm -rf "$verify_dir"' EXIT
+          gh release download v4.0.0 --dir "$verify_dir" --pattern INSFAV-4.0.0-double-back.apk
+          echo '061c568f3878e78a951a00d0ec5061b616ac2cd51d988b91a24244457bf824fa  '"$verify_dir/INSFAV-4.0.0-double-back.apk" | sha256sum --check
+          gh release upload v4.0.0 INSFAV-4.0.0.apk SHA256SUMS signing-certificate.txt verification.json --clobber
+          gh release download v4.0.0 --dir "$verify_dir" --pattern INSFAV-4.0.0.apk
+          (cd "$verify_dir" && sha256sum --check "$GITHUB_WORKSPACE/candidate/SHA256SUMS")
+          gh release edit v4.0.0 --notes-file RELEASE-NOTES.md
+          gh release view v4.0.0 --json url --jq .url

@@ -1,0 +1,140 @@
+[
+  {
+    "variant": "original",
+    "round": 0,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_SNAPSHOT": {
+        "environment": "Host Robolectric API34; metadata only, current onResume contract",
+        "profiles": 15000,
+        "unchangedResponses": 20,
+        "unchangedResponseBytes": 24992020,
+        "elapsedNanos": 832237427,
+        "singleProfileResponseBytes": 1249601,
+        "deltaContract": false
+      },
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 1,
+        "burstCallNanos": 173997,
+        "criticalDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 0,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_SNAPSHOT": {
+        "environment": "Host Robolectric API34; metadata only, current onResume contract",
+        "profiles": 15000,
+        "unchangedResponses": 20,
+        "unchangedResponseBytes": 18680,
+        "elapsedNanos": 31551238,
+        "singleProfileResponseBytes": 1061,
+        "deltaContract": true
+      },
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 2,
+        "burstCallNanos": 816923,
+        "criticalDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "original",
+    "round": 1,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_SNAPSHOT": {
+        "environment": "Host Robolectric API34; metadata only, current onResume contract",
+        "profiles": 15000,
+        "unchangedResponses": 20,
+        "unchangedResponseBytes": 24992020,
+        "elapsedNanos": 739977070,
+        "singleProfileResponseBytes": 1249601,
+        "deltaContract": false
+      },
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 1,
+        "burstCallNanos": 178684,
+        "criticalDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 1,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_SNAPSHOT": {
+        "environment": "Host Robolectric API34; metadata only, current onResume contract",
+        "profiles": 15000,
+        "unchangedResponses": 20,
+        "unchangedResponseBytes": 18700,
+        "elapsedNanos": 96848014,
+        "singleProfileResponseBytes": 1062,
+        "deltaContract": true
+      },
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 2,
+        "burstCallNanos": 636195,
+        "criticalDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "original",
+    "round": 2,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_SNAPSHOT": {
+        "environment": "Host Robolectric API34; metadata only, current onResume contract",
+        "profiles": 15000,
+        "unchangedResponses": 20,
+        "unchangedResponseBytes": 24992020,
+        "elapsedNanos": 718640432,
+        "singleProfileResponseBytes": 1249601,
+        "deltaContract": false
+      },
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 1,
+        "burstCallNanos": 175449,
+        "criticalDeliveredSynchronously": true
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 2,
+    "exitCode": 0,
+    "measurements": {
+      "STATUS_SNAPSHOT": {
+        "environment": "Host Robolectric API34; metadata only, current onResume contract",
+        "profiles": 15000,
+        "unchangedResponses": 20,
+        "unchangedResponseBytes": 18680,
+        "elapsedNanos": 66586152,
+        "singleProfileResponseBytes": 1061,
+        "deltaContract": true
+      },
+      "STATUS_DELIVERY": {
+        "environment": "Host Robolectric; synthetic 1000-event burst and 1150 ms drain",
+        "events": 1000,
+        "normalDeliveries": 2,
+        "burstCallNanos": 794996,
+        "criticalDeliveredSynchronously": true
+      }
+    }
+  }
+]

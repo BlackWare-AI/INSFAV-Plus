@@ -1,0 +1,78 @@
+{
+  "phase": "phase4-corrected",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "exitCode": 0,
+      "seconds": 0.606
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "web"
+      ],
+      "exitCode": 0,
+      "seconds": 0.498
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 0.249
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:testDebugUnitTest"
+      ],
+      "exitCode": 0,
+      "seconds": 73.964
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:lintDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 11.103
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:assembleDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 1.627
+    }
+  ],
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false,
+  "unitTests": {
+    "tests": 247,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Warning": 37,
+    "Information": 0,
+    "categories": {
+      "ApplySharedPref": 28,
+      "GradleDependency": 1,
+      "MonochromeLauncherIcon": 1,
+      "ObsoleteSdkInt": 1,
+      "SetJavaScriptEnabled": 1,
+      "StaticFieldLeak": 2,
+      "UnusedAttribute": 1,
+      "UnusedResources": 1,
+      "UseRequiresApi": 1
+    }
+  }
+}
