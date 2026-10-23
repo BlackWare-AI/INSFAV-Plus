@@ -32,4 +32,4 @@ tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
 notes='Independent INSFAV Plus package.\n\nPackage: '+meta['package']+'\nVersion: '+meta['version']+'\nBuild: '+str(meta['versionCode'])+'\nSHA-256: '+meta['sha256']+'\n\nSee MIGRATION.md before importing original INSFAV settings.\n'
 with tempfile.NamedTemporaryFile(mode='w',suffix='.md') as f:
     f.write(notes);f.flush()
-    subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',os.environ['GITHUB_SHA'],'--title','INSFAV Plus '+meta['version'],'--notes-file',f.name],check=True)
+    subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']),'--title','INSFAV Plus '+meta['version'],'--notes-file',f.name],check=True)

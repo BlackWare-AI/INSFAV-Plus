@@ -20,8 +20,8 @@ bounded shared encoded-image streams; cancellable 256-record scan checkpoints af
 English/Turkish presentation, consolidated settings and diagnostics; explicit
 authenticated migration of original INSFAV settings. Source files remain intact.
 
-No official release has been published from this work until its release gates
-and signing requirements have passed.
+1.1.0 / build 2 is published as a verified signed release; see
+`docs/verification/release-1.1.0.json` for its source, CI and checksum records.
 
 Owner review: preserve conservative 45-second profile deadlines after offline
 15/30/45 comparison; validate all unflushed successful metadata on recovery;

@@ -50,3 +50,13 @@ missing-photo portrait glyph from 34px to 40.8px on black. The replacement
 1280×1280 launcher source is preserved byte-for-byte (see branding.json); its
 foreground bounds are square. The themed launcher uses a matching star-plus silhouette
 in place of the unrelated legacy badge.
+
+## Published release
+
+[INSFAV Plus 1.1.0 / build 2](https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.0-build.2)
+is published with the owner-authorized permanent key. Current-source CI and
+emulator checks and the signed-file publication job passed. The public APK was
+downloaded again and its checksum/metadata match the verified local artifact.
+See release-1.1.0.json for immutable source/workflow references and public
+certificate/checksum records. Signing material is only in the private owner
+backup; it is absent from Git and public artifacts.

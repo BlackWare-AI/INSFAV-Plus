@@ -1,0 +1,28 @@
+{
+  "releaseUrl": "https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.0-build.2",
+  "tag": "plus-v1.1.0-build.2",
+  "appSourceCommit": "295b219fdb6ddf36199ecfe1228d1d375f70937a",
+  "publicationWorkflowCommit": "c0a87537b65b554d31a5ed805386aa5971ccc878",
+  "releaseTargetCommit": "c0a87537b65b554d31a5ed805386aa5971ccc878",
+  "ciRun": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/39999104328",
+  "ciConclusion": "success",
+  "publishRun": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/40000881539",
+  "publishConclusion": "success",
+  "apk": {
+    "file": "app-release.apk",
+    "bytes": 824658,
+    "sha256": "d0d56e0048c8b4c4d82cedc7345845c27fc8b53a9bb5307ad35b05c3d802e948",
+    "package": "com.instagram.insfav.plus",
+    "version": "1.1.0",
+    "versionCode": 2,
+    "debuggable": false,
+    "signatureVerified": true,
+    "certificateSha256": [
+      "9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f"
+    ],
+    "officialRelease": true
+  },
+  "publicDownloadVerified": true,
+  "physicalDeviceTested": false,
+  "notes": "App source is identical between the tested app commit and publication workflow revision; verified by the publication gate. No signing secrets were transferred."
+}

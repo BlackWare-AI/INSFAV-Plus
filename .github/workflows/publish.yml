@@ -180,5 +180,5 @@ jobs:
           PY
       - name: Publish verified signed release
         env:
-          GITHUB_SHA: ${{ inputs.source_sha }}
+          PLUS_SOURCE_SHA: ${{ inputs.source_sha }}
         run: python3 tools/publish-plus.py
