@@ -82,7 +82,7 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   check(await page.evaluate(()=>thumbnailMetrics().rows<32&&thumbnailMetrics().pool<=32),'recycled row pool remains bounded during a large jump');
   check(await page.locator('.bottom-nav .nav-btn').count()===1,'bottom bar only retains the information button');
   await page.locator('#info-btn').click();
-  await page.locator('#dialog-body .about-logo').waitFor();await waitForValue(page,()=>document.querySelector('.about-logo')?.naturalWidth===1280);check(await page.locator('#dialog-title').isHidden()&&await page.locator('#dialog-body .about-logo').evaluate(img=>img.src.endsWith('/logo.jpg')&&img.naturalHeight===1198),'About uses the supplied Plus logo and preserves its hidden title');
+  await page.locator('#dialog-body .about-detail').first().waitFor();check(await page.locator('#dialog-title').isHidden()&&await page.locator('#dialog-body img').count()===0,'About retains its information without displaying the launcher artwork');
   check(await page.locator('#dialog-body .about-detail').evaluateAll(nodes=>nodes.slice(-3).map(n=>n.firstChild.textContent).join('|'))==='Reset Count|Add List|Delete List','list actions follow Reset Count in the requested order');
   check(await page.locator('#import-btn').evaluate(el=>getComputedStyle(el).color)==='rgb(255, 255, 255)','Add List preserves the white plus');
   check(await page.locator('#clear-btn').evaluate(el=>getComputedStyle(el).color)==='rgb(181, 116, 120)','Delete List retains its existing red tone');
