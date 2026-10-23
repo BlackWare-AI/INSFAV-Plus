@@ -113,9 +113,24 @@
         }
       ],
       "countsMayBeStale": true
+    },
+    {
+      "attempt": "safety-logo-final",
+      "commands": [
+        {
+          "command": [
+            "npm",
+            "run",
+            "test:chromium"
+          ],
+          "exitCode": 1
+        }
+      ],
+      "countsMayBeStale": false,
+      "reason": "Old About assertion required no logo. The owner supplied the Plus logo; the assertion now verifies its actual JPEG dimensions and loaded asset, preserving the hidden title."
     }
   ],
-  "finalAttempt": "phase10-complete",
+  "finalAttempt": "safety-logo-complete",
   "finalFailures": 0,
   "note": "Compilation/build failures are not reported as executed failing test counts. See Turkish report for causes and corrections. The earlier CI SDK setup failure and local emulator process crash are described separately."
 }

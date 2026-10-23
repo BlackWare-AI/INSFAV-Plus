@@ -1,0 +1,21 @@
+{
+  "environment": "Robolectric virtual clock and delayed valid callback fixtures; normal and HD; not live latency/failure rates",
+  "results": [
+    {
+      "deadlineSeconds": 15,
+      "validCases": 16,
+      "falseTimeouts": 10
+    },
+    {
+      "deadlineSeconds": 30,
+      "validCases": 16,
+      "falseTimeouts": 4
+    },
+    {
+      "deadlineSeconds": 45,
+      "validCases": 16,
+      "falseTimeouts": 0
+    }
+  ],
+  "selectedSeconds": 45
+}

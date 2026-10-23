@@ -84,7 +84,7 @@ public class ProviderOperationTest {
     WebViewProfileProvider.Operation o = operation();
     Page page = (Page) o.view;
     o.poll();
-    ShadowSystemClock.advanceBy(Duration.ofSeconds(15));
+    ShadowSystemClock.advanceBy(Duration.ofMillis(WebViewProfileProvider.PROFILE_DEADLINE_MS));
     page.emit(image());
     assertEquals("WEBVIEW_TIMEOUT", o.failure.code);
     assertFalse(FailurePolicy.noImage(o.failure));
@@ -135,9 +135,61 @@ public class ProviderOperationTest {
     WebViewProfileProvider.Operation o = operation();
     o.armWatchdog();
     o.poll();
-    Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(15));
+    Shadows.shadowOf(Looper.getMainLooper())
+        .idleFor(Duration.ofMillis(WebViewProfileProvider.PROFILE_DEADLINE_MS));
     assertEquals("WEBVIEW_TIMEOUT", o.failure.code);
     assertFalse(FailurePolicy.noImage(o.failure));
+  }
+
+  @Test
+  public void compareFifteenThirtyAndFortyFiveSecondDeadlinesOnDelayedValidProfiles()
+      throws Exception {
+    JSONArray results = new JSONArray();
+    int[] delays = {2000, 8000, 14000, 16000, 22000, 29000, 31000, 44000};
+    for (int seconds : new int[] {15, 30, 45}) {
+      int falseTimeouts = 0;
+      for (boolean hd : new boolean[] {false, true})
+        for (int delay : delays) {
+          WebViewProfileProvider.Operation o =
+              provider.new Operation("example", "123", hd, seconds * 1000L);
+          Page page = new Page(c);
+          o.view = page;
+          o.started = true;
+          o.armWatchdog();
+          o.poll();
+          Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(delay));
+          page.emit(image());
+          if (delay >= seconds * 1000) {
+            falseTimeouts++;
+            assertEquals("WEBVIEW_TIMEOUT", o.failure.code);
+            assertTrue(FailurePolicy.retry(o.failure));
+            assertFalse(FailurePolicy.noImage(o.failure));
+            assertFalse(FailurePolicy.unavailable(o.failure));
+            assertNull(o.result);
+          } else {
+            assertNull(o.failure);
+            assertNotNull(o.result);
+          }
+        }
+      results.put(
+          new JSONObject()
+              .put("deadlineSeconds", seconds)
+              .put("validCases", 16)
+              .put("falseTimeouts", falseTimeouts));
+    }
+    assertEquals(10, results.getJSONObject(0).getInt("falseTimeouts"));
+    assertEquals(4, results.getJSONObject(1).getInt("falseTimeouts"));
+    assertEquals(0, results.getJSONObject(2).getInt("falseTimeouts"));
+    assertEquals(45000, WebViewProfileProvider.PROFILE_DEADLINE_MS);
+    System.out.println(
+        "DEADLINE_COMPARISON "
+            + new JSONObject()
+                .put(
+                    "environment",
+                    "Robolectric virtual clock and delayed valid callback fixtures; normal and HD;"
+                        + " not live latency/failure rates")
+                .put("results", results)
+                .put("selectedSeconds", 45));
   }
 
   WebResourceRequest request(boolean main) {

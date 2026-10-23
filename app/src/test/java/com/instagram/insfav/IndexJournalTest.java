@@ -86,6 +86,37 @@ public class IndexJournalTest {
   }
 
   @Test
+  public void everyAcknowledgedChangeBeforeTheBatchThresholdSurvivesRestart() throws Exception {
+    for (int i = 0; i < 63; i++) {
+      String user = "durable" + i;
+      store.updateProfile(
+          user,
+          profile().put("name", user + ".webp").put("uri", "content://fixture/document/" + user),
+          tree);
+    }
+    assertEquals(0, disk().getJSONObject("profiles").length());
+    // Model the first process stopping, including its in-memory timer.
+    java.util.concurrent.ScheduledFuture<?> scheduled =
+        org.robolectric.util.ReflectionHelpers.getField(store, "pendingSnapshot");
+    if (scheduled != null) scheduled.cancel(false);
+    Store recovered = new Store(context);
+    assertEquals(63, recovered.index.getJSONObject("profiles").length());
+    assertEquals(63, recovered.index.getInt("files"));
+    for (int i = 0; i < 63; i++)
+      assertTrue(
+          recovered
+              .index
+              .getJSONObject("profiles")
+              .getJSONObject("durable" + i)
+              .getBoolean("readable"));
+    assertEquals(63, disk().getJSONObject("profiles").length());
+    try (IndexJournal journal = new IndexJournal(context)) {
+      assertTrue(journal.pending(scope).isEmpty());
+    }
+    assertEquals(recovered.index.toString(), new Store(context).index.toString());
+  }
+
+  @Test
   public void crashAfterAtomicSnapshotBeforeAcknowledgmentDoesNotApplyTwice() throws Exception {
     store.updateProfile("one", profile(), tree);
     store.flushIndex();

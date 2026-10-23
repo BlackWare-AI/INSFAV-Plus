@@ -1,0 +1,79 @@
+{
+  "phase": "safety-logo-complete",
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "exitCode": 0,
+      "seconds": 0.47
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "web"
+      ],
+      "exitCode": 0,
+      "seconds": 0.666
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 0.253
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:testDebugUnitTest"
+      ],
+      "exitCode": 0,
+      "seconds": 129.049
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:lintDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 7.362
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":app:assembleDebug"
+      ],
+      "exitCode": 0,
+      "seconds": 1.991
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "test:chromium"
+      ],
+      "exitCode": 0,
+      "seconds": 38.568
+    }
+  ],
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false,
+  "unitTests": {
+    "tests": 272,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "unitTestCommandSucceeded": true,
+  "unitCountsMayBeStale": false,
+  "lint": {
+    "Error": 0,
+    "Warning": 0,
+    "Information": 0,
+    "categories": {}
+  }
+}

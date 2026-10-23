@@ -274,3 +274,8 @@ Authentication Required	Oturum doğrulaması gerekiyor
 Completed with failures	Başarısız sonuçlarla tamamlandı
 Completed — Retry available	Tamamlandı — yeniden denenebilir
 Paused: settings rollback could not be confirmed	Duraklatıldı: ayarların geri alınması doğrulanamadı
+Account details	Hesap ayrıntıları
+Open profile	Profili aç
+Press and hold to read the full name and username.	Tam adı ve kullanıcı adını okumak için basılı tutun.
+Orphan candidates are relative to loaded collections. Missing or incomplete imports can misclassify existing images. Nothing is deleted.	Sahipsiz adayları yalnızca yüklenmiş koleksiyonlara göre belirlenir. Eksik veya tamamlanmamış içe aktarmalar mevcut görselleri yanlış sınıflandırabilir. Hiçbir dosya silinmez.
+Import all collections before interpreting orphan candidates.	Sahipsiz adaylarını değerlendirmeden önce tüm koleksiyonları içe aktarın.

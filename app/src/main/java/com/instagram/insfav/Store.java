@@ -198,6 +198,11 @@ final class Store {
     return total;
   }
 
+  synchronized boolean hasDocument() {
+    File document = new File(root, "document.json");
+    return document.isFile() && document.length() > 0;
+  }
+
   synchronized void clearDocument() {
     new AtomicFile(new File(root, "document.json")).delete();
     cachedUsers = null;

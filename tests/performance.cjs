@@ -2,7 +2,7 @@
 const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 (async()=>{
  const roots={current:path.resolve(__dirname,'../app/src/main/assets')};if(process.env.BASELINE_ASSETS)roots.baseline=path.resolve(process.env.BASELINE_ASSETS);
- const server=http.createServer((req,res)=>{const [variant,...segments]=req.url.split('?')[0].slice(1).split('/'),root=roots[variant];if(!root){res.writeHead(404).end();return;}const name=segments.join('/')||'index.html',file=path.join(root,name);if(!file.startsWith(root)||!fs.existsSync(file)){res.writeHead(404).end();return;}res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.webp')?'image/webp':'text/html');res.end(fs.readFileSync(file));});
+ const server=http.createServer((req,res)=>{const [variant,...segments]=req.url.split('?')[0].slice(1).split('/'),root=roots[variant];if(!root){res.writeHead(404).end();return;}const name=segments.join('/')||'index.html',file=path.join(root,name);if(!file.startsWith(root)||!fs.existsSync(file)){res.writeHead(404).end();return;}res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.webp')?'image/webp':name.endsWith('.jpg')?'image/jpeg':'text/html');res.end(fs.readFileSync(file));});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  let browser;const output={};
  try{for(const variant of Object.keys(roots)){

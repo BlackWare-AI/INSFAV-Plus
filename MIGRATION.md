@@ -40,3 +40,8 @@ reported explicitly and retrieval remains disarmed before credential replacement
 Debug APKs are for testing. Export both backup formats before replacing a test
 installation with an APK signed by a different certificate. This concerns Plus's
 own test data; original INSFAV remains a separate package.
+
+Orphan candidates are relative to the currently loaded collections. Import every
+collection before interpreting them: missing or partial imports can make an
+existing image appear orphaned. With no collection loaded, Plus does not label
+all files as orphans. This view is read-only and has no delete command.

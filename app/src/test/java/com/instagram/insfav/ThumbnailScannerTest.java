@@ -76,10 +76,10 @@ public class ThumbnailScannerTest {
         (e, v) -> {
           if (e.equals("scan-progress") && v.optInt("processed") == 0)
             org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMillis(300));
-          if (e.equals("scan-progress") && v.optInt("processed") >= 512) images.cancelScan();
+          if (e.equals("scan-progress") && v.optInt("processed") >= 256) images.cancelScan();
         });
     assertEquals("interrupted", store.settings.optString("scanState"));
-    assertEquals(512, provider.opens);
+    assertEquals(256, provider.opens);
     assertFalse(store.index.has("profiles"));
     store = new Store(context);
     images = new LocalImages(context, store);
@@ -88,7 +88,7 @@ public class ThumbnailScannerTest {
     assertEquals(600, provider.opens);
     assertEquals(600, store.index.getJSONObject("profiles").length());
     assertTrue(metrics().getBoolean("resumed"));
-    assertEquals(512, metrics().getInt("reused"));
+    assertEquals(256, metrics().getInt("reused"));
   }
 
   @Test

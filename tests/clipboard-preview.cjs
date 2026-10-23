@@ -7,7 +7,7 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
  const root=path.resolve(__dirname,'../app/src/main/assets'),server=http.createServer((req,res)=>{
   const file=path.join(root,req.url==='/'?'index.html':req.url.split('?')[0]);
   if(!file.startsWith(root)||!fs.existsSync(file)){res.writeHead(404).end();return;}
-  res.setHeader('Content-Type',file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.webp')?'image/webp':'text/html');res.end(fs.readFileSync(file));
+  res.setHeader('Content-Type',file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.webp')?'image/webp':file.endsWith('.jpg')?'image/jpeg':'text/html');res.end(fs.readFileSync(file));
  });
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,args:['--no-sandbox','--disable-gpu']});
  try {

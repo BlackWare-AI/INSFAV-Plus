@@ -1,4 +1,5 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/ic_launcher_foreground"/>
-    <item android:drawable="@drawable/plus_badge"/>
+    <item android:gravity="center" android:width="64dp" android:height="59.9dp">
+        <bitmap android:src="@drawable/insfav_plus_logo" android:gravity="fill"/>
+    </item>
 </layer-list>

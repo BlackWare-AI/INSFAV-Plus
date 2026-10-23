@@ -1,5 +1,7 @@
 # INSFAV Plus
 
+<img src="web/static/logo.jpg" alt="INSFAV Plus" width="128">
+
 Independent Android collection manager based on INSFAV commit
 `0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original repository and INSFAV 5.0.0 remain separate.
 
@@ -9,7 +11,8 @@ Independent Android collection manager based on INSFAV commit
 - Existing collection formats, list memberships, 128/256 WebP files, HD viewer,
   Fetcher, scheduling, notifications, WorkManager, SAF and diagnostics remain supported.
 - English and Turkish, system language by default with a saved override.
-- Read-only missing/present/orphan thumbnail inventory with local previews.
+- Read-only missing/present/orphan candidates relative to loaded collections; incomplete imports can misclassify images. No deletion.
+- Hold an account name or use Shift+F10 to read full text at large font sizes.
 - Download outcome filters keep list order and memberships; Refresh updates the explicit filter snapshot.
 - Optional measured diagnostics, bounded redacted operation history and recoverable startup errors.
 
@@ -62,3 +65,8 @@ harnesses without editing tracked source, and disables the coverage agent for
 both measurement variants. Run the full verification and coverage commands again
 after these filtered benchmarks. Android, browser heap and host filesystem
 results have separate scopes in PERFORMANCE.md.
+
+Safety policy evidence: `python3 tools/benchmark.py --kind policies` compares
+15/30/45-second profile deadlines and identical 256/512 scanner batches. The
+selected defaults are 45 seconds (retryable) and 256 records with two workers.
+See the scope and measured results in PERFORMANCE.md.

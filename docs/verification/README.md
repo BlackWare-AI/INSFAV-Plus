@@ -7,12 +7,12 @@ grew from 11 to 16; the final separate Chromium command runs nine functional
 scripts. Avatar layout alone covers twelve dataset/viewport combinations,
 including 10, 1,000, 10,000 and 15,000 accounts.
 
-Final local source: `c6b0e63` (the subsequent delivery commit changes documentation,
-benchmark orchestration and CI triggers). All 268 Java tests pass with zero
+Owner safety-review native checkpoint: `357b6f7`; frontend/branding follow in the
+same delivery. All 272 Java tests pass with zero
 failures, errors or skips. All 16 core tests and nine browser scripts pass.
 Debug lint has zero errors and zero warnings. Debug APK and AndroidTest APK build
-successfully. `coverage.json` records actual JaCoCo counters: 4,170/6,255 lines
-(66.67%) and 2,125/3,791 branches (56.05%). This is application unit-test coverage,
+successfully. `coverage.json` records actual JaCoCo counters: 4,195/6,271 lines
+(66.90%) and 2,134/3,805 branches (56.08%). This is application unit-test coverage,
 not Android device coverage. XML and HTML reports are attached by CI.
 
 `debug-apk.json` describes the local test build, including its **public**
@@ -62,3 +62,16 @@ single-process/no-zygote flags. The launch-failure path now closes its HTTP serv
 executable: nonzero exit in 0.31 seconds). The process deadline bounds failures
 in the remaining scripts. The optional render harness also drops those flags;
 its retained older numeric trace is labelled historical.
+
+`owner-safety-review.json` records the final owner-review gates (272 Java tests).
+The earlier six journal recovery tests passed again before retaining batched
+snapshots; a seventh verifies all 63 pre-threshold acknowledged records after
+restart. `performance/batch-size-comparison.json` measures the same scanner at
+256/512; no overall improvement supports raising the default above 256.
+`performance/deadline-comparison.json` documents the virtual-time 15/30/45 matrix
+and conservative 45-second choice, not a live failure rate. The avatar matrices
+now verify visible clipping, complete accessible labels and scrollable full text
+via touch hold and keyboard. `branding.json` identifies the owner's unmodified
+JPEG and generated copies; the updated About assertion verifies the loaded logo.
+Full test and coverage reports were retained before a separate clean APK build
+to avoid comparing incremental dex packaging overhead with a clean baseline.

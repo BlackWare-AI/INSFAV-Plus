@@ -24,7 +24,7 @@ are scoped to verified application-context holders. JavaScript is required only
 for the local CSP-constrained UI and isolated probe WebViews. The API27 callback
 uses RequiresApi; locale splitting is disabled; minimum-26 adaptive icons moved
 to the base directory and received a monochrome layer. An unreferenced `ic_fetch`
-resource was removed after source/XML/manifest reference search. The unused original launcher variants were archived; the original foreground artwork still supplies the Plus icon. The source bundle
+resource was removed after source/XML/manifest reference search. The unused original launcher variants were archived; the original foreground artwork is archived, and the owner-supplied logo supplies the Plus icon. The source bundle
 retains it. Old app-specific User-Agent suffix now uses the Plus BuildConfig
 version; the Chrome compatibility signature remains unchanged.
 
