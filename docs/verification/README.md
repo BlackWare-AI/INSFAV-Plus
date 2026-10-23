@@ -72,6 +72,27 @@ restart. `performance/batch-size-comparison.json` measures the same scanner at
 and conservative 45-second choice, not a live failure rate. The avatar matrices
 now verify visible clipping, complete accessible labels and scrollable full text
 via touch hold and keyboard. `branding.json` identifies the owner's unmodified
-JPEG and generated copies; the updated About assertion verifies the loaded logo.
+JPEG and generated copies. The subsequent selector UI correction removes the
+image from About while retaining the supplied launcher artwork; the browser
+assertion now verifies that the information modal has no image.
 Full test and coverage reports were retained before a separate clean APK build
 to avoid comparing incremental dex packaging overhead with a clean baseline.
+
+The selector UI correction is covered by `tests/choice-dialogs.cjs`, included in
+`npm run test:chromium`. It exercises all seven outcome options, the existing
+language bridge, touch events, keyboard and Back dismissal, focus restoration,
+large text and launcher artwork references. Existing language persistence,
+collection membership and counter regression suites remain in the same command.
+
+Local selector verification passed: 16 core JavaScript tests, all 10 Chromium
+groups (including 217 choice-dialog assertions), 272 JVM Android tests, zero
+lint issues, debug assembly and APK signature/package verification. The dialog
+matrix includes English/Turkish, 320/360/480px widths, 200% root text size,
+synthetic touch events and both reduced and normal motion. Regeneration produced
+identical bytes for all 24 checked packaged resources/maps. Java JaCoCo reports
+4,195/6,271 covered lines and 2,134/3,805 covered branches; it does not measure
+web coverage. The initial pre-change Android attempt failed 92/272 tests when
+the existing `/tmp` test workspace ran out of space; removing only disposable
+synthetic test directories let the same source pass all 272 tests. The final
+post-change run also passed. No physical-device or live Instagram test was run
+for this UI correction. The resulting APK is debug signed, not an official release.

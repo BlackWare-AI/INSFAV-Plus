@@ -16,4 +16,9 @@ Owner review: preserve conservative 45-second profile deadlines after offline
 15/30/45 comparison; validate all unflushed successful metadata on recovery;
 provide visible full account text without increasing row height; warn about
 relative orphan classification and block it when collections are unloaded. The
-owner-provided Plus logo supplies launcher, splash, About and README branding.
+owner-provided Plus logo supplies launcher, splash and README branding. Application
+information keeps its metadata and actions without displaying the launcher image.
+
+Language and account-outcome selection now use the shared AMOLED web modal in
+place of platform select popups, with selected checkmarks, keyboard navigation,
+focus restoration, 48px touch targets and scrollable options at large text sizes.
