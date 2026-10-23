@@ -15,7 +15,7 @@ import org.json.*;
 
 /** Bounded reusable pages, one shared cookie lease; browser operations run on the main looper. */
 final class WebViewProfileProvider implements ProfileProvider {
-  static final long PROFILE_DEADLINE_MS = 15000;
+  static final long PROFILE_DEADLINE_MS = 45000;
   static final long SESSION_DEADLINE_MS = 10000;
 
   interface Pages {
@@ -356,6 +356,7 @@ final class WebViewProfileProvider implements ProfileProvider {
   final class Operation {
     final String user, expectedId;
     final boolean highResolution;
+    final long profileDeadlineMs;
     final CountDownLatch done = new CountDownLatch(1);
     final Object token = new Object();
     volatile Failure failure;
@@ -373,6 +374,13 @@ final class WebViewProfileProvider implements ProfileProvider {
     Diagnostics.Reason reason = Diagnostics.Reason.UNKNOWN_RESPONSE;
 
     Operation(String user, String expectedId, boolean highResolution) {
+      this(user, expectedId, highResolution, PROFILE_DEADLINE_MS);
+    }
+
+    // Package-private seam for deterministic deadline comparisons; no user/runtime override.
+    Operation(String user, String expectedId, boolean highResolution, long profileDeadlineMs) {
+      if (profileDeadlineMs <= 0) throw new IllegalArgumentException("Profile deadline");
+      this.profileDeadlineMs = profileDeadlineMs;
       this.user = user;
       this.expectedId = expectedId;
       this.highResolution = highResolution;
@@ -386,7 +394,7 @@ final class WebViewProfileProvider implements ProfileProvider {
     void armWatchdog() {
       if (!timingStarted) {
         timingStarted = true;
-        deadline = began + (user.isEmpty() ? 18000 : PROFILE_DEADLINE_MS);
+        deadline = began + (user.isEmpty() ? 18000 : profileDeadlineMs);
         later(
             () -> fail(new Failure("WEBVIEW_TIMEOUT")),
             Math.max(0, deadline - SystemClock.uptimeMillis()));
@@ -503,7 +511,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         deadline =
             user.isEmpty()
                 ? SystemClock.uptimeMillis() + SESSION_DEADLINE_MS
-                : began + PROFILE_DEADLINE_MS;
+                : began + profileDeadlineMs;
         if (SystemClock.uptimeMillis() >= deadline) {
           fail(new Failure("WEBVIEW_TIMEOUT"));
           return;
@@ -736,7 +744,7 @@ final class WebViewProfileProvider implements ProfileProvider {
           candidateFound,
           sessionEvidence,
           SystemClock.uptimeMillis() - began,
-          user.isEmpty() ? SESSION_DEADLINE_MS : PROFILE_DEADLINE_MS);
+          user.isEmpty() ? SESSION_DEADLINE_MS : profileDeadlineMs);
       if (error != null) log.log("WEBVIEW", error.code, error.http);
       if (error != null && FailurePolicy.pause(error)) barrier = error;
       try {

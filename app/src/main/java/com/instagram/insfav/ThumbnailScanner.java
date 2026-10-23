@@ -11,9 +11,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.json.*;
 
-/** One sequential SAF metadata cursor, bounded validation workers and durable 512-row batches. */
+/**
+ * One sequential SAF metadata cursor, bounded validation workers and durable checkpoint batches.
+ */
 final class ThumbnailScanner implements AutoCloseable {
-  static final int BATCH_SIZE = 512, WORKERS = 2;
+  static final int BATCH_SIZE = 256, WORKERS = 2;
 
   interface Progress {
     void update(int processed, int total) throws Exception;
@@ -21,7 +23,7 @@ final class ThumbnailScanner implements AutoCloseable {
 
   private final ContentResolver resolver;
   final ThumbnailScanIndex index;
-  private final int workers;
+  private final int workers, batchSize;
   private final AtomicInteger active = new AtomicInteger(), peak = new AtomicInteger();
   int inspected, reused, processed, total, metadataQueries;
   long queryNanos, listingNanos;
@@ -32,6 +34,14 @@ final class ThumbnailScanner implements AutoCloseable {
   }
 
   ThumbnailScanner(Context context, File root, int workers) {
+    this(context, root, workers, BATCH_SIZE);
+  }
+
+  // Comparison seam; production callers use the measured conservative default.
+  ThumbnailScanner(Context context, File root, int workers, int batchSize) {
+    if (batchSize != 256 && batchSize != 512)
+      throw new IllegalArgumentException("Scan batch limit");
+    this.batchSize = batchSize;
     if (workers < 1 || workers > 4) throw new IllegalArgumentException("Scan worker limit");
     resolver = context.getContentResolver();
     index = new ThumbnailScanIndex(context, root);
@@ -74,7 +84,7 @@ final class ThumbnailScanner implements AutoCloseable {
         total = cursor.getCount();
         queryNanos += System.nanoTime() - queryStarted;
         progress.update(0, total);
-        List<ThumbnailScanIndex.Entry> batch = new ArrayList<>(BATCH_SIZE);
+        List<ThumbnailScanIndex.Entry> batch = new ArrayList<>(batchSize);
         while (advance(cursor)) {
           cancel.throwIfCanceled();
           if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
@@ -93,11 +103,11 @@ final class ThumbnailScanner implements AutoCloseable {
                     cursor.isNull(3) ? 0 : cursor.getLong(3)));
           }
           processed++;
-          if (batch.size() == BATCH_SIZE) {
+          if (batch.size() == batchSize) {
             process(batch, previous, cancel, pool);
             batch.clear();
           }
-          if (processed % BATCH_SIZE == 0) progress.update(processed, total);
+          if (processed % batchSize == 0) progress.update(processed, total);
         }
         process(batch, previous, cancel, pool);
         // Cloud providers can return an incomplete cursor while still loading.
@@ -225,7 +235,7 @@ final class ThumbnailScanner implements AutoCloseable {
         .put("reused", reused)
         .put("workers", workers)
         .put("peakValidations", peak.get())
-        .put("batchSize", BATCH_SIZE)
+        .put("batchSize", batchSize)
         .put("safQueryNanos", queryNanos)
         .put("safCursorNanos", listingNanos)
         .put("sourceOpenNanos", timings.opens.get())

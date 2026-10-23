@@ -6,10 +6,12 @@ import argparse,datetime,json,os,subprocess,tarfile,xml.etree.ElementTree as ET
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 BASE='0a4ba915418e0652618879d4af2c0745ef9ca4f0'
-p=argparse.ArgumentParser();p.add_argument('--kind',choices=['native','browser','all'],default='all');p.add_argument('--rounds',type=int,default=3);p.add_argument('--output',type=Path,default=ROOT/'artifacts/performance');p.add_argument('--avatar-baseline-ref',default='d976254');a=p.parse_args();assert a.rounds>0
+p=argparse.ArgumentParser();p.add_argument('--kind',choices=['native','browser','policies','all'],default='all');p.add_argument('--rounds',type=int,default=3);p.add_argument('--output',type=Path,default=ROOT/'artifacts/performance');p.add_argument('--avatar-baseline-ref',default='d976254');a=p.parse_args();assert a.rounds>0
 out=a.output.resolve()/datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ');out.mkdir(parents=True)
-baseline=out/'original';subprocess.run(['git','-c','advice.detachedHead=false','clone','--quiet','--branch','baseline/insfav-0a4ba91',str(ROOT/'docs/archive/source/insfav-baseline.bundle'),str(baseline)],check=True)
-assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=baseline,text=True).strip()==BASE
+baseline=out/'original'
+if a.kind!='policies':
+ subprocess.run(['git','-c','advice.detachedHead=false','clone','--quiet','--branch','baseline/insfav-0a4ba91',str(ROOT/'docs/archive/source/insfav-baseline.bundle'),str(baseline)],check=True)
+ assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=baseline,text=True).strip()==BASE
 records=[]
 def call(command,cwd,log,env=None):
  with log.open('w') as stream:r=subprocess.run(command,cwd=cwd,env=env,stdout=stream,stderr=subprocess.STDOUT)
@@ -34,6 +36,15 @@ if a.kind in ['native','all']:
      name,_,value=line.partition(' ')
      if name in ['INDEX_WRITE','BROKER_IDLE','RESCAN_15000','STATUS_SNAPSHOT','STATUS_DELIVERY']:row['measurements'][name]=json.loads(value)
    records.append(row);(out/'native.json').write_text(json.dumps(records,indent=2)+'\n');print(variant,repeat,'passed',flush=True)
+if a.kind in ['policies','all']:
+ call(['./gradlew','-Pbenchmark',':app:testDebugUnitTest','--tests','*RescanBatchBenchmarkTest','--tests','*ProviderOperationTest'],ROOT,out/'policies.log')
+ policies={}
+ for xml in (ROOT/'app/build/test-results/testDebugUnitTest').glob('TEST-*.xml'):
+  for line in (ET.parse(xml).getroot().findtext('system-out') or '').splitlines():
+   name,_,value=line.partition(' ')
+   if name in ['BATCH_COMPARISON','DEADLINE_COMPARISON']:policies[name]=json.loads(value)
+ if len(policies)!=2:raise SystemExit('Policy evidence is incomplete')
+ (out/'policies.json').write_text(json.dumps(policies,indent=2)+'\n')
 if a.kind in ['browser','all']:
  env={**os.environ,'BASELINE_ASSETS':str(baseline/'app/src/main/assets')}
  if subprocess.run(['git','cat-file','-e',a.avatar_baseline_ref+'^{commit}'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
@@ -46,5 +57,5 @@ if a.kind in ['browser','all']:
    tar.extractall(avatar,filter='data')
   env['BASELINE_60_ASSETS']=str(avatar/'app/src/main/assets')
  for script in ['performance','thumbnail-performance','acceptance-performance']:call(['node','tests/'+script+'.cjs'],ROOT,out/(script+'.json'),env)
-subprocess.run(['git','diff','--exit-code'],cwd=baseline,check=True,stdout=subprocess.DEVNULL)
+if a.kind!='policies':subprocess.run(['git','diff','--exit-code'],cwd=baseline,check=True,stdout=subprocess.DEVNULL)
 print('Evidence:',out,'\nRun tools/verify.py and jacocoDebugReport for the full test/coverage report after benchmarks.')

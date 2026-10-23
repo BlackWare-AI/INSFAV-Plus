@@ -62,6 +62,7 @@ final class ThumbnailInventory implements AutoCloseable {
         }
         return result(kind, start, total, items, true);
       }
+      if (!store.hasDocument()) return result(kind, start, 0, items, false);
       if (!available || images.scanning() || !new File(store.root, "thumbnail-scan.db").isFile())
         return result(kind, start, 0, items, false);
       String folder =
@@ -103,7 +104,9 @@ final class ThumbnailInventory implements AutoCloseable {
         .put("pageSize", PAGE)
         .put("items", items)
         .put("complete", complete)
-        .put("readOnly", true);
+        .put("readOnly", true)
+        .put("collectionLoaded", store.hasDocument())
+        .put("relativeToLoadedCollections", kind.equals("orphan"));
   }
 
   private JSONObject item(

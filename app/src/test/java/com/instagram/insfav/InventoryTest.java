@@ -70,6 +70,21 @@ public class InventoryTest {
   }
 
   @Test
+  public void unloadedCollectionsCannotMakeEveryImageAConfirmedOrphan() throws Exception {
+    images.scan((e, v) -> {});
+    store.clearDocument();
+    int opens = provider.opens;
+    JSONObject result = inventory.query("orphan", 0, "");
+    assertFalse(result.getBoolean("collectionLoaded"));
+    assertFalse(result.getBoolean("complete"));
+    assertTrue(result.getBoolean("relativeToLoadedCollections"));
+    assertTrue(result.getBoolean("readOnly"));
+    assertEquals(0, result.getJSONArray("items").length());
+    assertEquals(opens, provider.opens);
+    assertEquals(0, provider.writes);
+  }
+
+  @Test
   public void paginationIsBoundedAndOldPreviewTokensExpire() throws Exception {
     for (int i = 0; i < 105; i++)
       provider.add("root/orphan" + i + ".webp", "orphan" + i + ".webp", 128, 128);
