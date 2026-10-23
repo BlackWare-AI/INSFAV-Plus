@@ -2,6 +2,8 @@
 
 ## 1.1.0 (build 2)
 
+Folder chevrons point down when collapsed and up when expanded.
+
 Larger scroll arrows and thumb fade when idle, with a 15px grip and one-second
 drag hold. Settings offer persistent list or 2/3/4-column square matrix views,
 usernames below images, and a language selector in the upper-right toolbar.
