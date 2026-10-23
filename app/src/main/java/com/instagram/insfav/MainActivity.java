@@ -287,9 +287,11 @@ public final class MainActivity extends Activity {
                       ? "font/woff2"
                       : name.endsWith(".webp")
                           ? "image/webp"
-                          : name.endsWith(".js")
-                              ? "application/javascript"
-                              : name.endsWith(".css") ? "text/css" : "text/html";
+                          : name.endsWith(".jpg")
+                              ? "image/jpeg"
+                              : name.endsWith(".js")
+                                  ? "application/javascript"
+                                  : name.endsWith(".css") ? "text/css" : "text/html";
               return new WebResourceResponse(
                   mime,
                   "UTF-8",

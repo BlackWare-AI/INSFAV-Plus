@@ -276,4 +276,9 @@
     <string name="ui_3ee1e3292f27" formatted="false">Completed with failures</string>
     <string name="ui_41f55ca840f7" formatted="false">Completed — Retry available</string>
     <string name="ui_31a3c27bf2f0" formatted="false">Paused: settings rollback could not be confirmed</string>
+    <string name="ui_17be95e1a188" formatted="false">Account details</string>
+    <string name="ui_7234213a42c2" formatted="false">Open profile</string>
+    <string name="ui_19371e0bec7c" formatted="false">Press and hold to read the full name and username.</string>
+    <string name="ui_522331719bf2" formatted="false">Orphan candidates are relative to loaded collections. Missing or incomplete imports can misclassify existing images. Nothing is deleted.</string>
+    <string name="ui_87611ccf72f0" formatted="false">Import all collections before interpreting orphan candidates.</string>
 </resources>

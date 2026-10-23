@@ -11,7 +11,7 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   if(req.url.startsWith('/thumb/')||req.url.startsWith('/full/')||req.url.startsWith('/remote-full/')){res.setHeader('Content-Type','image/svg+xml');res.end('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#777"/></svg>');return;}
   const name=req.url.split('?')[0]==='/'?'index.html':req.url.split('?')[0].slice(1),file=path.join(root,name);
   if(!file.startsWith(root)||!fs.existsSync(file)){res.writeHead(404).end();return;}
-  res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.webp')?'image/webp':name.endsWith('.woff2')?'font/woff2':'text/html');res.end(fs.readFileSync(file));
+  res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.webp')?'image/webp':name.endsWith('.jpg')?'image/jpeg':name.endsWith('.woff2')?'font/woff2':'text/html');res.end(fs.readFileSync(file));
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  let browser;
@@ -82,7 +82,7 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   check(await page.evaluate(()=>thumbnailMetrics().rows<32&&thumbnailMetrics().pool<=32),'recycled row pool remains bounded during a large jump');
   check(await page.locator('.bottom-nav .nav-btn').count()===1,'bottom bar only retains the information button');
   await page.locator('#info-btn').click();
-  check(await page.locator('#dialog-title').isHidden()&&await page.locator('#dialog-body img').count()===0,'About removes only its visible title and logo');
+  await page.locator('#dialog-body .about-logo').waitFor();await waitForValue(page,()=>document.querySelector('.about-logo')?.naturalWidth===1280);check(await page.locator('#dialog-title').isHidden()&&await page.locator('#dialog-body .about-logo').evaluate(img=>img.src.endsWith('/logo.jpg')&&img.naturalHeight===1198),'About uses the supplied Plus logo and preserves its hidden title');
   check(await page.locator('#dialog-body .about-detail').evaluateAll(nodes=>nodes.slice(-3).map(n=>n.firstChild.textContent).join('|'))==='Reset Count|Add List|Delete List','list actions follow Reset Count in the requested order');
   check(await page.locator('#import-btn').evaluate(el=>getComputedStyle(el).color)==='rgb(255, 255, 255)','Add List preserves the white plus');
   check(await page.locator('#clear-btn').evaluate(el=>getComputedStyle(el).color)==='rgb(181, 116, 120)','Delete List retains its existing red tone');

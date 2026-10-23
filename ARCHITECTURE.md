@@ -14,7 +14,7 @@ completion acknowledge only committed revisions. Startup replays unacknowledged
 deltas. Checkpoint SQLite version 1 and Fetcher version 5 remain unchanged.
 
 `ThumbnailScanner` performs bulk SAF metadata queries, two validation workers
-and 512-record transactions. Cancellation retains completed checkpoints. Warm
+and 256-record transactions. Cancellation retains completed checkpoints. Warm
 scans reuse unchanged metadata; source files are never deleted or rewritten.
 `SourceBytes` bounds encoded data to 64 MiB. Concurrent reads share chunks and
 release them when response streams close. One large read lease bounds concurrent
@@ -23,7 +23,7 @@ large payloads. No bitmap LRU or derived thumbnail disk cache is introduced.
 `FetchBroker` owns a bounded hidden-WebView pool with completion/condition
 wakeups, per-worker pacing, priority viewer work and shared access restrictions.
 `QueueEngine` isolates profile failures, pauses for storage/database failures
-and treats OOM as a global resource failure. A 15-second profile deadline remains
+and treats OOM as a global resource failure. A 45-second profile deadline remains
 retryable. Candidate evidence vetoes a permanent unavailable-page decision.
 WorkManager and the foreground service follow Android background limits;
 `onTimeout` persists/defer claims and ends the foreground notification.
@@ -59,3 +59,18 @@ source. The instrumentation package is `com.instagram.insfav.plus.test`. SAF URI
 grants and Android Keystore aliases are UID-scoped; matching alias strings do not
 share keys. Backup/cloud extraction remain disabled for private state. No
 sharedUserId or cross-app provider/URI access was added.
+
+The 15/30/45-second watchdog comparison uses virtual-time normal/HD delayed
+valid-profile fixtures. The conservative 45-second baseline avoids the false
+timeouts introduced by shorter limits; timeout remains retryable. These fixtures
+do not estimate live Instagram latency or failure rates. The identical Plus
+scanner was compared at 256/512 batches over three counterbalanced pairs of
+15,000 files. With no wall-time improvement at 512, production retains 256.
+
+Long account labels keep fixed 65px rows. Holding the name, using its context
+menu, or Shift+F10 opens a scrollable full-text dialog. Plain labels and complete
+accessible names remain available; a short tap still opens the profile. Orphan
+inventory is relative only to imported collections, warns about incomplete
+imports, and does not classify files when no collection is loaded. No delete
+operation is exposed. User-supplied logo bytes are generated from one web source
+into Web and Android assets without re-encoding.

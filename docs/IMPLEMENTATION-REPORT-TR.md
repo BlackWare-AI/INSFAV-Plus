@@ -9,7 +9,7 @@ Kullanıcının netleştirdiği ölçü **60×60 CSS px avatar, 65 px hesap sat�
 
 - Hedef: <https://github.com/BlackWare-AI/INSFAV-Plus>;
   PR: <https://github.com/BlackWare-AI/INSFAV-Plus/pull/1>.
-- Uygulama kaynak kontrol noktası: `c6b0e63`; teslim dokümanları ve CI düzenlemesi
+- Native güvenlik kontrol noktası: `357b6f7`; teslim dokümanları ve CI düzenlemesi
   sonraki mantıklı commit'tedir. Kesin teslim SHA'sı PR başlığındaki head commit ve
   son kullanıcı raporunda verilir. PR birleştirilmedi; çalışma `plus/1.0.0`
   dalında, yeni deponun `main` dalına incelenebilir durumdadır.
@@ -28,7 +28,7 @@ Kullanıcının netleştirdiği ölçü **60×60 CSS px avatar, 65 px hesap sat�
 |---|---|---|
 | 1 | Bağımsız import, provenance, Plus adı/kimliği/sürümü/ikonu, eski workflow izolasyonu | `e751069` |
 | 2 | 60 px avatar, bitişik 65 px satır, virtual koordinatlar ve erişilebilir adlar | `d976254` |
-| 3 | Kapalı profil aday vetosu, 15 saniye timeout, hata izolasyonu, FGS timeout ve saat açıklaması | `7115d42` |
+| 3 | Kapalı profil aday vetosu, timeout/hata izolasyonu, FGS timeout ve saat açıklaması | `7115d42` |
 | 4 | Kalıcı metadata günlüğü, toplu snapshot, sınırlı görsel akışı, olay tabanlı bekleme, 1 Hz durum, Resume ve iptal | `113f081` |
 | 5 | Ayar/temizlik/backup menüleri, birleşik diagnostics, TR/EN ve Türkçe görünen-ad araması | `4b4e7e8` |
 | 6 | Eski JSON ve doğrulanmış eski paket AAD ayar migrasyonu, kaynak dosyaları koruma | `00a9e95` |
@@ -55,7 +55,7 @@ canlı Instagram ve aşağıda belirtilen sistem sınırları ayrıca doğrulanm
   terminal flush, crash sonrası tekrar oynatma ve güvenli onay watermark'ı.
 - `LocalImages.java`, `SourceBytes.java`, `ImageCodec.java`: ortak sınırlı encoded
   akış, 64 MiB kaynak sınırı, küçük/büyük okuma slotları, iki validation worker,
-  512 kayıt checkpoint, Cancel ve ölçüm. Kaynağa yazma/silme/kopyalama yok.
+  ölçümle seçilmiş 256 kayıt checkpoint, Cancel ve ölçüm. Kaynağa yazma/silme/kopyalama yok.
 - `ProbeDecision.java`, `WebViewProfileProvider.java`, `profile-probe*.js`,
   `QueueEngine.java`, `FetchBroker.java`, `FetchService.java`, `ManualFetch.java`:
   hata öncelikleri, timeout, olayla uyanma, profil/global hata ayrımı, OOM ve
@@ -93,7 +93,9 @@ pencere yerel 00:00–08:00, açıklamalar ve sonraki uygun zaman 24 saat biçim
 
 60 px avatar tüm liste/arama/klasör satırlarında cover ile gösterilir; placeholder
 büyütüldü. Metin fontları büyütülmedi. İlave hesap aralığı yoktur. Sabit 65 px
-yükseklikte büyük yazı görünür olarak kırpılabilir; tam ad ekran okuyucuya verilir.
+yükseklikte büyük yazı görünür olarak kırpılabilir; tam ad ekran okuyucuya verilir. Adın üzerine basılı tutma, bağlam menüsü
+veya Shift+F10 ile kaydırılabilir tam metin penceresi açılır. 320×480 ekranda
+30 px metin ve 30 karakter kullanıcı adıyla erişim ayrıca test edilir.
 
 ## 5. Arşivleme ve sadeleştirme
 
@@ -103,8 +105,9 @@ testleri `legacy-tools` içinde, tarihî raporlar `technical-reports` içindedir
 Git takipli eski APK'ların birebir içeriği bundle'da; checksum ve açık sertifika
 referansları `release-artifacts.json` içindedir. Aktif kaynak ağacında APK yoktur.
 Kullanılmayan eski ikon varyantları arşivlendi; kullanılmayan `ic_fetch` kaldırıldı.
-Ana ikon resmi korundu, Plus/monochrome katmanı eklendi. Kaynak resim içeriğini
-değiştiren bir artwork optimizasyonu uygulanmadı.
+Önceki ikon ve logo arşivde korundu. Kullanıcının verdiği JPEG (1280×1198,
+43.009 byte) yeniden kodlanmadan launcher, açılış, About ve README
+markalamasında kullanılır. Tek kaynak `web/static/logo.jpg` üzerinden üretilir.
 
 `image-failed`, HTTP/yerel viewer yolları kullanım bulunduğu için korunur.
 MainActivity switch'i map'e taşımak bakım kazancı sağlamadığı için korunur.
@@ -135,13 +138,12 @@ bu sayılar fiziksel NAND yazımı veya pil tüketimi değildir.
 | Tek profil güncellemesi | 1.249.601 → yaklaşık 1.061 byte | Tam profil haritası yerine patch |
 | 2,2 sn progress + 1,1 sn drain | 11 → 3 normal gönderim | Kritik iki ardışık olay hemen iletilir |
 | Host 15.000 WebP Cold / Warm scan | 12.653 → 12.348 / 467 → 443 ms | Warm dağılımı çakışır; sağlam warm hızlanması iddiası yok |
-| Eşit 60 px avatarla 10k / 15k render p95 | 4,2 → 5,5 / 4,6 → 4,9 ms | Küçük regresyon; frame p95 medyanı 16,8 ms kaldı |
-| Debug APK | 2.956.131 → 3.256.037 byte | Yaklaşık %10,15 artış; iki dil ve yeni işlevlerin maliyeti |
+| Eşit 60 px avatarla 10k / 15k render p95 | 4,1 → 4,2 / 4,5 → 4,0 ms | Küçük karışık değişimler; frame p95 yaklaşık 16,8 ms |
+| Debug APK | 2.956.131 → 3.092.065 byte | Yaklaşık %4,60 artış; iki dil ve yeni işlevlerin maliyeti |
 
-Render ek maliyeti erişilebilir etiketler/i18n/envanter işlevleriyle birlikte
-tutuldu; hızlanma diye sunulmadı. Virtual algoritma korunur, DOM ve görsel iş
-sınırları test edilir. 15k JavaScript heap örneği eşit-avatar bazında 15,22 →
-15,36 MB'dır; bu native/GPU/Android toplam RAM peak'i değildir. Yeni bitmap LRU
+Render sonuçlarındaki küçük karışık farklar hızlanma diye sunulmadı. Virtual algoritma korunur, DOM ve görsel iş
+sınırları test edilir. 15k JavaScript heap örneği eşit-avatar bazında 15,24 →
+15,43 MB'dır; bu native/GPU/Android toplam RAM peak'i değildir. Yeni bitmap LRU
 veya thumbnail disk cache yoktur. Ertelenmiş arama indeksleme denemesi karışık
 sonuçlar üzerine geri alındı. Türkçe sorguyu bir kez normalize etmek 15k ad
 aramasında 12,9/19,1 → 3,2/1,4 ms verdi; hesap kimlik normalizasyonu değişmedi.
@@ -155,14 +157,14 @@ SQL/JSON/query/open/decode süreleri ayrı raporlanır; worker süreleri örtü�
 ## 7. Test sayıları, başarısız denemeler ve coverage
 
 Başlangıç: 222 Java ve 11 core testi başarılı; yedi eski Chromium script'i uygun
-baseline ortamıyla geçti. Son tam yerel koşum: **268 Java, 16 core testi ve dokuz
+baseline ortamıyla geçti. Son tam yerel koşum: **272 Java, 16 core testi ve dokuz
 ayrı Chromium fonksiyonel script'i başarılı; sıfır başarısız/hatalı/atlanmış Java
 testi**. Debug ve AndroidTest APK derlemesi başarılıdır. Chromium avatar matrisi
 10/1.000/10.000/15.000 hesap, farklı ekranlar, uzun adlar, eksik/256 WebP, klasör,
 hızlı scroll, arama ve alt çubuk koordinatlarını kapsar. Probe, dil, focus, font,
 envanter ve bootstrap hata testleri ayrı script'lerdir.
 
-JaCoCo 0.8.13: **4.170/6.255 satır = %66,67**, **2.125/3.791 branch = %56,05**.
+JaCoCo 0.8.13: **4.195/6.271 satır = %66,90**, **2.134/3.805 branch = %56,08**.
 Generated R/BuildConfig dışarıdadır; Robolectric uygulama Java kodu ölçülür.
 HTML/XML CI artifact'ine eklenir. Kapsama tam değildir ve cihaz coverage'i değildir.
 Faz bazında komut exit'leri [verification](verification/README.md) altındadır.
@@ -201,7 +203,7 @@ son ek Java değişiklikleri de aynı formatter kontrolünden geçer.
 ## 9. APK ve imza
 
 Test APK `com.instagram.insfav.plus`, code 1, `1.0.0-debug`, debuggable=true,
-geçerli debug imzalıdır. Yerel dosya 3.256.037 byte; SHA-256 ve açık sertifika
+geçerli debug imzalıdır. Yerel dosya 3.092.065 byte; SHA-256 ve açık sertifika
 digest'i [debug-apk.json](verification/debug-apk.json) içindedir. CI artifact'inin
 kendi checksum/sertifika JSON'u vardır; onunla eşleştirilmelidir. İki build farklı
 debug sertifikaları kullanabilir. AndroidTest APK yalnız test fixture'ıdır;
@@ -249,3 +251,32 @@ Debug APK, test sonuçları ve coverage: PR Checks → **INSFAV Plus checks** �
 **INSFAV-Plus-debug-test-and-coverage** artifact'i. Emülatör kanıtı ayrı
 **INSFAV-Plus-emulator-evidence** artifact'idir. Son rapor kesin artifact URL'sini
 verir. Resmî release bağlantısı yoktur; imza anahtarı sağlanmadan yayın yapılmaz.
+
+## Son kullanıcı güvenlik gözden geçirmesi
+
+15/30/45 saniye gerçek provider watchdog/callback kurallarıyla ve sanal saatle
+karşılaştırıldı. Her eşikte normal/HD yollarında 16 bilinen-geçerli gecikmiş yanıt
+gözleminde yanlış timeout sayıları 10/4/0 oldu. Örnek dağılımı sınır durumları
+için seçilmiştir; canlı servis hata oranı değildir. Kaynak uygulamanın temkinli
+45 saniyesi korundu; her timeout tekrar denenebilir WEBVIEW_TIMEOUT'tur.
+
+Aynı Plus scanner/aynı 15.000 gerçek sentetik WebP/iki worker üzerinde, coverage
+kapalı üç 256/512 çifti ölçüldü. Cold medyan 11.136,52 / 11.166,32 ms, warm medyan
+149,35 / 182,78 ms. 512 toplam süreyi iyileştirmediği için 256 seçildi. Önceki
+85cb932 emülatör sayıları 512 kullanan tarihî kontrol noktasıdır; güncel varsayılan
+256'dır. Kaynak byte/tarihler değişmedi, warm source-open ve kaynak yazımı sıfır.
+
+Altı mevcut journal/AtomicFile recovery testi toplulaştırma korunmadan önce tekrar
+geçti. Yeni yedinci test snapshot eşiğinin altındaki 63 başarılı metadata kaydının
+restart, kalıcı snapshot, onay ve ikinci restart sonrasında tamamını doğrular.
+Fiziksel güç kesme testi yapılmadı.
+
+Orphan görünümü yalnız yüklenmiş koleksiyonlara göre adayları gösterir. Eksik veya
+tamamlanmamış import yanlış sınıflandırma yapabilir; UI bunu açıkça belirtir.
+Koleksiyon yoksa tüm dosyaları orphan diye sınıflandırmaz. Silme komutu eklenmedi.
+
+İlk yeni koşumda yalnız eski About testinin “logo yok” beklentisi başarısız oldu;
+kullanıcının verdiği logonun gerçekten yüklenmesini ve JPEG boyutlarını doğrulayan
+beklentiyle güncellendi. Son tam yerel koşumun 272 Java/16 core/dokuz Chromium
+grubu, lint ve derlemeleri geçti. APK boyutu temiz derlemeyle karşılaştırıldı;
+önceki incremental dex paketleme boyutları bu karşılaştırmada kullanılmaz.

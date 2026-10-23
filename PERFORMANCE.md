@@ -33,21 +33,22 @@ SAF-open delay) measured 12,653 → 12,348 ms. Warm scans measured 467 → 443 m
 but Plus ranged 340–563 ms versus 449–501 ms originally. **No robust warm-scan
 speedup is claimed.** Both warm variants opened zero source files. Source bytes
 and modified dates were fingerprinted; application writes to sources were zero.
-Validation workers remain two. Cold checkpoint transactions decrease from
-256-record batches to 512-record batches; warm scans keep two transactions.
+Validation workers remain two. Those historical Plus samples used 512-record batches; warm scans kept two
+transactions. The subsequent controlled batch review below retains 256 in the
+final application.
 
 | Host Chromium, 393×820, real 256 WebP fixture | Original 40px | Phase-2 60px baseline | Plus 60px |
 |---|---:|---:|---:|
-| 10,000 accounts, render p95 | 4.4 ms | 4.2 ms | 5.5 ms |
-| 15,000 accounts, render p95 | 4.0 ms | 4.6 ms | 4.9 ms |
-| Frame interval p95 | 16.8 ms | 16.8 ms | 16.8 ms |
+| 10,000 accounts, render p95 | 4.0 ms | 4.1 ms | 4.2 ms |
+| 15,000 accounts, render p95 | 4.7 ms | 4.5 ms | 4.0 ms |
+| Frame interval p95 across dataset medians | 16.7–16.8 ms | 16.7–16.8 ms | 16.8 ms |
 | Peak mounted account nodes | 18 | 19 | 19 |
-| 15,000-account sampled JavaScript heap | 15.18 MB | 15.22 MB | 15.36 MB |
+| 15,000-account sampled JavaScript heap (decimal MB) | 15.24 MB | 15.24 MB | 15.43 MB |
 
-Render p95 increased by 1.3/0.3 ms against the equal-avatar baseline. We retain
-the requested larger avatars, localization and full accessible labels; bounded
-DOM/image work and the measured frame interval remain intact. These results do
-not establish a scrolling speedup. The virtual-list algorithm was preserved.
+The final owner-review trace includes full-text long-press/keyboard access and
+the new logo. Render p95 differs by +0.1/−0.5 ms from the equal-avatar baseline
+for 10k/15k records; these small mixed changes do not establish a scrolling
+speedup. Bounded DOM/image work and the measured frame interval remain intact. The virtual-list algorithm was preserved.
 Cold bootstrap timings varied with dataset/JIT behavior, so no startup-speed
 claim is made. A deferred display-name-index experiment was reverted after mixed
 results. Hoisting Turkish query normalization once per query reduced measured
@@ -76,8 +77,8 @@ source reading. Final CI acceptance and coexistence are linked from the PR.
 
 The final debug APK metadata is in [docs/verification/debug-apk.json](docs/verification/debug-apk.json).
 This JSON describes the locally signed test APK; CI verifies its own separately
-signed debug artifact. Original debug size was 2,956,131 bytes; Plus is 3,256,037
-bytes, approximately 10.15% larger, with
+signed debug artifact. Original debug size was 2,956,131 bytes; Plus is 3,092,065
+bytes, approximately 4.60% larger, with
 bilingual resources, inventory and recovery functionality. There are no new
 runtime dependencies and no JaCoCo agent in the APK. Debug and old minified
 release APK sizes are not treated as comparable builds.
@@ -93,3 +94,37 @@ launch flags. Those flags were removed from the harness after CI system Chrome
 failed before page load. The main three-variant acceptance table above already
 uses normal multiprocess launches. The launch-failure path now closes its HTTP
 server and exits nonzero rather than keeping the test process alive.
+
+## Owner safety review: policy comparisons
+
+[Batch evidence](docs/verification/performance/batch-size-comparison.json) compares
+the **same Plus scanner** at 256 and 512 on the same 15,000 real synthetic 128/256
+WebP files, two workers, 1 ms simulated source-open delay, three counterbalanced
+pairs, no coverage agent. Cold medians are **11,136.52 ms (256)** and **11,166.32 ms
+(512)**. Warm medians are **149.35 ms (256)** and **182.78 ms (512)**. SQL transaction
+medians improve slightly at 512 (69.17→63.05 ms), but total scan time does not.
+The default is therefore **256**. Warm source opens are zero in both variants;
+source contents/dates are unchanged and source writes are zero. This isolates
+scanner/batch behavior on a memory-backed host, not a phone-wide speed claim.
+
+[Deadline evidence](docs/verification/performance/deadline-comparison.json) drives
+the actual provider watchdog and late callback decision with a Robolectric virtual
+clock. Each threshold sees the same eight known-valid delayed callbacks at
+2/8/14/16/22/29/31/44 seconds, through both normal and HD paths (16 observations).
+15 seconds falsely times out 10/16, 30 seconds 4/16, and 45 seconds 0/16. These
+are deliberately chosen boundary/slow fixtures, **not a live failure-rate sample**.
+The conservative original **45-second** limit is retained; every expiry remains
+WEBVIEW_TIMEOUT and retryable. Fast confirmed unavailable profiles still skip
+immediately. No live evidence justifies shortening this baseline.
+
+Before retaining batched index snapshots, all six existing journal/AtomicFile
+recovery tests were rerun successfully. A seventh regression acknowledges 63
+updates below the snapshot threshold, stops the in-memory timer, reopens the Store
+and verifies all 63 records and their counts, durable snapshot, empty journal and
+idempotent second restart. This models interruption, not a physical power cut.
+
+APK size is now compared using clean builds: original 2,956,131 bytes versus final
+Plus 3,092,065 bytes (+4.60%). Earlier incremental packaging checkpoints
+(3,256,037 / 3,326,545 bytes) retained additional dex packaging overhead and are
+superseded for the size comparison. The clean APK has no duplicate class
+definitions or embedded JaCoCo agent; its own metadata/checksum is retained.

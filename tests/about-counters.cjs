@@ -6,7 +6,7 @@ const {chromium}=require('playwright'),http=require('node:http'),fs=require('nod
  assert.ok(baseline,'BASELINE_ASSETS must contain the unmodified previous packaged UI');
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,args:['--no-sandbox','--disable-gpu']});
  async function trace(root){
-  const server=http.createServer((req,res)=>{const name=req.url==='/'?'index.html':req.url.slice(1).split('?')[0],f=path.join(root,name);if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){res.writeHead(404).end();return;}res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.webp')?'image/webp':'text/html');res.end(fs.readFileSync(f));});
+  const server=http.createServer((req,res)=>{const name=req.url==='/'?'index.html':req.url.slice(1).split('?')[0],f=path.join(root,name);if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){res.writeHead(404).end();return;}res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.woff2')?'font/woff2':name.endsWith('.webp')?'image/webp':name.endsWith('.jpg')?'image/jpeg':'text/html');res.end(fs.readFileSync(f));});
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const page=await browser.newPage();
   await page.addInitScript(()=>{window.Android={request(){}};});await page.goto('http://127.0.0.1:'+server.address().port);
   const result=await page.evaluate(()=>{
