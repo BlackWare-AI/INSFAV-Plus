@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 (build 3)
+
+Restore the original person placeholder, enlarged inside the existing avatar.
+Replace the scrollbar marker with a fixed gray/black ball that remains visible
+and easy to grab; its rail stays invisible. The 250ms hold and list layout remain.
+
 ## 1.1.0 (build 2)
 
 Folder chevrons point down when collapsed and up when expanded.

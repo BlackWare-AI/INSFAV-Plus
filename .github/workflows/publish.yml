@@ -9,11 +9,11 @@ on:
         default: release
       version:
         description: VERSION_NAME in the reviewed source
-        default: '1.1.0'
+        default: '1.1.1'
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '2'
+        default: '3'
         required: true
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata

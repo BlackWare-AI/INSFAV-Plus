@@ -80,7 +80,7 @@ const {chromium}=require('playwright');
   const restored=await page.locator('.account').first().evaluate(node=>({height:node.clientHeight,avatar:node.querySelector('.avatar').clientWidth,width:document.getElementById('list').clientWidth}));
   check(JSON.stringify(restored)===JSON.stringify(original),'Returning to List restores the original row/avatar/list geometry');
   await page.evaluate(()=>nativeEvent('status',{profiles:{},revision:'missing-avatar-check'}));
-  check(await page.locator('.person-placeholder').first().evaluate(node=>Math.abs(node.getBoundingClientRect().width-40.8)<.1&&getComputedStyle(node.parentElement).backgroundColor==='rgb(0, 0, 0)'),'Missing avatar glyph is 20% larger on pure black');
+  check(await page.locator('.person-placeholder').first().evaluate(node=>Math.abs(node.getBoundingClientRect().width-48)<.1&&decodeURIComponent(getComputedStyle(node).backgroundImage).includes('M4 21v-2a8')&&getComputedStyle(node.parentElement).backgroundColor==='rgb(0, 0, 0)'),'Restored silhouette is larger (48px inside a 60px avatar) on pure black');
   await settings();check(await page.locator('#settings .screen-content').evaluate(node=>node.firstElementChild.id==='view-settings'),'View mode is the first settings section');const language=await page.locator('#language-choice').boundingBox(),header=await page.locator('#settings header').boundingBox();
   check(language.y>=header.y&&language.y+language.height<=header.y+header.height&&language.x>header.x+header.width/2,'Language choice is at the upper right of settings');
   await page.locator('#language-choice').click();await page.getByRole('radio',{name:'Türkçe',exact:true}).click();

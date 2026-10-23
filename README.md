@@ -7,11 +7,11 @@
 Independent Android collection manager based on INSFAV commit
 `0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original repository and INSFAV 5.0.0 remain separate.
 
-- **App:** INSFAV Plus 1.1.0, build 2; `com.instagram.insfav.plus`.
+- **App:** INSFAV Plus 1.1.1, build 3; `com.instagram.insfav.plus`.
 - One Java/Gradle Android application, one APK; Android 8.0+ (min 26), target 35.
 - AMOLED black interface, 60×60 profile images in contiguous 65px virtual rows.
 - Optional 2/3/4/5-column square matrices with usernames below images; view choice is saved.
-- Overlay scroll controls use a 250ms drag hold and slide/fade after 440ms idle.
+- A fixed scroll ball remains visible over the list; its rail stays hidden. Arrows slide/fade after 440ms idle; dragging uses a 250ms hold.
 - Existing collection formats, list memberships, 128/256 WebP files, HD viewer,
   Fetcher, scheduling, notifications, WorkManager, SAF and diagnostics remain supported.
 - English and Turkish, system language by default with a saved override.

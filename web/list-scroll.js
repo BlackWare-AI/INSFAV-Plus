@@ -26,13 +26,13 @@ root.createListScroll=function(){
   if(nextMaximum!==maximum||nextViewport!==viewport||nextWidth!==viewportWidth||nextHeight!==trackHeight)cancel();
   maximum=nextMaximum;viewport=nextViewport;viewportWidth=nextWidth;trackHeight=nextHeight;
   if(rail.hidden){cancel();return;}
-  const proportional=trackHeight*viewport/(maximum+viewport),hitHeight=Math.min(trackHeight,Math.max(56,proportional));
+  const hitHeight=56;
   travel=Math.max(0,trackHeight-hitHeight);
   const top=clamp(page.scrollTop),ratio=top/maximum;
-  const markHeight=Math.min(hitHeight,Math.max(40,proportional));
+  const markHeight=40;
   thumb.style.height=hitHeight+'px';thumb.style.top=ratio*travel+'px';mark.style.height=markHeight+'px';
-  // The thin mark reaches both track endpoints even when its touch target is larger.
-  mark.style.top=ratio*(hitHeight-markHeight)+'px';
+  // Keep the visible ball centered in its fixed-size touch target at every position.
+  mark.style.top=(hitHeight-markHeight)/2+'px';
   thumb.setAttribute('aria-valuemax',String(maximum));thumb.setAttribute('aria-valuenow',String(Math.round(top)));
   thumb.setAttribute('aria-valuetext',root.InsfavI18n.text('List position: {percent}%',{percent:Math.round(ratio*100)}));
   up.disabled=top<=0;down.disabled=top>=maximum;
