@@ -17,3 +17,8 @@ regenerated from web/. Current-source CI gates precede signed publication.
 
 VersionCode increases from 5 to 6 with the existing Plus signing certificate.
 Physical-device behavior remains unverified.
+
+Published: [INSFAV Plus 1.1.4 / build 6](https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.4-build.6).
+Full Chromium, Android unit tests, lint, assembly and emulator gates passed.
+The public APK was downloaded and matched against local bytes and metadata.
+See release-1.1.4.json for source, workflow, certificate and checksum records.
