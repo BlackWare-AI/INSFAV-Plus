@@ -13,7 +13,7 @@ REPO = "BlackWare-AI/INSFAV-Plus"
 
 
 class PublishGuardTest(unittest.TestCase):
-    def run_case(self, previous=None, **changes):
+    def run_case(self, previous=None, multiple_pages=False, **changes):
         prior = dict(package="com.instagram.insfav.plus", versionCode=1,
                      certificateSha256=["ab12"])
         prior.update(previous or {})
@@ -27,6 +27,9 @@ class PublishGuardTest(unittest.TestCase):
             (root / "artifacts").mkdir()
             (root / "artifacts/apk.json").write_text(json.dumps(current))
             (root / "prior.json").write_text(json.dumps(prior))
+            release = {"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
+            pages = ([{"assets": []}] * 100, [release]) if multiple_pages else ([release],)
+            (root / "pages.json").write_text("\n".join(json.dumps(page) for page in pages))
             fake = root / "bin/gh"
             fake.write_text('''#!/usr/bin/env python3
 import json, sys
@@ -34,7 +37,7 @@ from pathlib import Path
 args=sys.argv[1:]
 if args[:1]==['api']:
     if '--paginate' in args:
-        print(json.dumps([[{'assets':[{'name':'app-release.apk'}, {'name':'apk.json','id':10,'size':512}]}]]))
+        print(Path('pages.json').read_text())
     else:
         print(Path('prior.json').read_text())
 elif args[:2]==['release','create']:
@@ -71,6 +74,17 @@ else:
         self.assertNotEqual(0, code)
         self.assertFalse(published)
         self.assertIn("Cannot verify the previous", error)
+
+    def test_second_page_certificate_is_checked_with_older_gh_output(self):
+        code, published, error = self.run_case(multiple_pages=True, certificateSha256=["different"])
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+        self.assertIn("signing certificate must match", error)
+
+    def test_multiple_pages_with_matching_certificate_publish(self):
+        code, published, error = self.run_case(multiple_pages=True)
+        self.assertEqual(0, code, error)
+        self.assertTrue(published)
 
     def test_debug_artifact_is_rejected(self):
         code, published, _ = self.run_case(debuggable=True)
