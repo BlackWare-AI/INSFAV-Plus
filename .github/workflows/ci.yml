@@ -8,6 +8,7 @@ permissions:
   contents: read
 jobs:
   verify:
+    timeout-minutes: 20
     if: github.repository == 'BlackWare-AI/INSFAV-Plus'
     runs-on: ubuntu-latest
     steps:

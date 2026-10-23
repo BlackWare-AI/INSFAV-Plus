@@ -48,3 +48,8 @@ CI additionally runs `tools/coexist.py` and `tools/emulator-pool.sh` on API 35.
 Only run the former on an emulator: it checks both APK identities before
 installation, never replaces/uninstalls the original package, checks distinct
 UIDs and starts each app. No test contains real user collections or credentials.
+
+Chromium scripts have a 120-second process deadline and identify each script
+before execution. A timeout/signal/nonzero exit fails the suite explicitly; it is
+never counted as a passing or skipped script. The CI verify job has a 20-minute
+limit. Both installed Chromium and Playwright Chromium 156 passed locally.
