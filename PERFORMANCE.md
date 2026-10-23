@@ -87,3 +87,9 @@ preserved baseline locally and adds external test harnesses without editing its
 tracked files. Run full verification and JaCoCo again after filtered benchmark
 runs. Physical-device RAM, idle power, slow provider behavior and live-service
 latency remain unverified.
+
+The optional historical `browser-render.json` trace used the old single-process
+launch flags. Those flags were removed from the harness after CI system Chrome
+failed before page load. The main three-variant acceptance table above already
+uses normal multiprocess launches. The launch-failure path now closes its HTTP
+server and exits nonzero rather than keeping the test process alive.

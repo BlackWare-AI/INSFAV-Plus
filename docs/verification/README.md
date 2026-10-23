@@ -53,3 +53,12 @@ Chromium scripts have a 120-second process deadline and identify each script
 before execution. A timeout/signal/nonzero exit fails the suite explicitly; it is
 never counted as a passing or skipped script. The CI verify job has a 20-minute
 limit. Both installed Chromium and Playwright Chromium 156 passed locally.
+
+The cancelled run 39875424725 launched the runner-provided system Google Chrome
+through CHROME_BIN; it exited with SIGTRAP before loading the app. An open test
+server then kept Node alive. CI now explicitly unsets that override to use its
+pinned Playwright browser; the functional UI script no longer forces the legacy
+single-process/no-zygote flags. The launch-failure path now closes its HTTP server (verified with a missing
+executable: nonzero exit in 0.31 seconds). The process deadline bounds failures
+in the remaining scripts. The optional render harness also drops those flags;
+its retained older numeric trace is labelled historical.

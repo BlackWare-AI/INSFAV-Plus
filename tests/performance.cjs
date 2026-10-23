@@ -6,7 +6,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),path=require('node:
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  let browser;const output={};
  try{for(const variant of Object.keys(roots)){
-  browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--no-zygote','--single-process','--disable-gpu']});
+  browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-gpu']});
   const page=await browser.newPage({viewport:{width:393,height:820}});
   await page.addInitScript(()=>{Android={request(raw){const request=JSON.parse(raw);if(request.command==='bootstrap')nativeEvent('bootstrap',{raw:JSON.stringify([{name:'Benchmark',items:Array.from({length:10000},(_,i)=>({pageId:'user'+i,name:'Account '+i}))}]),profiles:{},app:{version:'benchmark',build:0},stats:{usage:0,load:0,clear:0}});}};});
   await page.goto('http://127.0.0.1:'+server.address().port+'/'+variant+'/');await page.waitForSelector('#splash[hidden]',{state:'attached'});

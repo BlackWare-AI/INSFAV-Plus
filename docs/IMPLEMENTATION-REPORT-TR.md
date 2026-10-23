@@ -175,7 +175,11 @@ gerçek commit sırası kontrolü düzeltildi. İlk PR verify işi, kaldırılm�
 `tools` paketini setup adımında istediği için testlerden önce başarısız oldu;
 paket listesi platform-tools/platform35/build-tools35 olarak açıkça sabitlendi.
 JaCoCo'nun tüm build ağacından executionData aramasıyla oluşan örtük AndroidTest
-bağımlılığı, tam `.exec` yolu seçilerek düzeltildi. Son tam kontroller geçmiştir.
+bağımlılığı, tam `.exec` yolu seçilerek düzeltildi. Son tam yerel kontroller geçmiştir. Bir sonraki CI koşumunda runner
+CHROME_BIN üzerinden sistem Chrome'unu seçti ve tarayıcı uygulama yüklenmeden
+SIGTRAP ile sonlandı; açık HTTP test sunucusu nedeniyle süreç bekledi. Koşum iptal
+edildi. CI Playwright tarayıcısına sabitlendi, UI testinin eski single-process
+bayrakları kaldırıldı; her script için 120 saniye hata veren süreç sınırı eklendi.
 
 Yerel yazılım emülatöründeki **orijinal baseline** instrumentation denemesi process
 crash ile bitti; uygulama kaynaklı olduğu kanıtlanmadı ve başarı sayılmadı.

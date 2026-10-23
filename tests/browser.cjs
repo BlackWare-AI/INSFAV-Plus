@@ -14,8 +14,9 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   res.setHeader('Content-Type',name.endsWith('.js')?'application/javascript':name.endsWith('.css')?'text/css':name.endsWith('.webp')?'image/webp':name.endsWith('.woff2')?'font/woff2':'text/html');res.end(fs.readFileSync(file));
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--no-zygote','--single-process','--disable-gpu']});
+ let browser;
  try{
+  browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-gpu']});
   const page=await browser.newPage({viewport:{width:393,height:820},deviceScaleFactor:1,hasTouch:true,isMobile:true}),errors=[],external=[];
   page.on('pageerror',error=>errors.push(error.message));page.on('request',req=>{if(!req.url().startsWith('http://127.0.0.1:'))external.push(req.url());});
   await page.addInitScript(({fixture})=>{
@@ -196,5 +197,5 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   if(process.env.UI_SCREENSHOT)await page.screenshot({path:process.env.UI_SCREENSHOT});
   check(external.length===0,'all UI image/font/resource requests stay on the local origin');check(errors.length===0,'no browser JavaScript errors');
   console.log(checks+' UI checks passed');
- }finally{await browser.close();server.close();}
+ }finally{try{if(browser)await browser.close();}finally{server.close();}}
 })().catch(error=>{console.error(error);process.exitCode=1;});

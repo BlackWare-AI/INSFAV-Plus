@@ -28,7 +28,7 @@ jobs:
       - run: npm run web:check
       - run: npm test
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:chromium
+      - run: env -u CHROME_BIN npm run test:chromium
       - run: ./gradlew :app:testDebugUnitTest :app:jacocoDebugReport :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
       - run: python3 tools/verify-apk.py app/build/outputs/apk/debug/app-debug.apk --output artifacts/debug-apk.json
       - uses: actions/upload-artifact@v4
