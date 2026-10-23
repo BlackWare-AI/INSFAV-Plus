@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.4 (build 6)
+
+Give all six basic settings information cards equal dimensions, matching the
+tallest Matched Images / Missing Images row without fixed-height text clipping.
+
 ## 1.1.3 (build 5)
 
 Enlarge and extend the Missing Images copy icon downward while preserving the
