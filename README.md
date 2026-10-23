@@ -7,7 +7,7 @@
 Independent Android collection manager based on INSFAV commit
 `0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original repository and INSFAV 5.0.0 remain separate.
 
-- **App:** INSFAV Plus 1.1.2, build 4; `com.instagram.insfav.plus`.
+- **App:** INSFAV Plus 1.1.3, build 5; `com.instagram.insfav.plus`.
 - One Java/Gradle Android application, one APK; Android 8.0+ (min 26), target 35.
 - AMOLED black interface, 60×60 profile images in contiguous 65px virtual rows.
 - Optional 2/3/4/5-column square matrices with usernames below images; view choice is saved.

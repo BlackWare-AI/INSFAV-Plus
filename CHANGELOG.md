@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3 (build 5)
+
+Enlarge and extend the Missing Images copy icon downward while preserving the
+existing card, count, label and button dimensions.
+
 ## 1.1.2 (build 4)
 
 Show the view-mode selector directly in a labeled settings box, without an

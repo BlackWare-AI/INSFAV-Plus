@@ -18,7 +18,7 @@
 /* Only the open overlay composites a small, constant blur. Fade opacity, never the blur radius. */
 .modal-overlay{backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}.screen{animation:fade var(--motion-base) var(--motion-ease)}
 .about-dialog #dialog-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.about-dialog #dialog-actions .btn{min-width:0}
-.metric-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.metric-head b{min-width:0}.copy-missing{width:28px;height:28px;flex:0 0 28px;border:0;background:none;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#aaa}.copy-missing svg{width:14px;height:14px}.folder-metric b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+.metric-head{display:flex;align-items:center;justify-content:space-between;gap:6px}.metric-head b{min-width:0}.copy-missing{width:28px;height:28px;flex:0 0 28px;border:0;background:none;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#aaa}.copy-missing svg{width:28px;height:34px;transform:translateY(3px)}.folder-metric b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
 
 .resolution-note{display:block;margin-top:4px}
 
