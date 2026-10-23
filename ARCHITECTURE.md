@@ -74,3 +74,13 @@ inventory is relative only to imported collections, warns about incomplete
 imports, and does not classify files when no collection is loaded. No delete
 operation is exposed. User-supplied logo bytes are generated from one web source
 into Web and Android assets without re-encoding.
+
+The main list keeps document scrolling and its existing virtual rows. A fixed
+48px strip reserves 12px from the rows and at least 15px from the viewport edge.
+Its arrows jump to the document's actual bounds; the scrollbar derives its
+position and length from scrollHeight/clientHeight. Only pointer dragging needs
+a continuous three-second hold, with an 8px cancellation threshold before
+activation. Scroll/resize events and observers update geometry without polling.
+Rebuilding the list, opening an overlay, losing focus/visibility or pausing the
+Android Activity cancels the hold and its glow. CSS and the WebView disable the
+main document's standard scrollbar while overflow panels retain their scrolling.

@@ -228,6 +228,8 @@ public final class MainActivity extends Activity {
     web = new WebView(this);
     web.setBackgroundColor(Color.BLACK);
     web.setOverScrollMode(View.OVER_SCROLL_NEVER);
+    // The main document has its own controls; CSS overflow panels keep their bars.
+    web.setVerticalScrollBarEnabled(false);
     WebSettings s = web.getSettings();
     s.setJavaScriptEnabled(true);
     s.setDomStorageEnabled(false);
@@ -958,6 +960,13 @@ public final class MainActivity extends Activity {
       android.widget.Toast.makeText(
               this, "Press back again to exit.", android.widget.Toast.LENGTH_SHORT)
           .show();
+  }
+
+  @Override
+  protected void onPause() {
+    // Cancel any pending Web UI hold before Android backgrounds the Activity.
+    send("app-background", "");
+    super.onPause();
   }
 
   @Override

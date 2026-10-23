@@ -47,3 +47,18 @@ select{font:inherit;background:#050505;color:#fff;border:1px solid #333;border-r
 .choice-list button:focus-visible{outline-offset:-3px}
 .choice-check{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;visibility:hidden}
 .choice-list [aria-checked="true"] .choice-check{visibility:visible}
+
+/* Reserve a 48px control strip, with 12px from the list and 15px from the edge. */
+html{scrollbar-width:none}html::-webkit-scrollbar{display:none}
+#app.has-scroll-controls{padding-right:75px}
+#main-scroll{position:fixed;top:max(15px,env(safe-area-inset-top));right:max(15px,calc((100vw - 600px)/2 + 15px));width:48px;display:flex;flex-direction:column;gap:8px;z-index:11;background:#000}
+body.overlay-open #main-scroll{visibility:hidden}
+#main-scroll button{width:48px;min-height:48px;height:48px;flex:none;border:1px solid #222;border-radius:14px;background:#000;color:#888;display:flex;align-items:center;justify-content:center;transform:none}
+#main-scroll svg{width:22px;height:22px;stroke-width:1.5}
+#scroll-track{position:relative;flex:1;min-height:48px}
+#scroll-track::before{content:"";position:absolute;left:23px;top:0;bottom:0;width:2px;background:#1c1c1c;border-radius:2px}
+#scroll-thumb{position:absolute;left:0;width:48px;min-height:48px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;border-radius:14px;cursor:grab}
+#scroll-thumb>span{position:absolute;display:block;width:4px;max-height:100%;min-height:8px;background:#777;border-radius:4px;pointer-events:none}
+#scroll-thumb.dragging{box-shadow:0 0 16px 3px #8886;cursor:grabbing}
+#scroll-thumb.dragging>span{background:#aaa}
+#scroll-thumb:focus-visible{outline:2px solid #aaa;outline-offset:-2px}

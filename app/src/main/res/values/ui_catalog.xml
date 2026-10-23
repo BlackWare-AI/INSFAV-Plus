@@ -281,6 +281,12 @@
     <item>Press and hold to read the full name and username.</item>
     <item>Orphan candidates are relative to loaded collections. Missing or incomplete imports can misclassify existing images. Nothing is deleted.</item>
     <item>Import all collections before interpreting orphan candidates.</item>
+    <item>List scrolling</item>
+    <item>Go to start of list</item>
+    <item>Go to end of list</item>
+    <item>List position</item>
+    <item>List position: {percent}%</item>
+    <item>Hold for 3 seconds to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.</item>
   </string-array>
   <string-array name="ui_values">
     <item>@string/ui_74a883a037bc</item>
@@ -564,5 +570,11 @@
     <item>@string/ui_19371e0bec7c</item>
     <item>@string/ui_522331719bf2</item>
     <item>@string/ui_87611ccf72f0</item>
+    <item>@string/ui_2130a69f4720</item>
+    <item>@string/ui_74eeec78327a</item>
+    <item>@string/ui_8ad46c01adea</item>
+    <item>@string/ui_8344488a9327</item>
+    <item>@string/ui_3a3f10d74419</item>
+    <item>@string/ui_b5211660e536</item>
   </string-array>
 </resources>

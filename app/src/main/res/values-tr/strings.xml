@@ -281,4 +281,10 @@
     <string name="ui_19371e0bec7c" formatted="false">Tam adı ve kullanıcı adını okumak için basılı tutun.</string>
     <string name="ui_522331719bf2" formatted="false">Sahipsiz adayları yalnızca yüklenmiş koleksiyonlara göre belirlenir. Eksik veya tamamlanmamış içe aktarmalar mevcut görselleri yanlış sınıflandırabilir. Hiçbir dosya silinmez.</string>
     <string name="ui_87611ccf72f0" formatted="false">Sahipsiz adaylarını değerlendirmeden önce tüm koleksiyonları içe aktarın.</string>
+    <string name="ui_2130a69f4720" formatted="false">Liste kaydırma</string>
+    <string name="ui_74eeec78327a" formatted="false">Listenin başına git</string>
+    <string name="ui_8ad46c01adea" formatted="false">Listenin sonuna git</string>
+    <string name="ui_8344488a9327" formatted="false">Liste konumu</string>
+    <string name="ui_3a3f10d74419" formatted="false">Liste konumu: %{percent}</string>
+    <string name="ui_b5211660e536" formatted="false">Sürüklemek için 3 saniye basılı tutun. Kaydırmak için yön tuşlarını, Page Up, Page Down, Home veya End tuşlarını kullanın.</string>
 </resources>
