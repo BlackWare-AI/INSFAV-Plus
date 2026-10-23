@@ -37,3 +37,8 @@ reviewed from Chromium screenshots. Bundles are regenerated from web/.
 Current-source CI gates precede signed release publication. VersionCode rises
 to 7, using the existing Plus certificate. Physical-device behavior, including
 Android edge gesture interaction and WebView blur rendering, is unverified.
+
+Published: [INSFAV Plus 1.1.5 / build 7](https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.5-build.7).
+Full Chromium, Android unit tests, lint, assembly and emulator gates passed.
+The published APK was downloaded and verified against local bytes and metadata.
+See release-1.1.5.json for source, CI, publication, certificate and checksum records.
