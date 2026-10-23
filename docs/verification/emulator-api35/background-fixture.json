@@ -1,0 +1,15 @@
+{
+  "screenWasOff": true,
+  "screenOffBefore": 2,
+  "screenOffAfter": 4,
+  "validFiles": 8,
+  "notificationDownloaded": 8,
+  "notificationProgress": 8,
+  "homeBefore": 0,
+  "homeAfter": 2,
+  "removeTaskBefore": 4,
+  "completed": 8,
+  "userPaused": false,
+  "completionNotificationRemoved": true,
+  "fixture": true
+}

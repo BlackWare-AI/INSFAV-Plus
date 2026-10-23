@@ -52,3 +52,13 @@ no key is generated. See [release guidance](docs/RELEASE.md).
 MIT application license: [LICENSE](LICENSE). Inter fonts retain their
 [SIL Open Font License](INTER-LICENSE.txt). Original source history and legacy
 release checksums/certificates are preserved in [docs/archive/source](docs/archive/source).
+
+The detailed Turkish delivery report is [here](docs/IMPLEMENTATION-REPORT-TR.md);
+[verification evidence](docs/verification/README.md) records counts, coverage and limits.
+
+For paired offline measurements (Python 3.12+), run `python3 tools/benchmark.py --kind all`.
+It restores the exact baseline bundle into ignored artifacts, adds external test
+harnesses without editing tracked source, and disables the coverage agent for
+both measurement variants. Run the full verification and coverage commands again
+after these filtered benchmarks. Android, browser heap and host filesystem
+results have separate scopes in PERFORMANCE.md.

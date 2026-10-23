@@ -1,0 +1,11 @@
+{
+  "repository": "BlackWare-AI/INSFAV-Plus",
+  "sourceCommit": "85cb9327b348f42e1468ca145d66cef1047085f3",
+  "runId": 39866358011,
+  "jobId": 120129417255,
+  "artifactId": 12464960743,
+  "jobConclusion": "success",
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false,
+  "scope": "Offline Android API35 emulator fixtures; separate from the failed SDK setup in the sibling verify job"
+}

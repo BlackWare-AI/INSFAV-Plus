@@ -38,3 +38,24 @@ Diagnostics use fixed error codes and aggregate counters. Cookies, passwords,
 account lists and private URIs are excluded. Cookie encryption remains the
 original authenticated format, with a destination-UID Keystore key. Portable
 settings archives authenticate the exact source package through AES-GCM AAD.
+
+Source observation is registered independently of queue synchronization on cold
+launch and resume. A lightweight source revision refreshes visible photos after
+external changes even when the JSON index revision is unchanged. URI permission
+loss and return change the snapshot scope. Restoring a folder changes its saved
+selection, not its grants: inaccessible restored folders remain unavailable and
+require the picker again. A directory change under the same tree invalidates the
+old index as well.
+
+Settings import durably disarms retrieval before any credential replacement.
+Rollback restores the cookie, folder/language metadata and preferences; an
+unconfirmed rollback keeps retrieval stopped and emits a fixed diagnostic code.
+The UI does not assert successful preservation after an unconfirmed storage error.
+
+The merged debug manifest uses `com.instagram.insfav.plus.androidx-startup` for
+AndroidX initialization. WorkManager databases, unique-work names and notification
+channels are scoped to the Plus UID even where their internal names match the
+source. The instrumentation package is `com.instagram.insfav.plus.test`. SAF URI
+grants and Android Keystore aliases are UID-scoped; matching alias strings do not
+share keys. Backup/cloud extraction remain disabled for private state. No
+sharedUserId or cross-app provider/URI access was added.

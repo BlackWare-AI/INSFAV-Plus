@@ -31,3 +31,12 @@ Orphan thumbnails remain available under Thumbnail management for read-only insp
 Existing invalid source filenames are preserved and reported as
 `OUTPUT_EXISTING_PRESERVED`; choose another authorized folder or handle them
 outside the app before retrying.
+
+Restored folder URIs do not carry Android permissions. Plus displays the restored
+folder as unavailable until its own grant is obtained, and invalidates old photo
+metadata when the tree or subdirectory changes. A failed settings rollback is
+reported explicitly and retrieval remains disarmed before credential replacement.
+
+Debug APKs are for testing. Export both backup formats before replacing a test
+installation with an APK signed by a different certificate. This concerns Plus's
+own test data; original INSFAV remains a separate package.

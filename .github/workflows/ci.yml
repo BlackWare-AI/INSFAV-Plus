@@ -1,7 +1,7 @@
 name: INSFAV Plus checks
 on:
   push:
-    branches: [main, 'plus/**']
+    branches: [main]
   pull_request:
   workflow_call:
 permissions:

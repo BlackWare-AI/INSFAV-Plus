@@ -1,0 +1,121 @@
+{
+  "historicalAttempts": [
+    {
+      "attempt": "phase4",
+      "commands": [
+        {
+          "command": [
+            "./gradlew",
+            ":app:testDebugUnitTest"
+          ],
+          "exitCode": 1
+        }
+      ],
+      "countsMayBeStale": true
+    },
+    {
+      "attempt": "phase4-final",
+      "commands": [
+        {
+          "command": [
+            "./gradlew",
+            ":app:testDebugUnitTest"
+          ],
+          "exitCode": 1
+        }
+      ],
+      "countsMayBeStale": true
+    },
+    {
+      "attempt": "phase7",
+      "commands": [
+        {
+          "command": [
+            "npm",
+            "run",
+            "web"
+          ],
+          "exitCode": 1
+        },
+        {
+          "command": [
+            "./gradlew",
+            ":app:testDebugUnitTest"
+          ],
+          "exitCode": 143
+        }
+      ],
+      "countsMayBeStale": true
+    },
+    {
+      "attempt": "phase8-review",
+      "commands": [
+        {
+          "command": [
+            "./gradlew",
+            ":app:testDebugUnitTest"
+          ],
+          "exitCode": 1
+        },
+        {
+          "command": [
+            "./gradlew",
+            ":app:lintDebug"
+          ],
+          "exitCode": 1
+        },
+        {
+          "command": [
+            "./gradlew",
+            ":app:assembleDebug"
+          ],
+          "exitCode": 1
+        }
+      ],
+      "countsMayBeStale": true
+    },
+    {
+      "attempt": "phase9",
+      "commands": [
+        {
+          "command": [
+            "./gradlew",
+            ":app:testDebugUnitTest"
+          ],
+          "exitCode": 1
+        },
+        {
+          "command": [
+            "./gradlew",
+            ":app:lintDebug"
+          ],
+          "exitCode": 1
+        },
+        {
+          "command": [
+            "./gradlew",
+            ":app:assembleDebug"
+          ],
+          "exitCode": 1
+        }
+      ],
+      "countsMayBeStale": true
+    },
+    {
+      "attempt": "phase9-corrected",
+      "commands": [
+        {
+          "command": [
+            "./gradlew",
+            ":app:testDebugUnitTest"
+          ],
+          "exitCode": 1
+        }
+      ],
+      "countsMayBeStale": true
+    }
+  ],
+  "finalAttempt": "phase10-complete",
+  "finalFailures": 0,
+  "note": "Compilation/build failures are not reported as executed failing test counts. See Turkish report for causes and corrections. The earlier CI SDK setup failure and local emulator process crash are described separately."
+}

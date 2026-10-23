@@ -1,0 +1,428 @@
+[
+  {
+    "variant": "original",
+    "round": 0,
+    "exitCode": 0,
+    "measurements": {
+      "BROKER_IDLE": {
+        "environment": "Host JVM + Robolectric; idle dispatcher",
+        "sampleNanos": 1000167108,
+        "threadCpuNanos": 3535690,
+        "waitTransitions": 50,
+        "cpuMeasured": true
+      },
+      "INDEX_WRITE": {
+        "environment": "Host filesystem + Robolectric; metadata only",
+        "initialProfiles": 15000,
+        "updates": 64,
+        "elapsedNanos": 1129891742,
+        "incremental": false,
+        "writes": {
+          "snapshotWrites": 64,
+          "snapshotSerializedBytes": 154660287
+        },
+        "linuxProcessIoDelta": {
+          "wchar": 154660287,
+          "syscw": 64,
+          "write_bytes": 0
+        }
+      },
+      "RESCAN_15000": {
+        "environment": "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF open latency",
+        "files": 15000,
+        "coldIo": {
+          "metadataQueries": 1,
+          "inspected": 15000,
+          "reused": 0,
+          "workers": 2,
+          "peakValidations": 2,
+          "batchSize": 256,
+          "transactions": 61,
+          "resumed": false
+        },
+        "warmIo": {
+          "metadataQueries": 1,
+          "inspected": 0,
+          "reused": 15000,
+          "workers": 2,
+          "peakValidations": 0,
+          "batchSize": 256,
+          "transactions": 2,
+          "resumed": false
+        },
+        "coldMs": 12653,
+        "warmMs": 467,
+        "coldOpens": 15000,
+        "warmOpens": 0,
+        "coldQueries": 2,
+        "warmQueries": 2,
+        "peakOpenCalls": 2,
+        "sourceBytesAndDatesUnchanged": true,
+        "sourceWrites": 0
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 0,
+    "exitCode": 0,
+    "measurements": {
+      "BROKER_IDLE": {
+        "environment": "Host JVM + Robolectric; idle dispatcher",
+        "sampleNanos": 1000645838,
+        "threadCpuNanos": 0,
+        "waitTransitions": 0,
+        "cpuMeasured": true
+      },
+      "RESCAN_15000": {
+        "environment": "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF open latency",
+        "files": 15000,
+        "coldIo": {
+          "metadataQueries": 1,
+          "inspected": 15000,
+          "reused": 0,
+          "workers": 2,
+          "peakValidations": 2,
+          "batchSize": 512,
+          "safQueryNanos": 33963606,
+          "safCursorNanos": 4443333,
+          "sourceOpenNanos": 17671507180,
+          "validationDecodeNanos": 4728206518,
+          "sqliteTransactionNanos": 143594183,
+          "transactions": 32,
+          "resumed": false,
+          "jsonWriteNanos": 102614280
+        },
+        "warmIo": {
+          "metadataQueries": 1,
+          "inspected": 0,
+          "reused": 15000,
+          "workers": 2,
+          "peakValidations": 0,
+          "batchSize": 512,
+          "safQueryNanos": 47410195,
+          "safCursorNanos": 377402,
+          "sourceOpenNanos": 0,
+          "validationDecodeNanos": 0,
+          "sqliteTransactionNanos": 726297,
+          "transactions": 2,
+          "resumed": false,
+          "jsonWriteNanos": 46186164
+        },
+        "coldMs": 12171,
+        "warmMs": 443,
+        "coldOpens": 15000,
+        "warmOpens": 0,
+        "coldQueries": 2,
+        "warmQueries": 2,
+        "peakOpenCalls": 2,
+        "sourceBytesAndDatesUnchanged": true,
+        "sourceWrites": 0
+      },
+      "INDEX_WRITE": {
+        "environment": "Host filesystem + Robolectric; metadata only",
+        "initialProfiles": 15000,
+        "updates": 64,
+        "elapsedNanos": 249446818,
+        "incremental": true,
+        "writes": {
+          "snapshotWrites": 1,
+          "snapshotSerializedBytes": 2421238,
+          "snapshotNanos": 77949270,
+          "deltaWrites": 64,
+          "pendingChanges": 0,
+          "recoveredDeltas": 0
+        },
+        "linuxProcessIoDelta": {
+          "wchar": 3615158,
+          "syscw": 1021,
+          "write_bytes": 0
+        }
+      }
+    }
+  },
+  {
+    "variant": "original",
+    "round": 1,
+    "exitCode": 0,
+    "measurements": {
+      "BROKER_IDLE": {
+        "environment": "Host JVM + Robolectric; idle dispatcher",
+        "sampleNanos": 1000288488,
+        "threadCpuNanos": 1994116,
+        "waitTransitions": 50,
+        "cpuMeasured": true
+      },
+      "INDEX_WRITE": {
+        "environment": "Host filesystem + Robolectric; metadata only",
+        "initialProfiles": 15000,
+        "updates": 64,
+        "elapsedNanos": 1111106673,
+        "incremental": false,
+        "writes": {
+          "snapshotWrites": 64,
+          "snapshotSerializedBytes": 154660287
+        },
+        "linuxProcessIoDelta": {
+          "wchar": 154660287,
+          "syscw": 64,
+          "write_bytes": 0
+        }
+      },
+      "RESCAN_15000": {
+        "environment": "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF open latency",
+        "files": 15000,
+        "coldIo": {
+          "metadataQueries": 1,
+          "inspected": 15000,
+          "reused": 0,
+          "workers": 2,
+          "peakValidations": 2,
+          "batchSize": 256,
+          "transactions": 61,
+          "resumed": false
+        },
+        "warmIo": {
+          "metadataQueries": 1,
+          "inspected": 0,
+          "reused": 15000,
+          "workers": 2,
+          "peakValidations": 0,
+          "batchSize": 256,
+          "transactions": 2,
+          "resumed": false
+        },
+        "coldMs": 12646,
+        "warmMs": 501,
+        "coldOpens": 15000,
+        "warmOpens": 0,
+        "coldQueries": 2,
+        "warmQueries": 2,
+        "peakOpenCalls": 2,
+        "sourceBytesAndDatesUnchanged": true,
+        "sourceWrites": 0
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 1,
+    "exitCode": 0,
+    "measurements": {
+      "BROKER_IDLE": {
+        "environment": "Host JVM + Robolectric; idle dispatcher",
+        "sampleNanos": 1000652143,
+        "threadCpuNanos": 0,
+        "waitTransitions": 0,
+        "cpuMeasured": true
+      },
+      "RESCAN_15000": {
+        "environment": "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF open latency",
+        "files": 15000,
+        "coldIo": {
+          "metadataQueries": 1,
+          "inspected": 15000,
+          "reused": 0,
+          "workers": 2,
+          "peakValidations": 2,
+          "batchSize": 512,
+          "safQueryNanos": 36811751,
+          "safCursorNanos": 4247701,
+          "sourceOpenNanos": 17747721150,
+          "validationDecodeNanos": 4863733246,
+          "sqliteTransactionNanos": 173645313,
+          "transactions": 32,
+          "resumed": false,
+          "jsonWriteNanos": 110194339
+        },
+        "warmIo": {
+          "metadataQueries": 1,
+          "inspected": 0,
+          "reused": 15000,
+          "workers": 2,
+          "peakValidations": 0,
+          "batchSize": 512,
+          "safQueryNanos": 59513191,
+          "safCursorNanos": 368421,
+          "sourceOpenNanos": 0,
+          "validationDecodeNanos": 0,
+          "sqliteTransactionNanos": 747610,
+          "transactions": 2,
+          "resumed": false,
+          "jsonWriteNanos": 54161307
+        },
+        "coldMs": 12348,
+        "warmMs": 563,
+        "coldOpens": 15000,
+        "warmOpens": 0,
+        "coldQueries": 2,
+        "warmQueries": 2,
+        "peakOpenCalls": 2,
+        "sourceBytesAndDatesUnchanged": true,
+        "sourceWrites": 0
+      },
+      "INDEX_WRITE": {
+        "environment": "Host filesystem + Robolectric; metadata only",
+        "initialProfiles": 15000,
+        "updates": 64,
+        "elapsedNanos": 266098108,
+        "incremental": true,
+        "writes": {
+          "snapshotWrites": 1,
+          "snapshotSerializedBytes": 2421238,
+          "snapshotNanos": 51694514,
+          "deltaWrites": 64,
+          "pendingChanges": 0,
+          "recoveredDeltas": 0
+        },
+        "linuxProcessIoDelta": {
+          "wchar": 3615158,
+          "syscw": 1021,
+          "write_bytes": 0
+        }
+      }
+    }
+  },
+  {
+    "variant": "original",
+    "round": 2,
+    "exitCode": 0,
+    "measurements": {
+      "BROKER_IDLE": {
+        "environment": "Host JVM + Robolectric; idle dispatcher",
+        "sampleNanos": 1000151600,
+        "threadCpuNanos": 2107315,
+        "waitTransitions": 50,
+        "cpuMeasured": true
+      },
+      "INDEX_WRITE": {
+        "environment": "Host filesystem + Robolectric; metadata only",
+        "initialProfiles": 15000,
+        "updates": 64,
+        "elapsedNanos": 1072316134,
+        "incremental": false,
+        "writes": {
+          "snapshotWrites": 64,
+          "snapshotSerializedBytes": 154660287
+        },
+        "linuxProcessIoDelta": {
+          "wchar": 154660287,
+          "syscw": 64,
+          "write_bytes": 0
+        }
+      },
+      "RESCAN_15000": {
+        "environment": "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF open latency",
+        "files": 15000,
+        "coldIo": {
+          "metadataQueries": 1,
+          "inspected": 15000,
+          "reused": 0,
+          "workers": 2,
+          "peakValidations": 2,
+          "batchSize": 256,
+          "transactions": 61,
+          "resumed": false
+        },
+        "warmIo": {
+          "metadataQueries": 1,
+          "inspected": 0,
+          "reused": 15000,
+          "workers": 2,
+          "peakValidations": 0,
+          "batchSize": 256,
+          "transactions": 2,
+          "resumed": false
+        },
+        "coldMs": 12667,
+        "warmMs": 449,
+        "coldOpens": 15000,
+        "warmOpens": 0,
+        "coldQueries": 2,
+        "warmQueries": 2,
+        "peakOpenCalls": 2,
+        "sourceBytesAndDatesUnchanged": true,
+        "sourceWrites": 0
+      }
+    }
+  },
+  {
+    "variant": "plus",
+    "round": 2,
+    "exitCode": 0,
+    "measurements": {
+      "BROKER_IDLE": {
+        "environment": "Host JVM + Robolectric; idle dispatcher",
+        "sampleNanos": 1000652287,
+        "threadCpuNanos": 0,
+        "waitTransitions": 0,
+        "cpuMeasured": true
+      },
+      "RESCAN_15000": {
+        "environment": "Robolectric API34, 15000 real synthetic 128/256 WebP files; 1 ms simulated SAF open latency",
+        "files": 15000,
+        "coldIo": {
+          "metadataQueries": 1,
+          "inspected": 15000,
+          "reused": 0,
+          "workers": 2,
+          "peakValidations": 2,
+          "batchSize": 512,
+          "safQueryNanos": 36644001,
+          "safCursorNanos": 7411587,
+          "sourceOpenNanos": 17877120174,
+          "validationDecodeNanos": 4978956575,
+          "sqliteTransactionNanos": 154466925,
+          "transactions": 32,
+          "resumed": false,
+          "jsonWriteNanos": 104274186
+        },
+        "warmIo": {
+          "metadataQueries": 1,
+          "inspected": 0,
+          "reused": 15000,
+          "workers": 2,
+          "peakValidations": 0,
+          "batchSize": 512,
+          "safQueryNanos": 25710913,
+          "safCursorNanos": 358983,
+          "sourceOpenNanos": 0,
+          "validationDecodeNanos": 0,
+          "sqliteTransactionNanos": 921297,
+          "transactions": 2,
+          "resumed": false,
+          "jsonWriteNanos": 47461554
+        },
+        "coldMs": 12602,
+        "warmMs": 340,
+        "coldOpens": 15000,
+        "warmOpens": 0,
+        "coldQueries": 2,
+        "warmQueries": 2,
+        "peakOpenCalls": 2,
+        "sourceBytesAndDatesUnchanged": true,
+        "sourceWrites": 0
+      },
+      "INDEX_WRITE": {
+        "environment": "Host filesystem + Robolectric; metadata only",
+        "initialProfiles": 15000,
+        "updates": 64,
+        "elapsedNanos": 294289110,
+        "incremental": true,
+        "writes": {
+          "snapshotWrites": 1,
+          "snapshotSerializedBytes": 2421238,
+          "snapshotNanos": 56954867,
+          "deltaWrites": 64,
+          "pendingChanges": 0,
+          "recoveredDeltas": 0
+        },
+        "linuxProcessIoDelta": {
+          "wchar": 3615158,
+          "syscw": 1021,
+          "write_bytes": 0
+        }
+      }
+    }
+  }
+]
