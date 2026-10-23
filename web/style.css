@@ -48,17 +48,34 @@ select{font:inherit;background:#050505;color:#fff;border:1px solid #333;border-r
 .choice-check{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;visibility:hidden}
 .choice-list [aria-checked="true"] .choice-check{visibility:visible}
 
-/* Reserve a 48px control strip, with 12px from the list and 15px from the edge. */
+/* Retain the list's reserved margin while slightly enlarging the controls. */
 html{scrollbar-width:none}html::-webkit-scrollbar{display:none}
 #app.has-scroll-controls{padding-right:75px}
-#main-scroll{position:fixed;top:max(15px,env(safe-area-inset-top));right:max(15px,calc((100vw - 600px)/2 + 15px));width:48px;display:flex;flex-direction:column;gap:8px;z-index:11;background:#000}
+#main-scroll{position:fixed;top:max(15px,env(safe-area-inset-top));right:max(15px,calc((100vw - 600px)/2 + 15px));width:52px;display:flex;flex-direction:column;gap:8px;z-index:11;background:transparent}
 body.overlay-open #main-scroll{visibility:hidden}
-#main-scroll button{width:48px;min-height:48px;height:48px;flex:none;border:1px solid #222;border-radius:14px;background:#000;color:#888;display:flex;align-items:center;justify-content:center;transform:none}
-#main-scroll svg{width:22px;height:22px;stroke-width:1.5}
-#scroll-track{position:relative;flex:1;min-height:48px}
-#scroll-track::before{content:"";position:absolute;left:23px;top:0;bottom:0;width:2px;background:#1c1c1c;border-radius:2px}
-#scroll-thumb{position:absolute;left:0;width:48px;min-height:48px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;border-radius:14px;cursor:grab}
-#scroll-thumb>span{position:absolute;display:block;width:4px;max-height:100%;min-height:8px;background:#777;border-radius:4px;pointer-events:none}
+#main-scroll button{width:52px;min-height:52px;height:52px;flex:none;border:1px solid #333;border-radius:14px;background:#000;color:#aaa;display:flex;align-items:center;justify-content:center;transform:none}
+#main-scroll svg{width:28px;height:28px;stroke-width:1.8}
+#scroll-track{position:relative;flex:1;min-height:56px}
+#scroll-track::before{content:"";position:absolute;left:25px;top:0;bottom:0;width:2px;background:#333;border-radius:2px}
+#scroll-thumb{position:absolute;left:0;width:52px;min-height:56px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;border-radius:14px;cursor:grab}
+#scroll-thumb>span{position:absolute;display:block;width:12px;max-height:100%;min-height:40px;background:#999;border:1px solid #bbb;border-radius:6px;pointer-events:none}
+#scroll-grip{position:absolute;left:5px;top:50%;transform:translateY(-50%);width:15px;height:32px;background:#777;border:1px solid #aaa;border-right:0;border-radius:8px 0 0 8px;pointer-events:none}
+#main-scroll button,#scroll-track::before,#scroll-thumb>span,#scroll-grip{transition:opacity 160ms var(--motion-ease)}
+#main-scroll.idle button,#main-scroll.idle #scroll-track::before,#main-scroll.idle #scroll-thumb>span{opacity:0;pointer-events:none}
+#main-scroll.idle{pointer-events:none}
+#main-scroll.idle #scroll-grip{opacity:.55;pointer-events:auto}
 #scroll-thumb.dragging{box-shadow:0 0 16px 3px #8886;cursor:grabbing}
 #scroll-thumb.dragging>span{background:#aaa}
 #scroll-thumb:focus-visible{outline:2px solid #aaa;outline-offset:-2px}
+
+#settings header{gap:10px;flex-wrap:wrap}
+#settings header h2{flex:1;min-width:0;overflow-wrap:anywhere}
+#settings header #language-choice{flex:none;max-width:110px;font-size:.8125rem;min-height:48px;padding:10px}
+#view-settings{margin-top:24px;border-top:1px solid #222;padding-bottom:20px}
+#view-choice{width:100%}
+#app.matrix-mode{padding-right:15px}
+.matrix-row{display:grid;grid-template-columns:repeat(var(--grid-columns),minmax(0,1fr));gap:8px;padding:0 8px 8px;background:#000;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.matrix-row.last{border-bottom:1px solid var(--border);border-radius:0 0 20px 20px}
+.matrix-account{min-width:0;display:flex;flex-direction:column;align-items:stretch}
+.matrix-account .avatar{width:100%;height:var(--tile-size);flex:none;aspect-ratio:1;border-radius:18px}
+.matrix-user{display:block;min-width:0;width:100%;height:var(--grid-label-height);flex:none;border:0;background:#000;color:#aaa;font-size:.8125rem;line-height:1.45;padding:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}

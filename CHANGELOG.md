@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 (build 2)
+
+Larger scroll arrows and thumb fade when idle, with a 15px grip and one-second
+drag hold. Settings offer persistent list or 2/3/4-column square matrix views,
+usernames below images, and a language selector in the upper-right toolbar.
+Cold process startup and stale service intents leave retrieval paused until an
+explicit start/resume; completed work and pending accounts are preserved.
+
 ## 1.0.0 (build 1)
 
 Initial independent INSFAV Plus package. Larger 60px avatars and consistent 65px

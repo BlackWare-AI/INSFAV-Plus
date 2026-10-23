@@ -25,3 +25,5 @@ test('Turkish display-name search preserves Instagram identity normalization and
 });
 
 test('Turkish display-name folding never substitutes Instagram username identity',()=>{const d=C.parseDocument(JSON.stringify([{name:'A',items:[{pageId:'Ipek'},{pageId:'other',name:'Ipek'}]}]));assert.deepEqual(C.filterCollections(d,'ıpek')[0].items.map(i=>i.user),['other']);assert.deepEqual(C.filterCollections(d,'İPEK')[0].items.map(i=>i.user),['other']);assert.equal(C.normalize('Ipek'),'ipek');});
+
+test('matrix rows preserve memberships and order while grouping 2/3/4 equal-height cells',()=>{const doc=C.parseDocument(JSON.stringify(sample));for(const columns of [2,3,4]){const rows=C.rowsFor(doc.indexed,new Set([0,1]),false,{columns,height:123});const groups=rows.filter(row=>row.type==='matrix');assert.deepEqual(groups.flatMap(row=>row.items.map(item=>item.key)),doc.indexed.flatMap(group=>group.items.map(item=>item.key)));assert.ok(groups.every(row=>row.items.length<=columns&&row.height===123));assert.equal(rows.filter(row=>row.type==='folder').length,2);assert.equal(C.rowsFor(doc.indexed,new Set(),false,{columns,height:123}).filter(row=>row.type==='matrix').length,0);}});

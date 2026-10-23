@@ -7,8 +7,25 @@ import java.util.*;
 // Queue, session, schedule and recovery decisions must be durable before continuing.
 @android.annotation.SuppressLint("ApplySharedPref")
 final class SessionState {
+  private static volatile boolean initialized;
   static SharedPreferences prefs(Context c) {
     return c.getSharedPreferences("thumbnail-fetcher", Context.MODE_PRIVATE);
+  }
+
+  static void requireManualStart(Context c) {
+    initialized = false;
+    SharedPreferences p = prefs(c);
+    boolean wasArmed = p.getBoolean("armed", false);
+    SharedPreferences.Editor edit = p.edit().putBoolean("armed", false).putBoolean("userPaused", true);
+    if (wasArmed) edit.putString("state", "Paused");
+    if (!edit.commit()) throw new IllegalStateException("Manual start state could not be saved");
+    WorkScheduler.cancel(c);
+    initialized = true;
+  }
+
+  static boolean userStarted(Context c) {
+    SharedPreferences p = prefs(c);
+    return initialized && p.getBoolean("armed", false) && !p.getBoolean("userPaused", true);
   }
 
   static void changed(Context c) {

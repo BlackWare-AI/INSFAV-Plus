@@ -1,5 +1,8 @@
 # Main-list scroll controls
 
+This records the initial 1.0.0 controls. The 1.1.0 update is documented in
+[matrix-release.md](matrix-release.md), including the one-second hold and idle UI.
+
 Scope: `BlackWare-AI/INSFAV-Plus` only. The existing choice dialogs and launcher
 artwork from PR #3 are retained and verified again. `web/` remains the source of
 the packaged UI, including the new `list-scroll.js` controller and source map.

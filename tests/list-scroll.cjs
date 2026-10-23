@@ -51,11 +51,11 @@ const {chromium}=require('playwright');
    const rows=[...document.querySelectorAll('.account')].map(node=>node.getBoundingClientRect());
    const targets=['scroll-start','scroll-end','scroll-thumb'].map(id=>document.getElementById(id).getBoundingClientRect());
    return {gap:Math.min(...rows.map(row=>rail.left-row.right)),edge:innerWidth-rail.right,navGap:nav.top-rail.bottom,
-    targets:targets.every(rect=>rect.width===48&&rect.height>=48),rows:rows.every(rect=>rect.height===65),
+    targets:targets.every(rect=>rect.width===52&&rect.height>=52),rows:rows.every(rect=>rect.height===65),
     avatars:[...document.querySelectorAll('.avatar')].every(node=>node.clientWidth===60&&node.clientHeight===60),overflow:document.scrollingElement.scrollWidth>innerWidth,
     scrollbar:getComputedStyle(document.documentElement).scrollbarWidth};
   });
-  check(result.gap>=12&&result.edge>=15&&result.navGap>=12,label+': strip has list/edge/nav clearance '+JSON.stringify(result));
+  check(result.gap>=8&&result.edge>=15&&result.navGap>=12,label+': strip has list/edge/nav clearance '+JSON.stringify(result));
   check(result.targets&&result.rows&&result.avatars&&!result.overflow,label+': 48px targets, 65px rows, 60px avatars and no overflow');
   check(result.scrollbar==='none',label+': main native scrollbar is hidden');
  }
@@ -68,15 +68,15 @@ const {chromium}=require('playwright');
    let m=await metrics(page);check(m.top===0&&await page.locator('#scroll-start').isDisabled(),'Start is exactly zero and up is disabled');
    check(m.maximum===m.max,'ARIA range equals actual document range');
    check(m.markOffset===0,'Visible mark starts at the top of the track');
-   check(Math.abs(m.hit-Math.max(48,m.track*m.viewport/(m.max+m.viewport)))<=1,'Thumb hit length follows content height with a 48px minimum');
-   await page.locator('#scroll-end').tap();await settled(page);m=await metrics(page);
+   check(Math.abs(m.hit-Math.max(56,m.track*m.viewport/(m.max+m.viewport)))<=1,'Thumb hit length follows content height with a 56px minimum');
+   await page.locator('#scroll-thumb').dispatchEvent('pointerenter');await page.locator('#scroll-end').tap();await settled(page);m=await metrics(page);
    check(m.top===m.max&&await page.locator('#scroll-end').isDisabled(),'One tap reaches the real end of '+count+' accounts');
    check(Math.abs(m.offset+m.markOffset+m.mark-m.track)<1,'Visible mark reaches the actual bottom of the track');
    const finalRow=page.locator('[data-key="1:'+(count/2-1)+'"]');
    check(await finalRow.locator('.card-user').innerText()==='@account_'+(count-1),'Virtual list renders its actual final account');
    const last=await finalRow.boundingBox(),nav=await page.locator('.nav-container').boundingBox();
    check(last.y+last.height<=nav.y,'Final row is above bottom navigation');
-   await page.locator('#scroll-start').tap();await settled(page);check((await metrics(page)).top===0,'One tap returns to the real start');
+   await page.locator('#scroll-thumb').dispatchEvent('pointerenter');await page.locator('#scroll-start').tap();await settled(page);check((await metrics(page)).top===0,'One tap returns to the real start');
    await page.evaluate(()=>scrollTo(0,(document.scrollingElement.scrollHeight-innerHeight)/2));await settled(page);m=await metrics(page);
    check(Math.abs(m.offset-(m.track-m.hit)*m.top/m.max)<1,'Thumb position follows the actual scroll ratio');
    check(Math.abs(m.offset+m.markOffset-(m.track-m.mark)*m.top/m.max)<1,'Visible mark position follows the actual scroll ratio');
@@ -99,7 +99,7 @@ const {chromium}=require('playwright');
    await page.evaluate(()=>scrollTo(0,0));await settled(page);
    await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));await page.clock.runFor(50);
    await page.locator('#scroll-thumb').dispatchEvent('pointerdown',{pointerId:1,pointerType:'touch',isPrimary:true,button:0,clientX:100,clientY:100});
-   await page.clock.runFor(3000);m=await metrics(page);check(m.active,count+' accounts: drag arms without jumping');
+   await page.clock.runFor(1000);m=await metrics(page);check(m.active,count+' accounts: drag arms without jumping');
    await page.locator('#scroll-thumb').dispatchEvent('pointermove',{pointerId:1,pointerType:'touch',isPrimary:true,clientX:100,clientY:100+(m.track-m.hit)/2});
    await page.clock.runFor(32);m=await metrics(page);check(Math.abs(m.top-m.max/2)<=1,count+' accounts: drag ratio uses actual range');
    await page.locator('#scroll-thumb').dispatchEvent('pointerup',{pointerId:1,pointerType:'touch',isPrimary:true});
@@ -121,8 +121,8 @@ const {chromium}=require('playwright');
    await page.evaluate(()=>{document.documentElement.style.fontSize='32px';});
    await page.addStyleTag({content:'.card-name{font-size:30px}.card-user{font-size:26px}'});await settled(page);
    await layout(page,viewport.width+'×'+viewport.height+' at 200% text');
-   await page.locator('#scroll-end').tap();await settled(page);check((await metrics(page)).top===(await metrics(page)).max,'Resized range ends at actual maximum');
-   await page.locator('#scroll-start').tap();await settled(page);
+   await page.locator('#scroll-thumb').dispatchEvent('pointerenter');await page.locator('#scroll-end').tap();await settled(page);check((await metrics(page)).top===(await metrics(page)).max,'Resized range ends at actual maximum');
+   await page.locator('#scroll-thumb').dispatchEvent('pointerenter');await page.locator('#scroll-start').tap();await settled(page);
    if(process.env.SCROLL_SCREENSHOTS){fs.mkdirSync(process.env.SCROLL_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.SCROLL_SCREENSHOTS,viewport.width+'x'+viewport.height+'.png')});}
   }
   await page.setViewportSize({width:393,height:850});await settled(page);
@@ -130,19 +130,19 @@ const {chromium}=require('playwright');
   await page.clock.install();await page.clock.pauseAt(new Date(Date.now()+1000));await page.clock.runFor(50);
   const thumb=page.locator('#scroll-thumb');
   const pointer=async(type,{id=1,x=100,y=100,primary=true,target='#scroll-thumb'}={})=>page.locator(target).dispatchEvent(type,{pointerId:id,pointerType:'touch',isPrimary:primary,button:0,buttons:type==='pointerup'?0:1,clientX:x,clientY:y,bubbles:true});
-  const active=async expected=>{const m=await metrics(page);check(m.active===expected&&(expected?m.glow!=='none':m.glow==='none'),'Drag and glow are '+(expected?'active':'inactive'));};
-  await pointer('pointerdown');await page.clock.runFor(2999);await active(false);
+  const active=async(expected,reason="")=>{const m=await metrics(page);check(m.active===expected&&(expected?m.glow!=='none':m.glow==='none'),reason+': Drag and glow are '+(expected?'active':'inactive'));};
+  await pointer('pointerdown');await page.clock.runFor(999);await active(false);
   const before=(await metrics(page)).top;
-  await page.clock.runFor(1);await active(true);check((await metrics(page)).top===before,'Activation at exactly 3000ms causes no jump');
+  await page.clock.runFor(1);await active(true);check((await metrics(page)).top===before,'Activation at exactly 1000ms causes no jump');
   let m=await metrics(page),travel=m.track-m.hit;
   await pointer('pointermove',{y:100+travel/2});await page.clock.runFor(32);m=await metrics(page);
   check(Math.abs(m.top-m.max/2)<=1,'Dragging half the rail maps to half the real range');
   await pointer('pointermove',{y:100+travel*5});await page.clock.runFor(32);m=await metrics(page);check(m.top===m.max,'Dragging beyond end clamps exactly to maximum');
   await pointer('pointermove',{y:100-travel*5});await page.clock.runFor(32);check((await metrics(page)).top===0,'Dragging above start clamps exactly to zero');
   await pointer('pointerup');await active(false);
-  await pointer('pointerdown');await page.clock.runFor(2999);await active(false);await pointer('pointerup');await page.clock.runFor(1);await active(false);
+  await pointer('pointerdown');await page.clock.runFor(999);await active(false);await pointer('pointerup');await page.clock.runFor(1);await active(false);
   for(const stop of ['release','move','cancel','lostcapture','multitouch','blur','visibility','pagehide','native-background','modal','list-change','resize']){
-   await pointer('pointerdown');await page.clock.runFor(1500);
+   await pointer('pointerdown');await page.clock.runFor(500);
    if(stop==='release')await pointer('pointerup');
    if(stop==='move')await pointer('pointermove',{x:109});
    if(stop==='cancel')await pointer('pointercancel');
@@ -155,20 +155,20 @@ const {chromium}=require('playwright');
    if(stop==='modal')await page.locator('#result-filter').dispatchEvent('click');
    if(stop==='list-change')await page.evaluate(()=>{opened.delete(1);rebuild(true);});
    if(stop==='resize')await page.setViewportSize({width:394,height:850});
-   await page.clock.runFor(1500);await active(false);check((await metrics(page)).top===0,stop+' cancels without scrolling');
+   await page.clock.runFor(500);await active(false,stop);check((await metrics(page)).top===0,stop+' cancels without scrolling');
    if(stop==='modal'){check(await page.locator('#main-scroll').isHidden(),'Open modal hides controls');await page.keyboard.press('Escape');}
    if(stop==='visibility')await page.evaluate(()=>{delete document.hidden;});
    if(stop==='list-change')await page.evaluate(()=>{opened.add(1);rebuild(true);});
    await pointer('pointerup');await page.clock.runFor(32);
   }
-  await pointer('pointerdown');await pointer('pointermove',{x:108});await page.clock.runFor(3000);await active(true);check((await metrics(page)).top===0,'Exactly 8px of pre-hold movement is tolerated without a jump');
+  await pointer('pointerdown');await pointer('pointermove',{x:108});await page.clock.runFor(1000);await active(true);check((await metrics(page)).top===0,'Exactly 8px of pre-hold movement is tolerated without a jump');
   await pointer('pointerup');await active(false);
   // Short presses and the empty rail never scroll.
-  await pointer('pointerdown');await page.clock.runFor(50);await pointer('pointerup');await page.clock.runFor(3000);check((await metrics(page)).top===0,'A short thumb press does not scroll');
-  await pointer('pointerdown',{target:'#scroll-track'});await page.clock.runFor(3000);await pointer('pointerup',{target:'#scroll-track'});check((await metrics(page)).top===0,'Empty track press does not scroll');
+  await pointer('pointerdown');await page.clock.runFor(50);await pointer('pointerup');await page.clock.runFor(1000);check((await metrics(page)).top===0,'A short thumb press does not scroll');
+  await pointer('pointerdown',{target:'#scroll-track'});await page.clock.runFor(1000);await pointer('pointerup',{target:'#scroll-track'});check((await metrics(page)).top===0,'Empty track press does not scroll');
   // Cancellation also extinguishes an already active drag.
   for(const stop of ['pointercancel','native-background','modal','list-change','multitouch']){
-   await pointer('pointerdown');await page.clock.runFor(3000);await active(true);
+   await pointer('pointerdown');await page.clock.runFor(1000);await active(true);
    if(stop==='pointercancel')await pointer('pointercancel');
    if(stop==='native-background')await page.evaluate(()=>nativeEvent('app-background',''));
    if(stop==='modal')await page.locator('#result-filter').dispatchEvent('click');
@@ -186,6 +186,13 @@ const {chromium}=require('playwright');
   check(await page.getByRole('button',{name:'Listenin başına git',exact:true}).count()===1&&await thumb.getAttribute('aria-valuetext')==='Liste konumu: %0','Controls and position announce Turkish');
   await page.evaluate(()=>InsfavI18n.choose('en'));await page.clock.runFor(32);
   check(await page.getByRole('scrollbar',{name:'List position',exact:true}).count()===1,'Scrollbar announces English after language change');
+  await pointer('pointerdown');await pointer('pointerup');await page.clock.runFor(2200);
+  check(await page.locator('#main-scroll').evaluate(node=>node.classList.contains('idle')),'Unused controls fade after inactivity');
+  check(await page.locator('#scroll-end').evaluate(node=>getComputedStyle(node).opacity==='0'),'Unused arrows disappear');
+  check(await page.locator('#scroll-grip').evaluate(node=>node.getBoundingClientRect().width===15),'A 15px grip remains available to grab the thumb');
+  await pointer('pointerdown',{target:'#scroll-grip'});await page.clock.runFor(999);await active(false);await page.clock.runFor(1);await active(true);
+  await page.clock.runFor(2200);check(await page.locator('#main-scroll').evaluate(node=>!node.classList.contains('idle')),'Active dragging remains visible');
+  await pointer('pointerup',{target:'#scroll-grip'});await page.clock.runFor(2200);
   const frames=(await metrics(page)).frames;await page.clock.runFor(10000);check((await metrics(page)).frames===frames,'Idle controls do not poll or schedule continuous frames');
   await page.close();
 
@@ -193,7 +200,7 @@ const {chromium}=require('playwright');
   const touchPage=await create(1000);await expand(touchPage);const cdp=await touchPage.context().newCDPSession(touchPage);
   await touchPage.clock.install();await touchPage.clock.pauseAt(new Date(Date.now()+1000));await touchPage.clock.runFor(50);
   const box=await touchPage.locator('#scroll-thumb').boundingBox(),point={x:box.x+24,y:box.y+box.height/2,id:1};
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});await touchPage.clock.runFor(3000);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});await touchPage.clock.runFor(1000);
   check((await metrics(touchPage)).active,'Trusted touch activates after three seconds');
   check(await touchPage.locator('#scroll-thumb').evaluate(node=>node.hasPointerCapture(window.thumbPointerId)),'Trusted gesture captures the active pointer');
   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...point,y:point.y+70}]});await touchPage.clock.runFor(32);
@@ -206,6 +213,6 @@ const {chromium}=require('playwright');
   check((await metrics(touchPage)).top>0,'Ordinary touch swiping on the main list remains available');
   await touchPage.close();
   check(errors.length===0,'No browser errors: '+errors.join('; '));
-  console.log('PASS '+checks+' main-list scroll checks: 10/1000/10000/15000, actual bounds/ratios, 2999/3000ms, cancellations/glow, real touch, keyboard, TR/EN, layouts and bounded resources');
+  console.log('PASS '+checks+' main-list scroll checks: 10/1000/10000/15000, actual bounds/ratios, 999/1000ms, cancellations/glow, real touch, keyboard, TR/EN, layouts and bounded resources');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

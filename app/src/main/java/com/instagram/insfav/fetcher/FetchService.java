@@ -22,11 +22,11 @@ public final class FetchService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int id) {
-    if (intent == null && !WorkScheduler.enabled(SessionState.prefs(this))) {
+    if (intent == null) {
       stopSelf(id);
       return START_NOT_STICKY;
     }
-    String action = intent == null ? "resume" : intent.getAction();
+    String action = intent.getAction();
     if ("pause".equals(action) || "stop".equals(action)) {
       QueueControl.pause(this, "stop".equals(action));
       if (!owns) stopSelf(id);
@@ -39,13 +39,16 @@ public final class FetchService extends Service {
       stopSelf(id);
       return START_NOT_STICKY;
     }
+    if (!"verify_index".equals(action) && !SessionState.userStarted(this)) {
+      stopSelf(id);
+      return START_NOT_STICKY;
+    }
     if (owns || !QueueControl.lock.compareAndSet(false, true)) {
       if (!owns) stopSelf(id);
       return START_NOT_STICKY;
     }
     owns = true;
     running = true;
-    QueueControl.requested = false;
     try {
       getSystemService(NotificationManager.class).cancel(3);
       Notification notification = DownloadNotification.preparing(this);
@@ -85,7 +88,7 @@ public final class FetchService extends Service {
             },
             "thumbnail-foreground");
     worker.start();
-    return START_STICKY;
+    return START_NOT_STICKY;
   }
 
   static void request(Context context, String action) {

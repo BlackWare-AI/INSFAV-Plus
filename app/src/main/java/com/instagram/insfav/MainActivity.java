@@ -493,6 +493,7 @@ public final class MainActivity extends Activity {
                       JSONObject result = imageSnapshot(true);
                       result
                           .put("language", UiLanguage.choice(MainActivity.this))
+                          .put("columns", UiLayout.choice(MainActivity.this))
                           .put("raw", store.original())
                           .put("app", appInfo())
                           .put(
@@ -509,6 +510,10 @@ public final class MainActivity extends Activity {
                     send(
                         "language",
                         new JSONObject().put("choice", UiLanguage.choice(MainActivity.this)));
+                    break;
+                  case "view-mode":
+                    UiLayout.save(MainActivity.this, input.getInt("columns"));
+                    send("view-mode", new JSONObject().put("columns", UiLayout.choice(MainActivity.this)));
                     break;
                   case "status":
                     send("status", imageSnapshot(false));

@@ -109,6 +109,8 @@ public final class Fetcher {
   public static void initialize(Context c, Host h) {
     context = c.getApplicationContext();
     host = h;
+    // A new process must not replay an old foreground/background start request.
+    SessionState.requireManualStart(context);
     lastSynced = null;
     try {
       watchSource();
