@@ -15,6 +15,12 @@ const {chromium}=require('playwright');
  let checks=0;const errors=[];
  const check=(value,message)=>{assert.ok(value,message);checks++;};
  const settled=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const renderedInk=(page,png)=>page.evaluate(async base64=>{
+  const image=new Image();image.src='data:image/png;base64,'+base64;await image.decode();
+  const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+  const context=canvas.getContext('2d');context.drawImage(image,0,0);const pixels=context.getImageData(0,0,canvas.width,canvas.height).data;
+  let ink=0;for(let i=0;i<pixels.length;i+=4)if(Math.max(pixels[i],pixels[i+1],pixels[i+2])>80)ink++;return ink;
+ },png.toString('base64'));
  const metrics=page=>page.evaluate(()=>{
   const page=document.scrollingElement,track=document.getElementById('scroll-track'),thumb=document.getElementById('scroll-thumb');
   return {top:page.scrollTop,max:page.scrollHeight-page.clientHeight,viewport:page.clientHeight,track:track.clientHeight,hit:thumb.clientHeight,
@@ -167,6 +173,7 @@ const {chromium}=require('playwright');
    if(stop==='list-change')await page.evaluate(()=>{opened.add(1);rebuild(true);});
    await pointer('pointerup');await page.clock.runFor(32);
   }
+  await page.evaluate(()=>listScroll.refresh());await page.clock.runFor(64);
   await pointer('pointerdown');await pointer('pointermove',{x:108});await page.clock.runFor(250);await active(true);check((await metrics(page)).top===0,'Exactly 8px of pre-hold movement is tolerated without a jump');
   await pointer('pointerup');await active(false);
   // Short presses and the empty rail never scroll.
@@ -192,16 +199,21 @@ const {chromium}=require('playwright');
   check(await page.getByRole('button',{name:'Listenin başına git',exact:true}).count()===1&&await thumb.getAttribute('aria-valuetext')==='Liste konumu: %0','Controls and position announce Turkish');
   await page.evaluate(()=>InsfavI18n.choose('en'));await page.clock.runFor(32);
   check(await page.getByRole('scrollbar',{name:'List position',exact:true}).count()===1,'Scrollbar announces English after language change');
-  await pointer('pointerdown');await pointer('pointerup');await page.clock.runFor(2999);
+  await pointer('pointerdown');await pointer('pointerup');
+  const visibleName=await renderedInk(page,await page.locator('.card-name').first().screenshot());
+  await page.clock.runFor(2999);
   check(await page.locator('#main-scroll').evaluate(node=>!node.classList.contains('idle')),'Controls stay visible before 3000ms');await page.clock.runFor(1);
   check(await page.locator('#main-scroll').evaluate(node=>node.classList.contains('idle')),'Unused controls fade after inactivity');
   check(await page.locator('#scroll-end').evaluate(node=>getComputedStyle(node).opacity==='0'),'Unused arrows disappear');
+  const dockedName=await renderedInk(page,await page.locator('.card-name').first().screenshot());
+  check(visibleName>100&&dockedName>=visibleName*.8&&dockedName<=visibleName*1.2,'Docking the translucent ball preserves rendered account text: '+visibleName+'/'+dockedName);
+  check(await page.locator('#scroll-thumb > span').evaluate(node=>getComputedStyle(node).backdropFilter==='none'),'Offscreen docking disables blur to avoid Chromium text damage');
   check(await page.locator('#scroll-thumb > span').evaluate(node=>{const r=node.getBoundingClientRect();return Math.abs(innerWidth-r.left-r.width/2)<1;}),'Exactly half the idle ball remains visible at the physical right edge');
-  check(await page.locator('#scroll-thumb > span').evaluate(node=>{const s=getComputedStyle(node);const color=s.backgroundColor.match(/[\d.]+/g).map(Number),blur=parseFloat(s.backdropFilter.slice(5));return color.length===4&&color[3]>0&&color[3]<.3&&blur>0&&blur<=2.5;}),'The ball has a translucent, lightly blurred interior');
   const tapTop=(await metrics(page)).top;
   await pointer('pointerdown');await pointer('pointerup');
   check(await page.locator('#scroll-thumb > span').evaluate(node=>node.getBoundingClientRect().right<=innerWidth-6),'One tap fully reveals the ball in its original position');
   check((await metrics(page)).top===tapTop,'Revealing with a short tap never scrolls the list');
+  check(await page.locator('#scroll-thumb > span').evaluate(node=>{const s=getComputedStyle(node);const color=s.backgroundColor.match(/[\d.]+/g).map(Number),blur=parseFloat(s.backdropFilter.slice(5));return color.length===4&&color[3]>0&&color[3]<.3&&blur>0&&blur<=2.5;}),'The ball has a translucent, lightly blurred interior');
   await page.clock.runFor(2999);check(await page.locator('#main-scroll').evaluate(node=>!node.classList.contains('idle')),'A tap restarts the full 3-second idle delay');
   await page.clock.runFor(1);check(await page.locator('#main-scroll').evaluate(node=>node.classList.contains('idle')),'The ball docks again after 3 seconds without touch');
   check(await page.locator('#scroll-grip').count()===0,'The protruding grip is removed');

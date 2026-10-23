@@ -7,7 +7,12 @@ it slides right until exactly half remains visible at the physical screen edge.
 The arrow idle delay also increases from 440ms to 3 seconds. The existing 180ms
 transition respects reduced motion; keyboard focus and active dragging keep the
 controls exposed. The drag hold stays 250ms, with existing cancellation rules.
-No polling or layout space is added.
+No polling or layout space is added. Chromium can lose underlying glyphs when
+a backdrop filter moves offscreen, so blur is disabled before docking and
+restored only after reveal completes; the half-exposed ball stays translucent.
+Active/docked screenshots were inspected to confirm list text remains visible.
+A pixel-based browser regression check confirms that docking preserves rendered
+account text, allowing normal antialiasing differences between compositor layers.
 
 The owner's annotated reference approves the compact Total / Unique cards.
 All six basic settings cards now use that compact size, instead of matching
@@ -16,7 +21,7 @@ the previously taller Missing Images row. The same enlarged copy glyph and
 Space is reserved to keep the text and icon separate. Intrinsic equal rows can
 grow together for narrow screens or larger text, without clipping content.
 
-Local validation: 333 scroll checks cover 10/1000/10000/15000 accounts, real
+Local validation: 335 scroll checks cover 10/1000/10000/15000 accounts, real
 bounds/ratios, 249/250ms drag activation, 2999/3000ms idle boundaries, tap reveal
 without scroll, half-exposed docking, repeat timeout, trusted touch, cancellation,
 keyboard, languages, layouts, no overflow and bounded DOM/image work. The
