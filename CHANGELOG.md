@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 (build 4)
+
+Show the view-mode selector directly in a labeled settings box, without an
+expandable section. One tap opens the existing List / 2–5 column choices.
+
 ## 1.1.1 (build 3)
 
 Restore the original person placeholder, enlarged inside the existing avatar.
