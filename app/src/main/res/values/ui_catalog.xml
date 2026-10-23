@@ -286,12 +286,13 @@
     <item>Go to end of list</item>
     <item>List position</item>
     <item>List position: {percent}%</item>
-    <item>Hold for 1 second to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.</item>
+    <item>Hold for 0.25 seconds to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.</item>
     <item>View mode</item>
     <item>List</item>
     <item>Matrix · 2 columns</item>
     <item>Matrix · 3 columns</item>
     <item>Matrix · 4 columns</item>
+    <item>Matrix · 5 columns</item>
   </string-array>
   <string-array name="ui_values">
     <item>@string/ui_74a883a037bc</item>
@@ -580,11 +581,12 @@
     <item>@string/ui_8ad46c01adea</item>
     <item>@string/ui_8344488a9327</item>
     <item>@string/ui_3a3f10d74419</item>
-    <item>@string/ui_7d13deba1100</item>
+    <item>@string/ui_e8f378a1e66b</item>
     <item>@string/ui_18997f2413b5</item>
     <item>@string/ui_6f202f54a7b2</item>
     <item>@string/ui_d74070804226</item>
     <item>@string/ui_91c507c9e8d7</item>
     <item>@string/ui_102849e5319d</item>
+    <item>@string/ui_0f598e5c8e2a</item>
   </string-array>
 </resources>

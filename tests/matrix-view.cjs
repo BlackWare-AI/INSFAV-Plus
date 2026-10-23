@@ -35,19 +35,21 @@ const {chromium}=require('playwright');
   }
   await page.locator('.folder-header').nth(1).click();await page.locator('.folder-header').first().click();
   const original=await page.locator('.account').first().evaluate(node=>({height:node.clientHeight,avatar:node.querySelector('.avatar').clientWidth,width:document.getElementById('list').clientWidth}));
-  for(const columns of [2,3,4]){
+  for(const columns of [2,3,4,5]){
    await mode(columns);
    for(const viewport of [{width:320,height:640},{width:393,height:850},{width:480,height:640},{width:640,height:360}]){
     await page.setViewportSize(viewport);await page.evaluate(()=>scrollTo(0,0));await settle(page);
+    const shell=await page.evaluate(()=>{const a=document.getElementById('result-controls'),b=document.querySelector('.nav-container'),x=a.getBoundingClientRect(),y=b.getBoundingClientRect();return Math.abs(x.width-y.width)<.6&&Math.abs(x.height-y.height)<.6&&getComputedStyle(a).borderRadius===getComputedStyle(b).borderRadius&&getComputedStyle(document.getElementById('result-filter')).fontSize===getComputedStyle(document.getElementById('search-input')).fontSize;});
+    check(shell,'Results selector matches bottom navigation shell and type at '+viewport.width+'px');
     const geometry=await page.evaluate(()=>{
      const row=document.querySelector('.matrix-row'),cells=[...row.children],avatars=cells.map(node=>node.querySelector('.avatar').getBoundingClientRect());
      const labels=cells.map(node=>node.querySelector('.matrix-user'));
-     return {columns:cells.length,squares:avatars.every(rect=>Math.abs(rect.width-rect.height)<.6),sizes:avatars.map(rect=>rect.width),
+     return {black:getComputedStyle(document.querySelector('.folder-wrap.open')).backgroundColor==='rgb(0, 0, 0)',divider:getComputedStyle(document.querySelector('.folder-wrap.open')).borderBottomWidth,columns:cells.length,squares:avatars.every(rect=>Math.abs(rect.width-rect.height)<.6),sizes:avatars.map(rect=>rect.width),
       aligned:avatars.every(rect=>Math.abs(rect.top-avatars[0].top)<.6),labels:labels.every((node,i)=>node.textContent.startsWith('@')&&node.getBoundingClientRect().top>=avatars[i].bottom&&getComputedStyle(node).textOverflow==='ellipsis'),
       radius:getComputedStyle(cells[0].querySelector('.avatar')).borderRadius,fit:document.scrollingElement.scrollWidth<=innerWidth,
       extraName:!!row.querySelector('.card-name'),metrics:thumbnailMetrics()};
     });
-    check(geometry.columns===columns&&geometry.squares&&geometry.aligned,'Equal square '+columns+'-column cells at '+viewport.width+'px');
+    check(geometry.black&&geometry.divider==='0px'&&geometry.columns===columns&&geometry.squares&&geometry.aligned,'Equal square '+columns+'-column cells at '+viewport.width+'px');
     check(geometry.sizes.every(size=>Math.abs(size-geometry.sizes[0])<.6)&&geometry.sizes[0]>=48,'Consistent, usable image dimensions');
     check(geometry.labels&&!geometry.extraName&&geometry.radius==='18px'&&geometry.fit,'Only ellipsized usernames below images, existing rounding, no overflow');
     check(geometry.metrics.active<=6&&geometry.metrics.retained<=64&&geometry.metrics.rows<32,'Matrix DOM and images remain bounded');
@@ -69,7 +71,7 @@ const {chromium}=require('playwright');
   await page.locator('#search-input').fill('user_14999_');await page.waitForTimeout(180);
   check(await page.locator('.matrix-account').count()===0,'Matrix excludes accounts outside result filter');
   await page.locator('#clear-search').click();await page.locator('#result-filter').click();await page.getByRole('radio',{name:'All accounts',exact:true}).click();
-  await page.reload();await page.locator('#splash').waitFor({state:'hidden'});check(await page.evaluate(()=>viewMode)===4,'Matrix choice survives reload through native bootstrap');
+  await page.reload();await page.locator('#splash').waitFor({state:'hidden'});check(await page.evaluate(()=>viewMode)===5,'Matrix choice survives reload through native bootstrap');
   check(await page.locator('.matrix-account').count()===0,'Reload keeps collections collapsed');
   await page.locator('.folder-header').first().click();await settle(page);
   await page.locator('.matrix-user').first().click();check(await page.evaluate(()=>commands.at(-1).command)==='open','Username opens the corresponding profile');
@@ -77,14 +79,16 @@ const {chromium}=require('playwright');
   await page.evaluate(()=>handleBack());await mode(0);await page.setViewportSize({width:393,height:850});await settle(page);
   const restored=await page.locator('.account').first().evaluate(node=>({height:node.clientHeight,avatar:node.querySelector('.avatar').clientWidth,width:document.getElementById('list').clientWidth}));
   check(JSON.stringify(restored)===JSON.stringify(original),'Returning to List restores the original row/avatar/list geometry');
-  await settings();const language=await page.locator('#language-choice').boundingBox(),header=await page.locator('#settings header').boundingBox();
+  await page.evaluate(()=>nativeEvent('status',{profiles:{},revision:'missing-avatar-check'}));
+  check(await page.locator('.person-placeholder').first().evaluate(node=>Math.abs(node.getBoundingClientRect().width-40.8)<.1&&getComputedStyle(node.parentElement).backgroundColor==='rgb(0, 0, 0)'),'Missing avatar glyph is 20% larger on pure black');
+  await settings();check(await page.locator('#settings .screen-content').evaluate(node=>node.firstElementChild.id==='view-settings'),'View mode is the first settings section');const language=await page.locator('#language-choice').boundingBox(),header=await page.locator('#settings header').boundingBox();
   check(language.y>=header.y&&language.y+language.height<=header.y+header.height&&language.x>header.x+header.width/2,'Language choice is at the upper right of settings');
   await page.locator('#language-choice').click();await page.getByRole('radio',{name:'Türkçe',exact:true}).click();
   await page.locator('#view-settings').evaluate(node=>node.open=true);await page.locator('#view-choice').click();
-  check(await page.getByRole('radio',{name:'Matris · 4 sütun',exact:true}).count()===1,'View options follow Turkish');
+  check(await page.getByRole('radio',{name:'Matris · 5 sütun',exact:true}).count()===1,'View options follow Turkish');
   await page.getByRole('button',{name:'Kapat',exact:true}).click();await page.locator('#language-choice').click();await page.getByRole('radio',{name:'English',exact:true}).click();
   check(await page.locator('html').getAttribute('lang')==='en','Upper-right language choice also applies English');
   check(errors.length===0,'No script errors: '+errors.join('; '));
-  console.log('PASS '+checks+' matrix checks: 2/3/4 square columns, labels, settings persistence, folders/search/filter, viewer, original list and language toolbar');
+  console.log('PASS '+checks+' matrix checks: 2/3/4/5 square columns, labels, settings persistence, folders/search/filter, viewer, original list and language toolbar');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

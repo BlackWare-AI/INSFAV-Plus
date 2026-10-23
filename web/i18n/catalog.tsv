@@ -284,9 +284,10 @@ Go to start of list	Listenin başına git
 Go to end of list	Listenin sonuna git
 List position	Liste konumu
 List position: {percent}%	Liste konumu: %{percent}
-Hold for 1 second to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.	Sürüklemek için 1 saniye basılı tutun. Kaydırmak için yön tuşlarını, Page Up, Page Down, Home veya End tuşlarını kullanın.
+Hold for 0.25 seconds to drag. Use arrow keys, Page Up, Page Down, Home or End to scroll.	Sürüklemek için 0,25 saniye basılı tutun. Kaydırmak için yön tuşlarını, Page Up, Page Down, Home veya End tuşlarını kullanın.
 View mode	Görünüm modu
 List	Liste
 Matrix · 2 columns	Matris · 2 sütun
 Matrix · 3 columns	Matris · 3 sütun
 Matrix · 4 columns	Matris · 4 sütun
+Matrix · 5 columns	Matris · 5 sütun

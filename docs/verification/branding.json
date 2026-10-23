@@ -1,9 +1,9 @@
 {
   "source": "User-supplied INSFAV Plus logo",
-  "bytes": 43009,
-  "sha256": "3115aec40d4bd59031c5bd56448ccb50f0deb5b71e3dcb299532012c37a19ef3",
+  "bytes": 32554,
+  "sha256": "8278e111c0727c9efa46ec832b681a44b0d381fa92cb0866ce1205dc07e236c4",
   "width": 1280,
-  "height": 1198,
+  "height": 1280,
   "format": "JPEG",
   "exifPresent": false,
   "sourceOfTruth": "web/static/logo.jpg",

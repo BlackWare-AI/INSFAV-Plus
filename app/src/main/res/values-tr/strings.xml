@@ -286,10 +286,11 @@
     <string name="ui_8ad46c01adea" formatted="false">Listenin sonuna git</string>
     <string name="ui_8344488a9327" formatted="false">Liste konumu</string>
     <string name="ui_3a3f10d74419" formatted="false">Liste konumu: %{percent}</string>
-    <string name="ui_7d13deba1100" formatted="false">Sürüklemek için 1 saniye basılı tutun. Kaydırmak için yön tuşlarını, Page Up, Page Down, Home veya End tuşlarını kullanın.</string>
+    <string name="ui_e8f378a1e66b" formatted="false">Sürüklemek için 0,25 saniye basılı tutun. Kaydırmak için yön tuşlarını, Page Up, Page Down, Home veya End tuşlarını kullanın.</string>
     <string name="ui_18997f2413b5" formatted="false">Görünüm modu</string>
     <string name="ui_6f202f54a7b2" formatted="false">Liste</string>
     <string name="ui_d74070804226" formatted="false">Matris · 2 sütun</string>
     <string name="ui_91c507c9e8d7" formatted="false">Matris · 3 sütun</string>
     <string name="ui_102849e5319d" formatted="false">Matris · 4 sütun</string>
+    <string name="ui_0f598e5c8e2a" formatted="false">Matris · 5 sütun</string>
 </resources>

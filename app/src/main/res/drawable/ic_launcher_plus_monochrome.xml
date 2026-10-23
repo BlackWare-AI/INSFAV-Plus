@@ -1,0 +1,7 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Single-color silhouette of the supplied star-plus artwork for themed launchers. -->
+    <path android:fillColor="#FFFFFF" android:pathData="M52.7,37.2 Q54,34.8 55.3,37.2 L60,46.7 Q60.3,47.2 61,47.3 L71.1,49.4 Q73.1,49.8 71.6,51.5 L64.1,58.9 Q63.6,59.4 63.8,60.2 L66.3,70 Q66.9,72 65,71.1 L54.6,65.9 Q54,65.5 53.4,65.9 L43,71.1 Q41.1,72 41.7,70 L44.2,60.2 Q44.4,59.4 43.9,58.9 L36.4,51.5 Q34.9,49.8 36.9,49.4 L47,47.3 Q47.7,47.2 48,46.7 Z"/>
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2.5" android:strokeLineCap="round" android:pathData="M64.5,41.5 L72,41.5 M68.25,37.75 L68.25,45.25"/>
+</vector>
