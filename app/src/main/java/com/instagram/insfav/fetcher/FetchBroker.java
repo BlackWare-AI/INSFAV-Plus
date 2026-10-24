@@ -57,8 +57,6 @@ final class FetchBroker {
             return t;
           });
   private volatile String sessionGeneration = "";
-  volatile Request authenticating;
-  private volatile boolean authenticationRequired = true;
   volatile ProfileProvider provider;
   volatile boolean poisoned;
   volatile int limit = 1;
@@ -121,7 +119,6 @@ final class FetchBroker {
   }
 
   void beginBatch() {
-    authenticationRequired = true;
     prefs
         .edit()
         .putString("sessionEvidence", "UNKNOWN")
@@ -149,7 +146,7 @@ final class FetchBroker {
 
   // Dispatch waits are visible without changing the user's delay or worker setting.
   long nextDispatchAt() {
-    if (tasks.isEmpty() || authenticating != null || active.size() >= limit) return 0;
+    if (tasks.isEmpty() || active.size() >= limit) return 0;
     boolean[] busy = new boolean[30];
     for (Request a : active) if (a.slot >= 0) busy[a.slot] = true;
     long earliest = Long.MAX_VALUE;
@@ -184,19 +181,16 @@ final class FetchBroker {
   }
 
   private void cancel(boolean full) {
-    Request auth = authenticating;
-    if (auth != null && auth.full == full) {
-      poisoned = true;
-      cancel(auth, false);
-      ProfileProvider p = provider;
-      if (p != null) p.cancel();
-    }
     for (Request r : tasks)
       if (r.full == full) {
         tasks.remove(r);
         r.result.cancel(false);
       }
-    for (Request r : active) if (r.full == full) cancel(r, false);
+    for (Request r : active)
+      if (r.full == full) {
+        poisoned = true; // A cancelled cookie setup must not be reused on Resume.
+        cancel(r, false);
+      }
   }
 
   private void cancel(Request r, boolean timeout) {
@@ -224,35 +218,6 @@ final class FetchBroker {
     ProfileProvider p = provider;
     if (p != null) p.cancel();
     for (Request a : active) if (a.thread != Thread.currentThread()) cancel(a, false);
-  }
-
-  private void authenticateBatch(Request r, ProfileProvider p) throws ProfileProvider.Failure {
-    if (r.full || !batch || !authenticationRequired) return;
-    authenticating = r;
-    r.thread = Thread.currentThread();
-    try {
-      p.authenticate();
-      if (r.result.isCancelled()) throw new ProfileProvider.Failure("REQUEST_CANCELLED");
-      authenticationRequired = false;
-      prefs.edit().putString("sessionEvidence", "VERIFIED").commit();
-    } catch (ProfileProvider.Failure e) {
-      poisoned = true;
-      if (e.code.equals("REQUEST_CANCELLED")) throw e;
-      if (FailurePolicy.pause(e)) throw e;
-      // An inconclusive/network-limited verification is a timed wait, never expired cookies.
-      long retry = System.currentTimeMillis() + 60000;
-      prefs
-          .edit()
-          .putString("sessionEvidence", "UNKNOWN")
-          .putLong("retryAt", Math.max(prefs.getLong("retryAt", 0), retry))
-          .putString("state", "Waiting: session verification retry")
-          .commit();
-      throw new ProfileProvider.Failure("COOKIE_AUTH_UNVERIFIED", e.http, retry, false);
-    } finally {
-      authenticating = null;
-      r.thread = null;
-      Thread.interrupted();
-    }
   }
 
   private long nextDeadlineDelay() {
@@ -337,7 +302,6 @@ final class FetchBroker {
                 || provider.blockingFailure() != null
                 || !sessionGeneration.equals(prefs.getString("cookieGeneration", "")))) {
           releaseProvider();
-          authenticationRequired = true;
         }
         QueueControl.queuedAccounts = tasks.size();
         Request request = tasks.peek();
@@ -390,8 +354,7 @@ final class FetchBroker {
           continue;
         }
         if ((request.full && !active.isEmpty())
-            || active.stream().anyMatch(operation -> operation.full)
-            || (!request.full && batch && authenticationRequired && !active.isEmpty())) {
+            || active.stream().anyMatch(operation -> operation.full)) {
           awaitEvent(observed, boundedWait(0, !request.full));
           continue;
         }
@@ -401,12 +364,12 @@ final class FetchBroker {
         try {
           if (provider == null) {
             provider = factory.open(false);
-            authenticationRequired = true;
             poisoned = false;
             sessionGeneration = prefs.getString("cookieGeneration", "");
           }
           provider.trim(limit);
-          authenticateBatch(request, provider);
+          // Like Thumb Fetcher 0.5.0, check the saved session on the requested profile.
+          // An unrelated homepage viewer-proof request must not stall the whole batch.
           if (request.result.isCancelled()) continue;
         } catch (ProfileProvider.Failure error) {
           if (FailurePolicy.pause(error)) block(error);

@@ -82,7 +82,7 @@ public class ProfileOutcomeHistoryTest {
       assertEquals(1, q.recordedOutcomes());
       assertEquals(Collections.singletonList("present"), q.eligible());
       q.sync(Arrays.asList("absent", "present", "done", "fresh"));
-      assertEquals(Arrays.asList("present", "fresh"), q.eligible());
+      assertEquals(Arrays.asList("fresh", "present"), q.eligible());
       assertEquals(Integer.valueOf(1), q.counts().get("SUCCESS"));
     }
   }

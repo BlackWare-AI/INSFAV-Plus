@@ -1,0 +1,28 @@
+{
+  "releaseUrl": "https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.4-build.6",
+  "tag": "plus-v1.1.4-build.6",
+  "appSourceCommit": "43fdb30d58c6e0e8f7a94f1b8b4cf4402aae1439",
+  "publicationWorkflowCommit": "43fdb30d58c6e0e8f7a94f1b8b4cf4402aae1439",
+  "releaseTargetCommit": "43fdb30d58c6e0e8f7a94f1b8b4cf4402aae1439",
+  "ciRun": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/40011629606",
+  "ciConclusion": "success",
+  "publishRun": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/40012650954",
+  "publishConclusion": "success",
+  "apk": {
+    "file": "app-release.apk",
+    "bytes": 824606,
+    "sha256": "4e947d2d34f152dda014e77276191f83a913e95c48f10f1f0d370d475a818b20",
+    "package": "com.instagram.insfav.plus",
+    "version": "1.1.4",
+    "versionCode": 6,
+    "debuggable": false,
+    "signatureVerified": true,
+    "certificateSha256": [
+      "9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f"
+    ],
+    "officialRelease": true
+  },
+  "publicDownloadVerified": true,
+  "physicalDeviceTested": false,
+  "ciAttempt": 1
+}

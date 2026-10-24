@@ -5,7 +5,7 @@ root.createListScroll=function(){
  const rail=document.getElementById('main-scroll'),track=document.getElementById('scroll-track'),thumb=document.getElementById('scroll-thumb'),mark=thumb.firstElementChild;
  const up=document.getElementById('scroll-start'),down=document.getElementById('scroll-end'),app=document.getElementById('app'),nav=document.querySelector('.bottom-nav');
  const pointers=new Set();let accounts=false,frame=0,hold=null,maximum=0,travel=0,viewport=0,viewportWidth=0,trackHeight=0,hideTimer=0,keyboard=false;
- function hideLater(){clearTimeout(hideTimer);if(!rail.hidden&&!hold&&!(keyboard&&rail.contains(document.activeElement)))hideTimer=setTimeout(()=>rail.classList.add('idle'),440);}
+ function hideLater(){clearTimeout(hideTimer);if(!rail.hidden&&!hold&&!(keyboard&&rail.contains(document.activeElement)))hideTimer=setTimeout(()=>rail.classList.add('idle'),3000);}
  function wake(){rail.classList.remove('idle');hideLater();}
  const scroller=()=>document.scrollingElement;
  const locked=()=>document.body.classList.contains('overlay-open');

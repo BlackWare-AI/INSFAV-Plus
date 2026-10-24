@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.6 (build 8)
+
+Thumbnail Fetcher processes eligible missing profiles newest-first, from the
+bottom of the source favorites. Completed images and explicit retry history
+are preserved. Like Thumb Fetcher 0.5.0, bulk retrieval starts on the requested
+profile without waiting for unrelated homepage session proof. Actual cookie,
+login, challenge and rate-limit barriers still stop work.
+
+## 1.1.5 (build 7)
+
+Make the fixed scroll ball translucent with very light background blur. A tap
+reveals it; after three seconds idle it slides halfway off the right edge.
+Arrow visibility also increases to three seconds; the 250ms drag hold remains.
+All six basic settings cards now use the approved compact Total / Unique card
+size. The copy button is positioned inside its card without increasing its row.
+
 ## 1.1.4 (build 6)
 
 Give all six basic settings information cards equal dimensions, matching the
