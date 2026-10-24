@@ -39,3 +39,8 @@ now express their intended dispatch sequence in oldest-first source order.
 The JS core and 37 offline probe-classification cases pass. All 177 native Fetcher tests pass with no failures/errors.
 Full current-source CI gates precede signed release publication. UI source
 and packaged assets are unchanged.
+
+Published: [INSFAV Plus 1.1.6 / build 8](https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.6-build.8).
+Full Chromium, all Android unit tests, lint, assembly and emulator gates passed.
+The published APK was downloaded and verified against local bytes and metadata.
+See release-1.1.6.json for source, CI, publication, certificate and checksum records.
