@@ -24,6 +24,27 @@ public class IntegrationQueueTest {
   }
 
   @Test
+  public void newestFirstOrderSurvivesReopenAndAppendedFavoritesWithoutErasingHistory() {
+    try (QueueStore q = new QueueStore(c)) {
+      q.sync(Arrays.asList("old", "present", "middle", "newest", "@NEWEST"));
+      q.mark("present", "SUCCESS", "VALID_WEBP");
+      q.mark("middle", "RETRY_LATER", "REQUEST_CANCELLED");
+      assertEquals(Arrays.asList("newest", "middle", "old"), q.eligible());
+      assertEquals("newest", q.next());
+      q.mark("newest", "SUCCESS", "VALID_WEBP");
+    }
+    try (QueueStore q = new QueueStore(c)) {
+      q.sync(Arrays.asList("old", "present", "middle", "newest", "latest"));
+      assertEquals(Arrays.asList("latest", "middle", "old"), q.eligible());
+      assertEquals("latest", q.next());
+      assertEquals(Integer.valueOf(2), q.counts().get("SUCCESS"));
+      assertEquals(Arrays.asList("old", "present", "middle", "newest", "latest"), q.users(false));
+      q.attempted("middle");
+      assertEquals(Arrays.asList("latest", "old"), q.eligible());
+    }
+  }
+
+  @Test
   public void deduplicatesAndPreservesDurableStatuses() {
     try (QueueStore q = new QueueStore(c)) {
       q.sync(Arrays.asList("one", "one", "two", "three"));

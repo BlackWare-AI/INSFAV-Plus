@@ -123,6 +123,8 @@ public class QueueReliabilityTest {
 
                   public byte[] fetch(String u) throws Failure {
                     requests.add(u);
+                    if (fault.equals("SESSION_INVALID"))
+                      throw new Failure("COOKIE_INVALID_EXPIRED", 401, 0, true);
                     if (fault.equals("FIRST_FIVE_TIMEOUT") && u.startsWith("timeout"))
                       throw new Failure("WEBVIEW_TIMEOUT");
                     if (u.equals("bad")) {
@@ -152,7 +154,9 @@ public class QueueReliabilityTest {
 
   void run(String action, String... names) {
     if (names.length > 0) {
-      users = Arrays.asList(names);
+      // Fault fixtures specify dispatch order; favorites are stored oldest first.
+      users = new ArrayList<>(Arrays.asList(names));
+      Collections.reverse(users);
       try (QueueStore q = new QueueStore(c)) {
         q.sync(users);
       }
@@ -290,10 +294,11 @@ public class QueueReliabilityTest {
   }
 
   @Test(timeout = 15000)
-  public void invalidSessionStopsBeforeAnyProfileAndPreservesQueue() {
-    authFailure = new ProfileProvider.Failure("COOKIE_INVALID_EXPIRED", 401, 0, true);
+  public void explicitProfileLoginWallStopsAndPreservesRemainingQueue() {
+    fault = "SESSION_INVALID";
     run("missing", "bad", "next");
-    assertTrue(requests.isEmpty());
+    assertEquals(Collections.singletonList("bad"), requests);
+    assertEquals(0, authCalls);
     assertEquals("UNVERIFIED", SessionState.evidence(SessionState.prefs(c)));
     assertEquals("Paused: session not verified", SessionState.prefs(c).getString("state", ""));
     try (QueueStore q = new QueueStore(c)) {
@@ -304,37 +309,33 @@ public class QueueReliabilityTest {
   }
 
   @Test(timeout = 15000)
-  public void temporaryAuthNetworkFailureWaitsThenReauthenticatesOnResume() throws Exception {
+  public void unrelatedHomepageFailureCannotPauseAHealthyProfileBatch() {
     authFailure = new ProfileProvider.Failure("WEBVIEW_NETWORK_ERROR");
     run("missing", "bad", "next");
-    assertTrue(requests.isEmpty());
+    assertEquals(Arrays.asList("bad", "next"), requests);
+    assertEquals(0, authCalls);
     assertEquals("", SessionState.prefs(c).getString("blocked", ""));
     assertEquals("UNKNOWN", SessionState.evidence(SessionState.prefs(c)));
-    assertTrue(SessionState.prefs(c).getLong("retryAt", 0) > System.currentTimeMillis());
+    assertEquals(0, SessionState.prefs(c).getLong("retryAt", 0));
     try (QueueStore q = new QueueStore(c)) {
-      assertEquals(0, q.attempts("bad"));
-      assertEquals(2, q.pending().size());
+      assertEquals(Integer.valueOf(2), q.counts().get("SUCCESS"));
+      assertTrue(q.pending().isEmpty());
     }
-    Files.write(new File(c.getFilesDir(), "fetcher-cookies.enc").toPath(), new byte[] {1});
-    try {
-      Fetcher.action("resume");
-      fail("Cooldown must prevent a manual restart");
-    } catch (IOException expected) {
-      assertTrue(expected.getMessage().contains("Retry cooldown"));
-    }
-    SessionState.prefs(c)
-        .edit()
-        .putBoolean("background", true)
-        .putBoolean("armed", true)
-        .putBoolean("userPaused", false)
-        .commit();
-    assertTrue(WorkScheduler.enabled(SessionState.prefs(c)));
-    authFailure = null;
-    SessionState.prefs(c).edit().putLong("retryAt", 0).commit();
     run("resume");
     assertEquals(2, requests.size());
-    assertEquals(2, authCalls);
-    assertEquals("VERIFIED", SessionState.evidence(SessionState.prefs(c)));
+    assertEquals(0, authCalls);
+  }
+
+  @Test(timeout = 15000)
+  public void realSourceOrderIsNewestFirstAndExistingImagesAreNotFetched() {
+    users = Arrays.asList("oldest", "middle", "newest");
+    try (QueueStore q = new QueueStore(c)) {
+      q.sync(users);
+    }
+    run("missing");
+    assertEquals(Arrays.asList("newest", "middle", "oldest"), requests);
+    run("resume");
+    assertEquals(3, requests.size());
   }
 
   @Test(timeout = 15000)

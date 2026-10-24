@@ -293,17 +293,16 @@ final class QueueStore extends SQLiteOpenHelper {
             new Object[] {code});
   }
 
+  // Source favorites are oldest first. Dispatch newest eligible entries without reordering storage.
   String next() {
-    for (String condition :
-        new String[] {"status='PENDING'", "status='RETRY_LATER' AND attempts=0"})
-      try (Cursor c =
-          getReadableDatabase()
-              .rawQuery(
-                  "SELECT username FROM accounts WHERE " + condition + " ORDER BY position LIMIT 1",
-                  null)) {
-        if (c.moveToFirst()) return c.getString(0);
-      }
-    return null;
+    try (Cursor c =
+        getReadableDatabase()
+            .rawQuery(
+                "SELECT username FROM accounts WHERE status='PENDING' OR (status='RETRY_LATER' AND"
+                    + " attempts=0) ORDER BY position DESC LIMIT 1",
+                null)) {
+      return c.moveToFirst() ? c.getString(0) : null;
+    }
   }
 
   List<String> eligible() {
@@ -312,7 +311,7 @@ final class QueueStore extends SQLiteOpenHelper {
         getReadableDatabase()
             .rawQuery(
                 "SELECT username FROM accounts WHERE status='PENDING' OR (status='RETRY_LATER' AND"
-                    + " attempts=0) ORDER BY CASE WHEN status='PENDING' THEN 0 ELSE 1 END,position",
+                    + " attempts=0) ORDER BY position DESC",
                 null)) {
       while (c.moveToNext()) result.add(c.getString(0));
     }

@@ -1,0 +1,25 @@
+{
+  "repository": "BlackWare-AI/INSFAV-Thumb-Fetcher",
+  "release": "v0.5.0",
+  "releaseBuild": 9,
+  "commit": "401631af687a01cd062e6ee7169b0f576c751759",
+  "files": {
+    "AccessWall.java": "6f2426818ba816fdfe1a5ddac1eabb5501dc2004f064782f31e05f4494bef875",
+    "FailurePolicy.java": "5ac8c8d0dc284a01343babb82f0bbfdaccf1b905bf984e51101c3264ff049232",
+    "ProbeDecision.java": "96e3371101da9a1ce007bd8765376c8e7fdc822baca2339f05382dd94201f098",
+    "QueueEngine.java": "0de0b1a0af90e338beedaee2808a61f69ea8d8b6fd4768a0d1f498170da05232",
+    "QueueStore.java": "09b6244a2224c09252f319f8b9de434d80c4f49a3a9eac8a5571b866a40fc55a",
+    "WebViewProfileProvider.java": "caa1804a86db2300e665cd1d268c5b5c025ad7866b0ee46a2e52bc4463ac3b00",
+    "profile-probe.js": "295eaea5990240e1c8b0e5444441043e2e89fb14c2ea77caf93c21b9fa285ed1",
+    "profile-probe.test.cjs": "b4c3e63427f14fb5df0c6cb03fddafd390ed722f123c871a4debf0e3811c7cb5"
+  },
+  "findings": [
+    "0.5.0 QueueEngine starts profile retrieval without calling authenticate().",
+    "Plus already contains the explicit unavailable-text skip, candidate veto and real login/rate-limit barriers. No probe replacement is needed.",
+    "Plus mandatory homepage verification can convert a homepage timeout/network failure into a 60-second queue-wide session retry before any requested profile is fetched.",
+    "Remove that batch preflight; retain per-profile cookie application, explicit login/challenge/rate-limit barriers, pacing, deadlines and manual-start rules.",
+    "Select eligible usernames by descending source position without changing source JSON or main list order."
+  ],
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false
+}
