@@ -2,10 +2,11 @@
 
 <img src="web/static/logo.jpg" alt="INSFAV Plus" width="128">
 
-[Download the signed 1.1.6 release APK](https://github.com/BlackWare-AI/INSFAV-Plus/releases/download/plus-v1.1.6-build.8/app-release.apk).
+[Download the signed INSFAV Plus 1.1.6 release APK](https://github.com/BlackWare-AI/INSFAV-Plus/releases/latest).
 
-Independent Android collection manager based on INSFAV commit
-`0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original repository and INSFAV 5.0.0 remain separate.
+INSFAV Plus is an independent Android collection manager based on INSFAV commit
+`0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original INSFAV repository and
+INSFAV 5.0.0 remain separate.
 
 - **App:** INSFAV Plus 1.1.6, build 8; `com.instagram.insfav.plus`.
 - One Java/Gradle Android application, one APK; Android 8.0+ (min 26), target 35.
@@ -59,6 +60,14 @@ no key is generated. See [release guidance](docs/RELEASE.md).
 MIT application license: [LICENSE](LICENSE). Inter fonts retain their
 [SIL Open Font License](INTER-LICENSE.txt). Original source history and legacy
 release checksums/certificates are preserved in [docs/archive/source](docs/archive/source).
+The current source is also preserved on `preservation/current-main-2026-10-24`.
+
+## Open source and development
+
+This public repository can be forked to study, modify and extend INSFAV Plus.
+Third-party contributions are welcome through pull requests. Read
+[CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes. Plus remains a
+separate application with its own package name, release history and signing key.
 
 The detailed Turkish delivery report is [here](docs/IMPLEMENTATION-REPORT-TR.md);
 [verification evidence](docs/verification/README.md) records counts, coverage and limits.
