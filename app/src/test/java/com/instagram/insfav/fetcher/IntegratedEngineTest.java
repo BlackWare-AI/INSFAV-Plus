@@ -100,7 +100,7 @@ public class IntegratedEngineTest {
       q.sync(Arrays.asList("gone", "ambiguous", "good"));
     }
     new QueueEngine(c, state -> {}, () -> false).run("missing", false);
-    assertEquals(Arrays.asList("gone", "ambiguous", "good"), requests);
+    assertEquals(Arrays.asList("good", "ambiguous", "gone"), requests);
     assertEquals(Collections.singleton("good"), written);
     try (QueueStore q = new QueueStore(c)) {
       assertEquals(Integer.valueOf(1), q.counts().get("SUCCESS"));

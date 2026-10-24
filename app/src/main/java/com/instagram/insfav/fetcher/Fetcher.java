@@ -416,7 +416,7 @@ public final class Fetcher {
             running(),
             QueueControl.activeAccounts,
             broker.tasks.size(),
-            broker.authenticating != null,
+            false, // Bulk retrieval checks cookies on each profile, without a homepage preflight.
             broker.nextDispatchAt(),
             System.currentTimeMillis()));
     RunPolicy r = RunPolicy.read(p);

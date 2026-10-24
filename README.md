@@ -2,12 +2,12 @@
 
 <img src="web/static/logo.jpg" alt="INSFAV Plus" width="128">
 
-[Download the signed 1.1.5 release APK](https://github.com/BlackWare-AI/INSFAV-Plus/releases/download/plus-v1.1.5-build.7/app-release.apk).
+[Download the signed 1.1.6 release APK](https://github.com/BlackWare-AI/INSFAV-Plus/releases/download/plus-v1.1.6-build.8/app-release.apk).
 
 Independent Android collection manager based on INSFAV commit
 `0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original repository and INSFAV 5.0.0 remain separate.
 
-- **App:** INSFAV Plus 1.1.5, build 7; `com.instagram.insfav.plus`.
+- **App:** INSFAV Plus 1.1.6, build 8; `com.instagram.insfav.plus`.
 - One Java/Gradle Android application, one APK; Android 8.0+ (min 26), target 35.
 - AMOLED black interface, 60×60 profile images in contiguous 65px virtual rows.
 - Optional 2/3/4/5-column square matrices with usernames below images; view choice is saved.

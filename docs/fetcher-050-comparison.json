@@ -1,0 +1,49 @@
+{
+  "repository": "BlackWare-AI/INSFAV-Thumb-Fetcher",
+  "release": "v0.5.0",
+  "releaseBuild": 9,
+  "commit": "401631af687a01cd062e6ee7169b0f576c751759",
+  "files": {
+    "AccessWall.java": {
+      "gitBlobSha": "ac1d96093c280fc093bdd8b2ebf12ff28fcf6d00",
+      "sha256": "440a92ae33ad018646963319c604e597bcd9e31c769ce91e60e60cc9fc35f52e"
+    },
+    "FailurePolicy.java": {
+      "gitBlobSha": "15c40bfd3a8cee92f882a27e6c66a77f9da98bf2",
+      "sha256": "a132455bb1c378a58eba81fc89c5f29b4700a4a670c452ce9ec4ac3f5995ea6e"
+    },
+    "ProbeDecision.java": {
+      "gitBlobSha": "424bd1c80952bfb1418c578d223ba41fc47c4a46",
+      "sha256": "86813153beac29062fb4af10f9948b4a2a2bab8252c729e515c1ee10a79a6dd1"
+    },
+    "QueueEngine.java": {
+      "gitBlobSha": "f876e58daf7f69d91c1a709f18b4712dad9b126d",
+      "sha256": "d283f23ca21c3d48233fe93697318f4fd33a110c1d5b254ae274f9b4f7197fd4"
+    },
+    "QueueStore.java": {
+      "gitBlobSha": "555a09801cb46573a918eb46bce932f5ab8e7d20",
+      "sha256": "dceb296c74d30933e114200ccaa784dcfa4deace7beb6d24f9652a23b1867ef0"
+    },
+    "WebViewProfileProvider.java": {
+      "gitBlobSha": "e6ef06de3779fdf0c3e7d928576e783c0701b2bd",
+      "sha256": "2851ab4472b3ca9ddf8e77f97c26f7b29722ea89feb837ef64574c52b5c1a81a"
+    },
+    "profile-probe.js": {
+      "gitBlobSha": "feaa919e3651673738e39207b202909d63dcb34d",
+      "sha256": "b7b8768b03a70bd85306543da9725068c43769fd546542e8017d0d71e688de42"
+    },
+    "profile-probe.test.cjs": {
+      "gitBlobSha": "4bd03fc1b19b5755fd4a13a9f15912ff55011872",
+      "sha256": "a0cf322b3ab71f428817be3fbc6e00fdaf50fc33214739d8fb8891252f8c8a7b"
+    }
+  },
+  "findings": [
+    "0.5.0 QueueEngine starts profile retrieval without calling authenticate().",
+    "Plus already contains the explicit unavailable-text skip, candidate veto and real login/rate-limit barriers. No probe replacement is needed.",
+    "Plus mandatory homepage verification can convert a homepage timeout/network failure into a 60-second queue-wide session retry before any requested profile is fetched.",
+    "Remove that batch preflight; retain per-profile cookie application, explicit login/challenge/rate-limit barriers, pacing, deadlines and manual-start rules.",
+    "Select eligible usernames by descending source position without changing source JSON or main list order."
+  ],
+  "physicalDeviceTested": false,
+  "liveInstagramTested": false
+}

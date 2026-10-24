@@ -296,12 +296,7 @@ final class QueueEngine {
         }
         if (!completed) {
           if (android.os.SystemClock.elapsedRealtime() - lastSignal >= 1000)
-            state(
-                broker.authenticating != null
-                    ? "Verifying session"
-                    : QueueControl.activeAccounts == 0
-                        ? "Waiting for worker delay"
-                        : "Downloading");
+            state(QueueControl.activeAccounts == 0 ? "Waiting for worker delay" : "Downloading");
           long now = System.currentTimeMillis(),
               until = RunPolicy.read(settings).windowEnd(now, ZoneId.systemDefault());
           synchronized (completionSignal) {

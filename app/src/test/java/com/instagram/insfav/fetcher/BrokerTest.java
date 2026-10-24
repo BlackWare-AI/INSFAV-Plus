@@ -142,39 +142,33 @@ public class BrokerTest {
   }
 
   @Test
-  public void resumeReplacesInconclusiveSessionWithoutMarkingCookiesInvalid() throws Exception {
-    AtomicInteger opened = new AtomicInteger();
+  public void homepageTimeoutCannotGateProfileRetrievalOrResume() throws Exception {
+    AtomicInteger checks = new AtomicInteger();
     FetchBroker b =
         new FetchBroker(
             c,
-            full -> {
-              boolean bad = opened.incrementAndGet() == 1;
-              return new ProfileProvider() {
-                public void authenticate() throws Failure {
-                  if (bad) throw new Failure("COOKIE_WEBVIEW_SETUP_TIMEOUT", 0, 0, true);
-                }
+            full ->
+                new ProfileProvider() {
+                  public void authenticate() throws Failure {
+                    checks.incrementAndGet();
+                    throw new Failure("WEBVIEW_TIMEOUT");
+                  }
 
-                public byte[] fetch(String u) {
-                  return new byte[] {9};
-                }
+                  public byte[] fetch(String user) {
+                    return new byte[] {9};
+                  }
 
-                public void cancel() {}
-              };
-            },
+                  public void cancel() {}
+                },
             new TestTime());
     b.beginBatch();
-    try {
-      b.submit("first", false).get(3, TimeUnit.SECONDS);
-      fail();
-    } catch (ExecutionException expected) {
-      assertEquals("COOKIE_AUTH_UNVERIFIED", ((ProfileProvider.Failure) expected.getCause()).code);
-    }
-    assertEquals("", SessionState.prefs(c).getString("blocked", ""));
-    assertEquals("UNKNOWN", SessionState.evidence(SessionState.prefs(c)));
-    assertTrue(SessionState.prefs(c).getLong("retryAt", 0) > System.currentTimeMillis());
-    SessionState.prefs(c).edit().putLong("retryAt", 0).commit();
+    assertArrayEquals(new byte[] {9}, b.submit("first", false).get(3, TimeUnit.SECONDS));
+    b.beginBatch();
     assertArrayEquals(new byte[] {9}, b.submit("second", false).get(3, TimeUnit.SECONDS));
-    assertEquals(2, opened.get());
+    assertEquals(0, checks.get());
+    assertEquals("", SessionState.prefs(c).getString("blocked", ""));
+    assertEquals(0, SessionState.prefs(c).getLong("retryAt", 0));
+    assertEquals("UNKNOWN", SessionState.evidence(SessionState.prefs(c)));
     b.endBatch();
   }
 
@@ -238,7 +232,7 @@ public class BrokerTest {
   }
 
   @Test
-  public void eachBatchAuthenticatesBeforeProfilesEvenWithReusedProvider() throws Exception {
+  public void eachBatchStartsProfilesDirectlyEvenWithReusedProvider() throws Exception {
     AtomicInteger authenticated = new AtomicInteger(), opened = new AtomicInteger();
     List<String> order = Collections.synchronizedList(new ArrayList<>());
     FetchBroker b =
@@ -268,15 +262,15 @@ public class BrokerTest {
     assertTrue(b.active.isEmpty());
     b.beginBatch();
     b.submit("second", false).get(3, TimeUnit.SECONDS);
-    assertEquals(Arrays.asList("auth", "first", "auth", "second"), order);
-    assertEquals(2, authenticated.get());
+    assertEquals(Arrays.asList("first", "second"), order);
+    assertEquals(0, authenticated.get());
     assertEquals(1, opened.get());
     b.endBatch();
   }
 
   @Test
-  public void pausingDuringAuthenticationCannotStartProfileAndResumeReverifies() throws Exception {
-    CountDownLatch authenticating = new CountDownLatch(1);
+  public void pauseDuringProfileSetupCancelsAndResumeUsesFreshProvider() throws Exception {
+    CountDownLatch settingUp = new CountDownLatch(1);
     AtomicInteger profiles = new AtomicInteger(), opened = new AtomicInteger();
     FetchBroker b =
         new FetchBroker(
@@ -284,18 +278,15 @@ public class BrokerTest {
             full -> {
               boolean wait = opened.incrementAndGet() == 1;
               return new ProfileProvider() {
-                public void authenticate() throws Failure {
+                public byte[] fetch(String user) throws Failure {
                   if (wait) {
-                    authenticating.countDown();
+                    settingUp.countDown();
                     try {
                       new CountDownLatch(1).await();
                     } catch (InterruptedException e) {
                       throw new Failure("REQUEST_CANCELLED");
                     }
                   }
-                }
-
-                public byte[] fetch(String u) {
                   profiles.incrementAndGet();
                   return new byte[] {1};
                 }
@@ -306,11 +297,12 @@ public class BrokerTest {
             new TestTime());
     b.beginBatch();
     CompletableFuture<byte[]> first = b.submit("first", false);
-    assertTrue(authenticating.await(3, TimeUnit.SECONDS));
+    assertTrue(settingUp.await(3, TimeUnit.SECONDS));
     b.cancelBulk();
     assertTrue(first.isCancelled());
     long end = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
-    while (b.authenticating != null && System.nanoTime() < end) Thread.yield();
+    while (!b.active.isEmpty() && System.nanoTime() < end) Thread.yield();
+    assertTrue(b.active.isEmpty());
     assertEquals(0, profiles.get());
     b.beginBatch();
     assertArrayEquals(new byte[] {1}, b.submit("next", false).get(3, TimeUnit.SECONDS));
