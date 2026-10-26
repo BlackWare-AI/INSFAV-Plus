@@ -37,7 +37,7 @@ final class WorkScheduler {
       }
       return;
     }
-    if (!new CookieVault(c).configured()) return;
+    if (!InstagramSession.configured(c)) return;
     try (QueueStore queue = new QueueStore(c)) {
       if (queue.pending().isEmpty()) {
         p.edit().putBoolean("armed", false).apply();

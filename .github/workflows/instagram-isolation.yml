@@ -1,0 +1,54 @@
+name: Independent Instagram browser stores
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  three-app-stores:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: BlackWare-AI/INSFAV-Thumb-Fetcher
+          ref: 8c83ef15cd7e454a98181e8e34ab606e6d66d427
+          path: isolation/thumb
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: BlackWare-AI/INSFAV
+          ref: 0109edb011d863d00003f79d46eed26743edbbcc
+          path: isolation/insfav
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build the three independently reviewed applications
+        run: |
+          ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon
+          (cd isolation/thumb && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon)
+          (cd isolation/insfav && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon)
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: bash tools/session-isolation.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: three-app-instagram-session-isolation
+          path: session-isolation-evidence/
