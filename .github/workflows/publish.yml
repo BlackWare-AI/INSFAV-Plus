@@ -179,7 +179,7 @@ jobs:
           import json,os
           current=json.load(open('artifacts/apk.json'))
           assert current==json.load(open('.private/release-input/apk.json'))
-          assert current['certificateSha256']==['9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f']
+          assert current['certificateSha256']==['cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8']
           assert json.load(open('.private/release-input/source.json'))['sourceCommit']==os.environ['REVIEWED_SOURCE']
           PY
       - name: Publish verified signed release

@@ -1,3 +1,5 @@
+The owner approved using the supplied signing key for this release. Its certificate differs from previous releases, so this APK cannot update those installations in place. Uninstalling clears app-private sessions, queues and settings: export or back up needed data with the existing app features before choosing to reinstall. Future releases are pinned to the approved signing identity.
+
 Persistent WebView Session is the default Instagram sign-in method. A visible in-app browser lets the user complete login, 2FA and Instagram security checks. Verified browser cookies are flushed immediately and at lifecycle boundaries, with no startup or provider-close purge.
 
 Signing out clears this app's Instagram browser session while preserving manual cookies and other app data.
