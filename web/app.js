@@ -29,7 +29,7 @@ window.nativeEvent=(event,data)=>{
    let oldProfiles=profiles,changedUsers=null;
    if(data.profiles)profiles=data.profiles;
    else if(data.profileChanges){oldProfiles=Object.create(null);changedUsers=new Set(Object.keys(data.profileChanges));for(const user of changedUsers){oldProfiles[user]=profiles[user];profiles[user]=data.profileChanges[user];}}
-   state={...state,...data};
+   state={...state,...data};delete state.raw;delete state.profiles;delete state.profileChanges;
    const revision=[data.revision,data.matched,data.missing,data.unreadable,data.folderStatus,data.scopeRevision].join(':');
    if(revision!==lastRevision){lastRevision=revision;cacheVersion++;refreshAvatars(oldProfiles,changedUsers);}
    updateSettings();
