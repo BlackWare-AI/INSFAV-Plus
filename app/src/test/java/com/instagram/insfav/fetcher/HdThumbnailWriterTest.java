@@ -54,7 +54,14 @@ public class HdThumbnailWriterTest {
         assertTrue(ThumbnailCodec.valid(saved()));
         Bitmap bitmap = BitmapFactory.decodeByteArray(saved(), 0, saved().length);
         assertEquals(256, bitmap.getWidth()); assertEquals(256, bitmap.getHeight()); bitmap.recycle();
-        assertEquals("VP8 ", new String(saved(), 12, 4, java.nio.charset.StandardCharsets.US_ASCII));
+        byte[] webp = saved(); boolean lossy = false;
+        for (int offset = 12; offset + 8 <= webp.length;) {
+            String chunk = new String(webp, offset, 4, java.nio.charset.StandardCharsets.US_ASCII);
+            assertNotEquals("VP8L", chunk); lossy |= "VP8 ".equals(chunk);
+            int size = java.nio.ByteBuffer.wrap(webp, offset + 4, 4).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
+            offset += 8 + size + (size & 1);
+        }
+        assertTrue(lossy);
         assertEquals(1, indexed.get()); assertOnlyFinal();
         for (byte b : copy) assertEquals(0, b);
         assertNotEquals(0, remote[0]);
