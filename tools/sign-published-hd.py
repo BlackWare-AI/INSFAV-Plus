@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sign a pinned, tested public unsigned APK using the existing Actions signing material."""
+"""Sign a pinned, tested public unsigned APK using the configured Actions signing material."""
 import base64, hashlib, io, json, os, re, shutil, subprocess, tempfile, zipfile
 from pathlib import Path
 
@@ -18,6 +18,7 @@ def payload(raw):
 
 def certificate(bt,apk):
     text=run(bt/'apksigner','verify','--verbose','--print-certs',apk).decode()
+    assert not re.search(r'CN\s*=\s*Android Debug\b',text,re.I),'Debug certificate cannot sign a release'
     return re.findall(r'certificate SHA-256 digest: ([a-f0-9]+)',text)
 
 def main():
@@ -55,17 +56,21 @@ def main():
         if cert!=[env['EXPECTED_CERT_SHA256']]: raise SystemExit('Official signing certificate mismatch; expected SHA-256='+env['EXPECTED_CERT_SHA256']+'; received SHA-256='+','.join(cert))
         previous=root/'previous';previous.mkdir()
         run('gh','release','download',env['PREVIOUS_TAG'],'--pattern',env['PREVIOUS_APK'],'--dir',previous)
-        assert certificate(bt,previous/env['PREVIOUS_APK'])==cert,'Previous official APK certificate mismatch'
+        previous_cert=certificate(bt,previous/env['PREVIOUS_APK'])
+        assert previous_cert==[env.get('PREVIOUS_CERT_SHA256',env['EXPECTED_CERT_SHA256'])],'Previous official APK certificate mismatch'
+        changed=previous_cert!=cert
+        assert not changed or env.get('ALLOW_CERTIFICATE_CHANGE')=='true','Certificate change was not explicitly authorized'
         assert payload(source.read_bytes())==payload(apk.read_bytes()),'Signing must not change any application payload'
         badging=run(bt/'aapt2','dump','badging',apk).decode()
         fields={k:re.search(r"\b"+k+r"='([^']*)'",badging.splitlines()[0])[1] for k in ['name','versionName','versionCode']}
         assert fields==dict(name=env['EXPECTED_PACKAGE'],versionName=env['EXPECTED_VERSION'],versionCode=env['EXPECTED_CODE'])
         assert 'application-debuggable' not in badging.splitlines()
         run(bt/'zipalign','-c','-P','16','4',apk)
-        result=dict(file=apk.name,bytes=apk.stat().st_size,sha256=hashlib.sha256(apk.read_bytes()).hexdigest(),package=fields['name'],version=fields['versionName'],versionCode=int(fields['versionCode']),debuggable=False,signatureVerified=True,certificateSha256=cert,officialRelease=True,unsigned=False,sourceCommit=meta['sourceCommit'],signingWorkflowCommit=env['GITHUB_SHA'],unsignedSourceTag=env['UNSIGNED_TAG'],unsignedSha256=digest,payloadMatchesUnsigned=True,validationRun=meta['validationRun'])
+        result=dict(file=apk.name,bytes=apk.stat().st_size,sha256=hashlib.sha256(apk.read_bytes()).hexdigest(),package=fields['name'],version=fields['versionName'],versionCode=int(fields['versionCode']),debuggable=False,signatureVerified=True,certificateSha256=cert,officialRelease=True,unsigned=False,sourceCommit=meta['sourceCommit'],signingWorkflowCommit=env['GITHUB_SHA'],unsignedSourceTag=env['UNSIGNED_TAG'],unsignedSha256=digest,payloadMatchesUnsigned=True,validationRun=meta['validationRun'],signingCertificateChanged=changed,previousCertificateSha256=previous_cert,compatibleWithPreviousOfficial=not changed)
         (output/'apk.json').write_text(json.dumps(result,indent=2)+'\n')
         (output/'SHA256SUMS').write_text(result['sha256']+'  '+apk.name+'\n')
-        (output/'notes.md').write_text('Resmi imzalı HD thumbnail sürümü.\n\nDaha önce yayımlanan imzasız APK ile uygulama içeriği birebir aynıdır. Mevcut resmi sertifikayla imzalanmıştır.\n\nPaket: '+result['package']+'\n\nSürüm: '+result['version']+'; build: '+str(result['versionCode'])+'\n\nKaynak commit: '+result['sourceCommit']+'\n\nTestler: https://github.com/'+env['GH_REPO']+'/actions/runs/'+str(result['validationRun'])+'\n\nSertifika SHA-256: '+cert[0]+'\n\nAPK SHA-256: '+result['sha256']+'\n')
+        signing_note='Kullanıcının onayıyla yeni imzalama sertifikası kullanılmıştır. Önceki sertifikayla kurulan uygulamanın üzerine güncelleme olarak yüklenemez.' if changed else 'Mevcut resmi sertifikayla imzalanmıştır.'
+        (output/'notes.md').write_text('İmzalı HD thumbnail sürümü.\n\nDaha önce yayımlanan imzasız APK ile uygulama içeriği birebir aynıdır. '+signing_note+'\n\nPaket: '+result['package']+'\n\nSürüm: '+result['version']+'; build: '+str(result['versionCode'])+'\n\nKaynak commit: '+result['sourceCommit']+'\n\nTestler: https://github.com/'+env['GH_REPO']+'/actions/runs/'+str(result['validationRun'])+'\n\nSertifika SHA-256: '+cert[0]+'\n\nAPK SHA-256: '+result['sha256']+'\n')
         common=Path('app/build/outputs/apk/release/app-release.apk');common.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(apk,common)
         with open(env['GITHUB_ENV'],'a') as stream:stream.write('PLUS_SOURCE_SHA='+result['sourceCommit']+'\n')
         print(json.dumps(result,indent=2))
