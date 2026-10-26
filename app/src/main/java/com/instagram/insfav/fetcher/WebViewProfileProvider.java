@@ -37,7 +37,15 @@ final class WebViewProfileProvider implements ProfileProvider {
   volatile int createdCount, reusedCount, activeCount;
   private final Context context;
   private final CookieJar cookies;
-  private static final Semaphore SESSION_LEASE = new Semaphore(1, true);
+    // Injected offline fixture constructors use their fixture store; production isolates manual cookies.
+    private boolean isolatedManual;
+    private volatile CookieManager sessionManager;
+    private volatile String sessionAccount = "";
+    private volatile String browserAgent = "";
+    private final Object authenticationLock = new Object();
+    private volatile boolean persistentAuthenticated;
+
+  static final Semaphore SESSION_LEASE = new Semaphore(1, true);
   private final Semaphore imageTransfers = new Semaphore(30, true);
   private final ConcurrentHashMap<String, PublicProfileProvider> userTransfers =
       new ConcurrentHashMap<>();
@@ -62,6 +70,7 @@ final class WebViewProfileProvider implements ProfileProvider {
 
   WebViewProfileProvider(Context context, CookieJar cookies) throws Failure {
     this(context, cookies, (view, url) -> view.loadUrl(url), url -> null);
+        isolatedManual = cookies != null;
   }
 
   WebViewProfileProvider(Context context, CookieJar cookies, Pages pages, Resources resources)
@@ -145,6 +154,8 @@ final class WebViewProfileProvider implements ProfileProvider {
         if (cancelled || barrier != null) throw new Failure("REQUEST_CANCELLED");
         transfers.add(transfer);
         userTransfers.put(user, transfer);
+        if (cancelled || barrier != null) { transfer.cancel(); throw new Failure("REQUEST_CANCELLED"); }
+        transfer.userAgent = browserAgent;
         return transfer.download(image);
       } finally {
         transfers.remove(transfer);
@@ -155,7 +166,7 @@ final class WebViewProfileProvider implements ProfileProvider {
       Thread.currentThread().interrupt();
       throw new Failure("REQUEST_CANCELLED");
     } catch (Failure error) {
-      if (FailurePolicy.pause(error)) barrier = error;
+      if (FailurePolicy.pause(error)) trip(error);
       throw error;
     }
   }
@@ -164,13 +175,19 @@ final class WebViewProfileProvider implements ProfileProvider {
     if (Looper.myLooper() == Looper.getMainLooper())
       throw new Failure("WEBVIEW_WORKER_REQUIRED", 0, 0, true);
     if (cancelled) throw new Failure("REQUEST_CANCELLED");
-    if (cookies.value("sessionid", System.currentTimeMillis()).isEmpty())
+    if (cookies != null && cookies.value("sessionid", System.currentTimeMillis()).isEmpty())
       throw new Failure("COOKIE_EXPIRED", 0, 0, true);
     ensureSession();
     if (barrier != null) throw barrier;
+    if (cookies == null && !user.isEmpty() && !persistentAuthenticated) {
+      synchronized (authenticationLock) {
+        if (!persistentAuthenticated) { resolve("", false); persistentAuthenticated = true; }
+      }
+    }
+
     Operation operation =
         new Operation(
-            user, cookies.value("ds_user_id", System.currentTimeMillis()), highResolution);
+            user, sessionAccount, highResolution);
     operations.add(operation);
     main.post(operation::start);
     try {
@@ -195,6 +212,17 @@ final class WebViewProfileProvider implements ProfileProvider {
     return barrier;
   }
 
+
+    private void trip(Failure error) {
+        if (barrier != null || error.code.equals("REQUEST_CANCELLED")) return;
+        barrier = error;
+        InstagramSession.blocked(context, cookies != null, error.code);
+        for (PublicProfileProvider transfer : transfers) transfer.cancel();
+        main.post(() -> {
+            for (Operation operation : new ArrayList<>(operations))
+                if (!operation.finishing) operation.fail(error);
+        });
+    }
   private void ensureSession() throws Failure {
     if (initializing.compareAndSet(false, true)) {
       try {
@@ -204,9 +232,12 @@ final class WebViewProfileProvider implements ProfileProvider {
         main.post(
             () -> {
               try {
-                CookieManager m = CookieManager.getInstance();
-                m.setAcceptCookie(true);
-                m.removeAllCookies(ignored -> applySessionCookies(m, 0));
+                if (isolatedManual && !InstagramSession.profiles()) throw new Failure("COOKIE_WEBVIEW_UPDATE_REQUIRED", 0, 0, true);
+                CookieManager m = isolatedManual ? InstagramSession.manager(true) : CookieManager.getInstance();
+                sessionManager = m; browserAgent = WebSettings.getDefaultUserAgent(context); m.setAcceptCookie(true);
+                if (cookies == null) { sessionAccount = InstagramSession.account(m); sessionReady.countDown(); }
+                else { sessionAccount = cookies.value("ds_user_id", System.currentTimeMillis()); m.removeAllCookies(ignored -> applySessionCookies(m, 0)); }
+              } catch (Failure error) { sessionFailure = error; sessionReady.countDown();
               } catch (RuntimeException | LinkageError error) {
                 sessionFailure = new Failure("WEBVIEW_UNAVAILABLE", 0, 0, true);
                 sessionReady.countDown();
@@ -323,20 +354,12 @@ final class WebViewProfileProvider implements ProfileProvider {
     main.post(
         () -> {
           try {
-            if (!views.isEmpty()) views.iterator().next().clearCache(true);
             for (WebView view : new ArrayList<>(views)) destroy(view);
-            WebStorage.getInstance().deleteAllData();
-            CookieManager.getInstance()
-                .removeAllCookies(
-                    ignored -> {
-                      if (leased) {
-                        leased = false;
-                        SESSION_LEASE.release();
-                      }
-                      cleaned.countDown();
-                    });
+            if (sessionManager != null) sessionManager.flush();
+            if (leased) { leased = false; SESSION_LEASE.release(); }
+            cleaned.countDown();
           } catch (RuntimeException | LinkageError error) {
-            // Retain the lease after a failed purge; no later provider may race this browser store.
+            if (leased) { leased = false; SESSION_LEASE.release(); }
             log.log("WEBVIEW", "CLEANUP_FAILED", 0);
             cleaned.countDown();
           }
@@ -408,6 +431,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         fail(new Failure("REQUEST_CANCELLED"));
         return;
       }
+      if (barrier != null) { fail(barrier); return; }
       // Includes creation/cookie setup; no indefinitely pending platform callback.
       armWatchdog();
       try {
@@ -419,6 +443,7 @@ final class WebViewProfileProvider implements ProfileProvider {
             return;
           }
           view = new WebView(context);
+          InstagramSession.attach(view, isolatedManual);
           views.add(view);
           createdCount++;
           log.log("POOL", "VIEW_CREATED", views.size());
@@ -504,7 +529,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         view.setDownloadListener(
             (url, agent, disposition, type, length) ->
                 fail(new Failure("WEBVIEW_DOWNLOAD_BLOCKED", 0, 0, true)));
-        CookieManager manager = CookieManager.getInstance();
+        CookieManager manager = sessionManager;
         manager.setAcceptCookie(true);
         manager.setAcceptThirdPartyCookies(view, false);
         started = true;
@@ -551,7 +576,8 @@ final class WebViewProfileProvider implements ProfileProvider {
 
         @Override
         public void onPageFinished(WebView v, String url) {
-          // No success here: poll checks identity, DOM and image completion separately.
+          // A finished page alone is not authentication proof.
+                if (sessionManager != null) sessionManager.flush();
           if (!finishing) {
             pageFinished = true;
             log.log("WEBVIEW", "PAGE_FINISHED", 0);
@@ -646,6 +672,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         fail(new Failure("REQUEST_CANCELLED"));
         return;
       }
+      if (barrier != null) { fail(barrier); return; }
       Failure expired = ProbeDecision.deadline(SystemClock.uptimeMillis(), deadline);
       if (expired != null) {
         reason = Diagnostics.Reason.DEADLINE;
@@ -731,6 +758,12 @@ final class WebViewProfileProvider implements ProfileProvider {
     void finish(JSONObject data, Failure error) {
       if (finishing) return;
       finishing = true;
+      if (error == null && user.isEmpty() && data != null && data.optBoolean("authenticated")) {
+        if (sessionManager != null) sessionManager.flush();
+        InstagramSession.recordVerified(context, cookies != null);
+        persistentAuthenticated = cookies == null;
+      }
+
       result = data;
       failure = error;
       main.removeCallbacksAndMessages(token);
@@ -746,7 +779,7 @@ final class WebViewProfileProvider implements ProfileProvider {
           SystemClock.uptimeMillis() - began,
           user.isEmpty() ? SESSION_DEADLINE_MS : profileDeadlineMs);
       if (error != null) log.log("WEBVIEW", error.code, error.http);
-      if (error != null && FailurePolicy.pause(error)) barrier = error;
+      if (error != null && FailurePolicy.pause(error)) trip(error);
       try {
         if (view == null) {
           complete();

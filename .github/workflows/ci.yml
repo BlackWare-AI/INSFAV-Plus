@@ -80,3 +80,8 @@ jobs:
         with:
           name: INSFAV-Plus-emulator-evidence
           path: emulator-pool/
+
+  instagram-session:
+    uses: ./.github/workflows/instagram-session.yml
+  instagram-isolation:
+    uses: ./.github/workflows/instagram-isolation.yml

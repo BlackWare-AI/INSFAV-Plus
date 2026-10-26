@@ -87,6 +87,7 @@ public class ViewerSourcePreservationTest {
                 },
             new TestTime());
     ReflectionHelpers.setStaticField(FetchBroker.class, "instance", broker);
+    SessionState.prefs(c).edit().putBoolean("manualSession", true).commit();
     Files.write(new File(c.getFilesDir(), "fetcher-cookies.enc").toPath(), new byte[] {1});
     Fetcher.Listener listener =
         new Fetcher.Listener() {

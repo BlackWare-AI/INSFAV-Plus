@@ -1,5 +1,8 @@
 name: INSFAV Plus publish
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish.yml', 'version.properties']
   workflow_dispatch:
     inputs:
       kind:
@@ -9,11 +12,11 @@ on:
         default: release
       version:
         description: VERSION_NAME in the reviewed source
-        default: '1.1.6'
+        default: '1.1.7'
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '9'
+        default: '10'
         required: true
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata
@@ -52,8 +55,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Check reviewed version
         env:
-          EXPECTED_VERSION: ${{ inputs.version }}
-          EXPECTED_CODE: ${{ inputs.code }}
+          EXPECTED_VERSION: ${{ inputs.version || '1.1.7' }}
+          EXPECTED_CODE: ${{ inputs.code || '10' }}
         run: |
           python3 - <<'PY'
           import os,re
@@ -66,7 +69,7 @@ jobs:
         if: inputs.kind == 'debug'
         run: ./gradlew :app:assembleDebug
       - name: Prepare existing Plus signing material
-        if: inputs.kind == 'release'
+        if: inputs.kind != 'debug'
         env:
           PLUS_KEYSTORE_BASE64: ${{ secrets.PLUS_KEYSTORE_BASE64 }}
           PLUS_STORE_PASSWORD: ${{ secrets.PLUS_STORE_PASSWORD }}
@@ -82,7 +85,7 @@ jobs:
           p.write_bytes(base64.b64decode(os.environ['PLUS_KEYSTORE_BASE64'],validate=True));p.chmod(0o600)
           PY
       - name: Build signed Plus APK
-        if: inputs.kind == 'release'
+        if: inputs.kind != 'debug'
         env:
           INSFAV_KEYSTORE: ${{ runner.temp }}/plus-release.jks
           INSFAV_STORE_PASSWORD: ${{ secrets.PLUS_STORE_PASSWORD }}
@@ -91,9 +94,9 @@ jobs:
         run: ./gradlew :app:assembleRelease
       - name: Verify APK
         env:
-          KIND: ${{ inputs.kind }}
-          VERSION: ${{ inputs.version }}
-          CODE: ${{ inputs.code }}
+          KIND: ${{ inputs.kind || 'release' }}
+          VERSION: ${{ inputs.version || '1.1.7' }}
+          CODE: ${{ inputs.code || '10' }}
         run: |
           if [ "$KIND" = release ]; then
             python3 tools/verify-apk.py app/build/outputs/apk/release/app-release.apk --release --version "$VERSION" --code "$CODE" --output artifacts/apk.json
@@ -102,22 +105,22 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: INSFAV-Plus-${{ inputs.kind }}-${{ inputs.version }}-${{ inputs.code }}
+          name: INSFAV-Plus-${{ inputs.kind || 'release' }}-${{ inputs.version || '1.1.7' }}-${{ inputs.code || '10' }}
           path: |
             app/build/outputs/apk/**/*.apk
             artifacts/apk.json
       - name: Publish verified release
-        if: inputs.kind == 'release'
+        if: inputs.kind != 'debug'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version }}
-          CODE: ${{ inputs.code }}
+          VERSION: ${{ inputs.version || '1.1.7' }}
+          CODE: ${{ inputs.code || '10' }}
         run: python3 tools/publish-plus.py
       - name: Remove temporary signing file
         if: always()
         run: rm -f "$RUNNER_TEMP/plus-release.jks"
   publish-owner-signed:
-    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.kind == 'release' && inputs.artifact_commit != ''
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.kind != 'debug' && inputs.artifact_commit != ''
     runs-on: ubuntu-latest
     environment: plus-release
     permissions:
@@ -128,8 +131,8 @@ jobs:
       REVIEWED_SOURCE: ${{ inputs.source_sha }}
       ARTIFACT_COMMIT: ${{ inputs.artifact_commit }}
       VALIDATION_RUN: ${{ inputs.validation_run }}
-      EXPECTED_VERSION: ${{ inputs.version }}
-      EXPECTED_CODE: ${{ inputs.code }}
+      EXPECTED_VERSION: ${{ inputs.version || '1.1.7' }}
+      EXPECTED_CODE: ${{ inputs.code || '10' }}
     steps:
       - uses: actions/checkout@v4
         with:

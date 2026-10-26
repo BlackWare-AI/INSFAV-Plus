@@ -265,7 +265,8 @@ function closeFetcher(){clearInterval(fetcherPoll);fetcherPoll=0;$('cookie-text'
 function outsideSchedule(f){return t('Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.',{start:f.start,end:f.end,next:f.nextAllowedAt?new Date(f.nextAllowedAt).toLocaleString(I.locale(),{hour12:false}):'—'});}
 function updateFetcher(){
  const f=fetcherState;if($('fetcher-screen').hidden)return;
- $('cookie-state').textContent=f.cookiesSaved?t('Cookies saved · session checked during retrieval'):t('Not configured');
+ $('instagram-session-state').textContent=f.instagramSession||'Persistent WebView Session · Not verified';
+ $('cookie-state').textContent=f.manualCookiesSaved?t('Cookies saved · session checked during retrieval'):t('Not configured');
  $('fetcher-state').textContent=(f.outsideScheduleMessage?outsideSchedule(f):(I.status(f.scheduleStatus||'')+' · '+I.status(f.state||'Idle')))+(f.blocked==='RATE_LIMITED'?' · '+(f.blockedHttp===429?'HTTP 429':'Instagram restriction')+(f.retryAt?' · Cooldown until '+new Date(f.retryAt).toLocaleTimeString(I.locale(),{hour12:false}):'')+(f.automaticResume?' · Automatic resume scheduled':' · Manual resume'):'');$('fetcher-folder').textContent=t(f.folder||'Not selected')+' · '+t(f.writable?'Write access granted':'Read only');$('fetcher-write').hidden=!!f.writable;
  for(const [id,value] of [['fetcher-concurrency',f.requestedViews],['fetcher-min',f.minimum],['fetcher-max',f.maximum],['fetcher-start',f.start],['fetcher-end',f.end]]){const input=$(id);if(value!==undefined&&document.activeElement!==input&&!input.dataset.edited)input.value=value;}
  if(!$('fetcher-background').dataset.edited)$('fetcher-background').checked=!!f.background;
@@ -284,6 +285,10 @@ function updateFetcher(){
 }
 $('fetcher-menu').onclick=openFetcher;$('fetcher-back').onclick=closeFetcher;
 for(const input of $('fetcher-screen').querySelectorAll('input'))input.addEventListener('input',()=>input.dataset.edited='true');
+$('instagram-webview').onclick=()=>request('instagram-session-method',{manual:false});
+$('instagram-manual').onclick=()=>request('instagram-session-method',{manual:true});
+$('instagram-login').onclick=()=>request('instagram-session-open');
+$('instagram-test').onclick=()=>request('instagram-session-test');
 $('cookie-paste').onclick=async()=>{if(native){request('fetcher-paste');return;}try{$('cookie-text').value=await navigator.clipboard.readText();}catch(error){$('cookie-text').focus();message('Use the Android Paste command in the cookie field.');}};
 $('cookie-save').onclick=()=>{const text=$('cookie-text').value;$('cookie-text').value='';request('fetcher-cookies-save',{text});};
 $('cookie-remove').onclick=()=>{$('cookie-text').value='';confirmAction('Remove Instagram Cookies?','Retrieval stops. Collections and local photos stay unchanged.',()=>request('fetcher-cookies-remove'));};

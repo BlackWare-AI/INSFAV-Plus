@@ -31,7 +31,7 @@ final class FetchBroker {
       Context app = c.getApplicationContext();
       instance =
           new FetchBroker(
-              app, full -> new WebViewProfileProvider(app, new CookieVault(app).load()));
+              app, full -> InstagramSession.open(app));
     }
     return instance;
   }

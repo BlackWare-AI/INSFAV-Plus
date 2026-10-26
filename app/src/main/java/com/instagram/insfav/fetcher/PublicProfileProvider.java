@@ -117,6 +117,7 @@ final class PublicProfileProvider implements ProfileProvider {
 
   private volatile HttpsURLConnection active;
   private volatile boolean cancelled;
+    String userAgent = System.getProperty("http.agent", "");
   private static final Pattern SCRIPT =
       Pattern.compile(
           "<script\\b[^>]*>(.*?)</script\\s*>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -211,12 +212,7 @@ final class PublicProfileProvider implements ProfileProvider {
         connection.setInstanceFollowRedirects(false);
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(15000);
-        connection.setRequestProperty(
-            "User-Agent",
-            "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko)"
-                + " Chrome/130.0.0.0 Mobile Safari/537.36 INSFAVPlus/"
-                + com.instagram.insfav.BuildConfig.VERSION_NAME
-                + "");
+        connection.setRequestProperty("User-Agent", userAgent);
         if (!image && cookies != null) {
           if (cookies.value("sessionid", System.currentTimeMillis()).isEmpty())
             throw new Failure("COOKIE_EXPIRED", 0, 0, true);
@@ -226,7 +222,8 @@ final class PublicProfileProvider implements ProfileProvider {
             "Accept", image ? "image/webp,image/jpeg,image/png" : "text/html");
         connection.setRequestProperty("Accept-Encoding", "identity");
         if (image) connection.setRequestProperty("Referer", "https://www.instagram.com/");
-        int status = connection.getResponseCode();
+        if (cancelled) throw new Failure("REQUEST_CANCELLED");
+                int status = connection.getResponseCode();
         if (cancelled) throw new Failure("REQUEST_CANCELLED");
         if (System.nanoTime() > deadline) throw new Failure("REQUEST_TIMEOUT");
         if (status == 429)

@@ -564,7 +564,16 @@ public final class MainActivity extends Activity {
                       send("cookie-paste", text.toString());
                       break;
                     }
-                  case "fetcher-cookies-save":
+                  case "instagram-session-method":
+                            Fetcher.closeViewer();
+                            com.instagram.insfav.fetcher.InstagramSession.select(MainActivity.this, input.optBoolean("manual"));
+                            send("fetcher-status", Fetcher.snapshot()); break;
+                        case "instagram-session-open":
+                            Fetcher.closeViewer();
+                            runOnUiThread(() -> com.instagram.insfav.fetcher.InstagramSession.show(MainActivity.this)); break;
+                        case "instagram-session-test":
+                            runOnUiThread(() -> com.instagram.insfav.fetcher.InstagramSession.test(MainActivity.this)); break;
+                        case "fetcher-cookies-save":
                     Fetcher.saveCookies(input.getString("text"));
                     send("fetcher-status", Fetcher.snapshot());
                     send("message", "Cookies saved securely.");
@@ -608,10 +617,6 @@ public final class MainActivity extends Activity {
                     break;
                   case "view-closed":
                     Fetcher.closeViewer();
-                    runOnUiThread(
-                        () -> {
-                          if (web != null) web.clearCache(true);
-                        });
                     break;
                   case "select-folder":
                     selectFolder();
@@ -968,14 +973,14 @@ public final class MainActivity extends Activity {
   }
 
   @Override
-  protected void onPause() {
+  protected void onPause() { com.instagram.insfav.fetcher.InstagramSession.flush();
     // Cancel any pending Web UI hold before Android backgrounds the Activity.
     send("app-background", "");
     super.onPause();
   }
 
   @Override
-  protected void onStop() {
+  protected void onStop() { com.instagram.insfav.fetcher.InstagramSession.flush();
     exitBack.reset();
     foreground = false;
     if (images != null) Fetcher.foregroundStopped();

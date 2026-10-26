@@ -118,8 +118,7 @@ public final class Fetcher {
       new Diagnostics(context).log("INDEX", "OBSERVER_UNAVAILABLE", 0);
     }
     try {
-      android.webkit.CookieManager.getInstance().removeAllCookies(null);
-      android.webkit.WebStorage.getInstance().deleteAllData();
+      android.webkit.CookieManager.getInstance().setAcceptCookie(true);
     } catch (RuntimeException | LinkageError ignored) {
     }
   }
@@ -283,7 +282,7 @@ public final class Fetcher {
     QueueControl.pause(context, true);
     closeViewer();
     FetchBroker.get(context).cancelAll();
-    new CookieVault(context).remove();
+    new CookieVault(context).remove(); InstagramSession.removeManual();
     SessionState.changed(context);
     publish();
   }
@@ -355,8 +354,9 @@ public final class Fetcher {
           "Android background restrictions are active. Try again in the next working window.");
     }
     sync();
-    if (!action.equals("verify_index") && !new CookieVault(context).configured())
-      throw new IOException("Paste and save Instagram cookies first.");
+    if (!action.equals("verify_index")) InstagramSession.requireReady(context);
+    if (!action.equals("verify_index") && !InstagramSession.configured(context))
+      throw new IOException("Sign in through Instagram Login or select and save Manual Cookies first.");
     if (host().tree().isEmpty())
       throw new IOException("Select the thumbnail folder in Profile Images first.");
     if (!writable())
@@ -457,7 +457,7 @@ public final class Fetcher {
         .put("blockedHttp", p.getInt("blockedHttp", 0))
         .put("automaticResume", WorkScheduler.enabled(p))
         .put("resolution", resolution(-1))
-        .put("cookiesSaved", new CookieVault(context).configured())
+        .put("cookiesSaved", InstagramSession.configured(context)).put("manualCookiesSaved", new CookieVault(context).configured()).put("manualSession", InstagramSession.manual(context)).put("instagramSession", InstagramSession.status(context))
         .put("writable", writable())
         .put("minimum", r.minimum)
         .put("maximum", r.maximum)
@@ -573,7 +573,7 @@ public final class Fetcher {
   public static void view(String name, String token) {
     closeViewer();
     if (!Identity.valid(name) || !token.matches("[a-zA-Z0-9_-]{1,80}")) return;
-    if (!new CookieVault(context).configured()) {
+    if (!InstagramSession.configured(context)) {
       for (Listener l : listeners) l.fullFailed(token, "COOKIE_REQUIRED");
       return;
     }

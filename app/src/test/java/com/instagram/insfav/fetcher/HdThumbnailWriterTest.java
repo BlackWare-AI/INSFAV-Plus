@@ -141,6 +141,7 @@ public class HdThumbnailWriterTest {
             public void cancel(){}
         },new TestTime());
         ReflectionHelpers.setStaticField(FetchBroker.class,"instance",broker);
+        SessionState.prefs(context).edit().putBoolean("manualSession",true).commit();
         Files.write(new File(context.getFilesDir(),"fetcher-cookies.enc").toPath(),new byte[]{1});
         Fetcher.Listener listener=new Fetcher.Listener(){
             public void changed(){}
