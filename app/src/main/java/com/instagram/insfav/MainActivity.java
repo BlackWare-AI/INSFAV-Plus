@@ -617,10 +617,6 @@ public final class MainActivity extends Activity {
                     break;
                   case "view-closed":
                     Fetcher.closeViewer();
-                    runOnUiThread(
-                        () -> {
-                          if (web != null) web.clearCache(true);
-                        });
                     break;
                   case "select-folder":
                     selectFolder();

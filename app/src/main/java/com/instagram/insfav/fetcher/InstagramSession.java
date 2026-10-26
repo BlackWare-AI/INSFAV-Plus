@@ -15,7 +15,7 @@ public final class InstagramSession {
     public static String status(Context c) {
         android.content.SharedPreferences p = SessionState.prefs(c);
         return (manual(c) ? "Manual cookies · " : "Persistent WebView Session · ") +
-            (p.getBoolean(key(manual(c)), false) ? "Verification required" : p.getString(manual(c) ? "manualSessionStatus" : "webSessionStatus", "Not verified"));
+            ((p.getBoolean("instagramSecurityHold", false) || p.getBoolean(key(manual(c)), false)) ? "Verification required" : p.getString(manual(c) ? "manualSessionStatus" : "webSessionStatus", "Not verified"));
     }
     public static void select(Context c, boolean manual) {
         if (QueueControl.lock.get()) throw new IllegalStateException("Pause retrieval before changing the session method.");
@@ -29,7 +29,7 @@ public final class InstagramSession {
         return new WebViewProfileProvider(c, manual(c) ? new CookieVault(c).load() : null);
     }
     static void requireReady(Context c) throws ProfileProvider.Failure {
-        if (SessionState.prefs(c).getBoolean(key(manual(c)), false))
+        if (SessionState.prefs(c).getBoolean("instagramSecurityHold", false) || SessionState.prefs(c).getBoolean(key(manual(c)), false))
             throw new ProfileProvider.Failure("LOGIN_VERIFICATION_REQUIRED", 0, 0, true);
     }
     static boolean security(String code) {
@@ -37,7 +37,7 @@ public final class InstagramSession {
     }
     static void blocked(Context c, boolean manual, String code) {
         if (!security(code)) return;
-        SessionState.prefs(c).edit().putBoolean(key(manual), true)
+        SessionState.prefs(c).edit().putBoolean("instagramSecurityHold", true).putBoolean(key(manual), true)
             .putString(manual ? "manualSessionStatus" : "webSessionStatus", "Verification required")
             .putBoolean("armed", false).putBoolean("userPaused", true).putString("blocked", code).commit();
         WorkScheduler.cancel(c);
@@ -48,7 +48,7 @@ public final class InstagramSession {
         recordVerified(c, manual);
     }
     static void recordVerified(Context c, boolean manual) {
-        SessionState.prefs(c).edit().putBoolean(key(manual), false)
+        SessionState.prefs(c).edit().putBoolean("instagramSecurityHold", false).putBoolean(key(manual), false)
             .putString(manual ? "manualSessionStatus" : "webSessionStatus", "Verified")
             .putLong(manual ? "manualSessionCheckedAt" : "webSessionCheckedAt", System.currentTimeMillis()).putString("sessionEvidence", "VERIFIED").commit();
         // Verification never arms or resumes the download queue.

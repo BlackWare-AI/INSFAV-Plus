@@ -26,7 +26,10 @@ public class InstagramSessionTest {
         Context reopened=c.createPackageContext(c.getPackageName(),0);
         assertTrue(SessionState.prefs(reopened).getBoolean("webSessionHold",false));
         try { InstagramSession.requireReady(reopened); fail(); } catch(ProfileProvider.Failure e) { assertEquals("LOGIN_VERIFICATION_REQUIRED",e.code); }
-        InstagramSession.select(c,true); InstagramSession.requireReady(c);
+        InstagramSession.select(c,true);
+        try { InstagramSession.open(c); fail("Switching methods must not bypass a security stop"); }
+        catch(ProfileProvider.Failure e) { assertEquals("LOGIN_VERIFICATION_REQUIRED",e.code); }
+        InstagramSession.recordVerified(c,true); InstagramSession.requireReady(c);
         InstagramSession.select(c,false);
         try { InstagramSession.requireReady(c); fail(); } catch(ProfileProvider.Failure expected) { }
     }
