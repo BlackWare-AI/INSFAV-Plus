@@ -438,7 +438,7 @@ final class OutputFolder {
       FetcherCatalog.writing.add(writingUser);
       try {
         if (missingOnly) saveJournal(filename, pendingName, backupName);
-                pending =
+        pending =
             DocumentsContract.createDocument(
                 resolver, folder, "application/octet-stream", pendingName);
         if (pending == null) throw new IOException("OUTPUT_CREATE_FAILED");
