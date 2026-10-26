@@ -14,6 +14,34 @@ final class SessionInstrumentation {
         try {
             Context c=host.getTargetContext(); boolean seed="seed".equals(arguments.getString("scenario"));
             String value="OFFLINE_"+c.getPackageName().replace('.','_');
+            if ("logout".equals(arguments.getString("scenario"))) {
+                CountDownLatch loggedOut=new CountDownLatch(1);
+                java.util.concurrent.atomic.AtomicReference<Throwable> logoutFailure=new java.util.concurrent.atomic.AtomicReference<>();
+                host.runOnMainSync(() -> {
+                    CookieManager manager=CookieManager.getInstance();
+                    manager.setCookie("https://session-fixture.invalid/","local=kept; Max-Age=604800; Secure",accepted -> {
+                        if(!Boolean.TRUE.equals(accepted)) { logoutFailure.set(new AssertionError("Unrelated origin fixture rejected"));loggedOut.countDown();return; }
+                        manager.flush();
+                        InstagramSession.logout(c, () -> {
+                            try {
+                                String web=manager.getCookie(InstagramSession.ORIGIN);
+                                if(web!=null&&web.contains("sessionid="))throw new AssertionError("Instagram logout retained browser credentials");
+                                String manual=InstagramSession.manager(true).getCookie(InstagramSession.ORIGIN);
+                                if(manual==null||!manual.contains("sessionid=MANUAL_"+value))throw new AssertionError("Logout erased manual credentials");
+                                String other=manager.getCookie("https://session-fixture.invalid/");
+                                if(other==null||!other.contains("local=kept"))throw new AssertionError("Logout erased an unrelated origin");
+                            }catch(Throwable error){logoutFailure.set(error);}
+                            loggedOut.countDown();
+                        });
+                    });
+                });
+                if(!loggedOut.await(20,TimeUnit.SECONDS)||logoutFailure.get()!=null)throw new AssertionError("Scoped logout failed");
+                java.io.File preserved=new java.io.File(c.getFilesDir(),"session-thumbnail-sentinel.webp");
+                if(!"PRESERVED_THUMBNAIL".equals(new String(Files.readAllBytes(preserved.toPath()),StandardCharsets.UTF_8)))throw new AssertionError("Logout changed thumbnail sentinel");
+                if(!"PENDING".equals(SessionState.prefs(c).getString("sessionQueueSentinel","")))throw new AssertionError("Logout changed queue sentinel");
+                result.putString("stream","OFFLINE_SESSION_LOGOUT_SCOPED\n");host.finish(Activity.RESULT_OK,result);return;
+            }
+
             CountDownLatch done=new CountDownLatch(1);
             java.util.concurrent.atomic.AtomicReference<Throwable> failure=new java.util.concurrent.atomic.AtomicReference<>();
             host.runOnMainSync(() -> {

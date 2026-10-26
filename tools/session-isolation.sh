@@ -25,3 +25,9 @@ for attempt in $(seq 1 120); do
 done
 adb shell input keyevent 82
 check_all after-reboot
+adb shell am instrument -w -e scenario logout "${packages[2]}.test/${runners[2]}" | tee session-isolation-evidence/plus-logout.txt
+grep -q OFFLINE_SESSION_LOGOUT_SCOPED session-isolation-evidence/plus-logout.txt
+for i in 0 1; do
+  adb shell am instrument -w -e scenario check "${packages[$i]}.test/${runners[$i]}" | tee "session-isolation-evidence/after-plus-logout-$i.txt"
+  grep -q OFFLINE_SESSION_PRESERVED "session-isolation-evidence/after-plus-logout-$i.txt"
+done

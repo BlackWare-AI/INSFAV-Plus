@@ -1,6 +1,6 @@
 # Instagram session validation
 
-The session workflow runs native unit tests, lint, builds and an offline Chromium durability fixture. The fixture seeds a synthetic persistent cookie and localStorage, then checks them after a new process, force-stop, intentional process crash, background kill request, APK update install and emulator reboot. It also preserves separate thumbnail/queue sentinels. These sentinels are not a live Instagram download or proof that Android actually reclaimed a background process.
+The session workflow runs native unit tests, lint, builds and an offline Chromium durability fixture. The fixture seeds a synthetic persistent cookie and localStorage, then checks them after a new process, force-stop, intentional process crash, background kill request, APK update install and emulator reboot. It also preserves separate thumbnail/queue sentinels. A scoped logout check also verifies that the manual browser profile, another origin, and the file/queue sentinels survive Instagram logout. These sentinels are not a live Instagram download or proof that Android actually reclaimed a background process.
 
 Existing engine/codec/storage tests cover queue recovery, security stops and preservation of successful thumbnails. Session tests cover default selection, method independence, durable security holds, HTTPS login navigation and verification without automatic queue resumption.
 
