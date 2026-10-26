@@ -14,6 +14,23 @@ final class SessionInstrumentation {
         try {
             Context c=host.getTargetContext(); boolean seed="seed".equals(arguments.getString("scenario"));
             String value="OFFLINE_"+c.getPackageName().replace('.','_');
+            if ("authenticate".equals(arguments.getString("scenario"))) {
+                // Real Android WebView/JS and the production provider, offline first-party responses.
+                SessionState.prefs(c).edit().putString("webSessionStatus", "Not verified").commit();
+                try (WebViewProfileProvider provider = new WebViewProfileProvider(c, null,
+                        (view, url) -> view.loadUrl(url), url -> {
+                    boolean api = url.contains("/api/v1/accounts/current_user/");
+                    String header = CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);
+                    boolean accepted = header != null && header.contains("sessionid=" + value);
+                    String body = api ? (accepted ? "{\"status\":\"ok\",\"user\":{\"pk\":\"123\",\"username\":\"fixture\"}}" : "{\"status\":\"fail\"}") : "<html><body>Feed without legacy viewer JSON</body></html>";
+                    return new WebResourceResponse(api ? "application/json" : "text/html", "UTF-8",
+                        api && !accepted ? 401 : 200, "Fixture", java.util.Collections.emptyMap(),
+                        new java.io.ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
+                })) { provider.authenticate(); }
+                if (!"Verified".equals(SessionState.prefs(c).getString("webSessionStatus", ""))) throw new AssertionError("Browser session was not verified");
+                if (SessionState.prefs(c).getBoolean("armed", false)) throw new AssertionError("Verification resumed the queue");
+                result.putString("stream", "OFFLINE_SESSION_AUTHENTICATED\n"); host.finish(Activity.RESULT_OK, result); return;
+            }
             if ("logout".equals(arguments.getString("scenario"))) {
                 CountDownLatch loggedOut=new CountDownLatch(1);
                 java.util.concurrent.atomic.AtomicReference<Throwable> logoutFailure=new java.util.concurrent.atomic.AtomicReference<>();

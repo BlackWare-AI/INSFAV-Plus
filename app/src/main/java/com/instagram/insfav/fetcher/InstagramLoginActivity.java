@@ -18,6 +18,7 @@ public final class InstagramLoginActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean lease, resumed, verified, probeRunning;
     private String probe = "";
+    private long checkingSince;
     private final Runnable poll = this::check;
     @Override @SuppressLint("SetJavaScriptEnabled") public void onCreate(Bundle saved) {
         super.onCreate(saved);
@@ -25,7 +26,7 @@ public final class InstagramLoginActivity extends Activity {
         LinearLayout layout = new LinearLayout(this); layout.setOrientation(LinearLayout.VERTICAL);
         status = new TextView(this); status.setText("Instagram · checking session"); layout.addView(status);
         LinearLayout controls = new LinearLayout(this); layout.addView(controls);
-        button(controls, "Check", () -> { verified = false; check(); });
+        button(controls, "Check", () -> { verified = false; checkingSince = android.os.SystemClock.uptimeMillis(); if (browser != null) browser.evaluateJavascript("delete window.__insfavSessionCheck", ignored -> check()); });
         button(controls, "Log out", () -> {
             if (browser == null) return;
             browser.stopLoading(); browser.loadUrl("about:blank"); handler.removeCallbacks(poll);
@@ -61,7 +62,7 @@ public final class InstagramLoginActivity extends Activity {
                     return request.isForMainFrame() && !instagram(request.getUrl());
                 }
                 @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) {
-                    verified = false;
+                    verified = false; checkingSince = android.os.SystemClock.uptimeMillis();
                     if (!"about:blank".equals(url) && !instagram(Uri.parse(url))) { view.stopLoading(); return; }
                     String path = Uri.parse(url).getPath();
                     if (path != null && (path.contains("challenge") || path.contains("checkpoint") || path.contains("two_factor")))
@@ -89,12 +90,14 @@ public final class InstagramLoginActivity extends Activity {
     }
     private void blocked(String code) {
         InstagramSession.blocked(this, false, code);
-        status.setText(code.equals("CHALLENGE_REQUIRED") ? "Complete Instagram verification below, then check the session" : "Sign in below, then check the session");
+        status.setText((code.equals("CHALLENGE_REQUIRED") || code.equals("ACCESS_BLOCKED")) ? "Complete Instagram verification below, then check the session" : "Sign in below, then check the session");
     }
     private void check() {
         handler.removeCallbacks(poll);
         if (!resumed || browser == null || probeRunning || verified || !instagram(Uri.parse(browser.getUrl() == null ? "" : browser.getUrl()))) return;
         probeRunning = true;
+        if (checkingSince == 0) checkingSince = android.os.SystemClock.uptimeMillis();
+        if (android.os.SystemClock.uptimeMillis() - checkingSince > 12000) status.setText("Session not verified. Check your connection, then tap Check or reopen Instagram.");
         String id = InstagramSession.account(CookieManager.getInstance());
         browser.evaluateJavascript("(" + probe + ")(" + JSONObject.quote("") + "," + JSONObject.quote(id) + ",false)", encoded -> {
             probeRunning = false;
@@ -102,7 +105,8 @@ public final class InstagramLoginActivity extends Activity {
             try {
                 JSONObject data = WebProfilePolicy.snapshot(encoded);
                 String wall = data.optString("wall");
-                if (wall.equals("CHALLENGE_REQUIRED") || wall.equals("COOKIE_INVALID_EXPIRED") || wall.equals("LOGIN_REQUIRED")) blocked(wall);
+                if (wall.equals("CHALLENGE_REQUIRED") || wall.equals("ACCESS_BLOCKED") || wall.equals("COOKIE_INVALID_EXPIRED") || wall.equals("LOGIN_REQUIRED")) blocked(wall);
+                else if (wall.equals("RATE_LIMITED")) status.setText("Instagram restricted requests. Wait before trying Check again.");
                 else if (data.optBoolean("authenticated") && wall.isEmpty()) {
                     InstagramSession.verified(this, false); verified = true;
                     status.setText("Session verified · resume retrieval manually"); return;

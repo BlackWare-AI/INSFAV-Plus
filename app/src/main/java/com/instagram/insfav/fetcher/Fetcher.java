@@ -570,10 +570,14 @@ public final class Fetcher {
     }
   }
 
+  private static String viewFailure(Throwable error) {
+    while ((error instanceof java.util.concurrent.CompletionException || error instanceof java.util.concurrent.ExecutionException) && error.getCause() != null) error = error.getCause();
+    return error instanceof ProfileProvider.Failure ? ((ProfileProvider.Failure) error).code : "REMOTE_IMAGE_UNAVAILABLE";
+  }
   public static void view(String name, String token) {
     closeViewer();
     if (!Identity.valid(name) || !token.matches("[a-zA-Z0-9_-]{1,80}")) return;
-    if (!InstagramSession.configured(context)) {
+    if (InstagramSession.manual(context) && !InstagramSession.configured(context)) {
       for (Listener l : listeners) l.fullFailed(token, "COOKIE_REQUIRED");
       return;
     }
@@ -586,7 +590,7 @@ public final class Fetcher {
           try {
             if (error != null) {
               for (Listener l : listeners)
-                if (id == generation.get()) l.fullFailed(token, "REMOTE_IMAGE_UNAVAILABLE");
+                if (id == generation.get()) l.fullFailed(token, viewFailure(error));
               return;
             }
             // Validate the whole container and decoder before replacing an existing view or
