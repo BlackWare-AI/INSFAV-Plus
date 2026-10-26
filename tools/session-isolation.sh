@@ -16,7 +16,7 @@ check_all() {
     grep -q OFFLINE_SESSION_PRESERVED "session-isolation-evidence/$1-$i.txt"
   done
 }
-check_all after-all-apps-signed-in
+check_all after-all-stores-seeded
 adb reboot
 adb wait-for-device
 for attempt in $(seq 1 120); do

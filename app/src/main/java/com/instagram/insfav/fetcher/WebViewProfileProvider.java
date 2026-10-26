@@ -41,6 +41,7 @@ final class WebViewProfileProvider implements ProfileProvider {
     private boolean isolatedManual;
     private volatile CookieManager sessionManager;
     private volatile String sessionAccount = "";
+    private volatile String browserAgent = "";
     private final Object authenticationLock = new Object();
     private volatile boolean persistentAuthenticated;
 
@@ -153,6 +154,8 @@ final class WebViewProfileProvider implements ProfileProvider {
         if (cancelled || barrier != null) throw new Failure("REQUEST_CANCELLED");
         transfers.add(transfer);
         userTransfers.put(user, transfer);
+        if (cancelled || barrier != null) { transfer.cancel(); throw new Failure("REQUEST_CANCELLED"); }
+        transfer.userAgent = browserAgent;
         return transfer.download(image);
       } finally {
         transfers.remove(transfer);
@@ -176,11 +179,11 @@ final class WebViewProfileProvider implements ProfileProvider {
       throw new Failure("COOKIE_EXPIRED", 0, 0, true);
     ensureSession();
     if (barrier != null) throw barrier;
-        if (cookies == null && !user.isEmpty() && !persistentAuthenticated) {
-            synchronized (authenticationLock) {
-                if (!persistentAuthenticated) { resolve("", false); persistentAuthenticated = true; }
-            }
-        }
+    if (cookies == null && !user.isEmpty() && !persistentAuthenticated) {
+      synchronized (authenticationLock) {
+        if (!persistentAuthenticated) { resolve("", false); persistentAuthenticated = true; }
+      }
+    }
 
     Operation operation =
         new Operation(
@@ -231,7 +234,7 @@ final class WebViewProfileProvider implements ProfileProvider {
               try {
                 if (isolatedManual && !InstagramSession.profiles()) throw new Failure("COOKIE_WEBVIEW_UPDATE_REQUIRED", 0, 0, true);
                 CookieManager m = isolatedManual ? InstagramSession.manager(true) : CookieManager.getInstance();
-                sessionManager = m; m.setAcceptCookie(true);
+                sessionManager = m; browserAgent = WebSettings.getDefaultUserAgent(context); m.setAcceptCookie(true);
                 if (cookies == null) { sessionAccount = InstagramSession.account(m); sessionReady.countDown(); }
                 else { sessionAccount = cookies.value("ds_user_id", System.currentTimeMillis()); m.removeAllCookies(ignored -> applySessionCookies(m, 0)); }
               } catch (Failure error) { sessionFailure = error; sessionReady.countDown();
@@ -755,11 +758,11 @@ final class WebViewProfileProvider implements ProfileProvider {
     void finish(JSONObject data, Failure error) {
       if (finishing) return;
       finishing = true;
-            if (error == null && user.isEmpty() && data != null && data.optBoolean("authenticated")) {
-                if (sessionManager != null) sessionManager.flush();
-                InstagramSession.recordVerified(context, cookies != null);
-                persistentAuthenticated = cookies == null;
-            }
+      if (error == null && user.isEmpty() && data != null && data.optBoolean("authenticated")) {
+        if (sessionManager != null) sessionManager.flush();
+        InstagramSession.recordVerified(context, cookies != null);
+        persistentAuthenticated = cookies == null;
+      }
 
       result = data;
       failure = error;
