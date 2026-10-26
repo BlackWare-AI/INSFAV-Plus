@@ -52,7 +52,7 @@ def main():
             '--ks-pass','env:INSFAV_STORE_PASSWORD','--key-pass','env:INSFAV_KEY_PASSWORD','--out',str(apk),str(source)],env=signing_env,capture_output=True)
         if signed.returncode: raise SystemExit('Official APK signing failed; the configured keystore credentials could not sign this APK')
         cert=certificate(bt,apk)
-        assert cert==[env['EXPECTED_CERT_SHA256']],'Official signing certificate mismatch'
+        if cert!=[env['EXPECTED_CERT_SHA256']]: raise SystemExit('Official signing certificate mismatch; expected SHA-256='+env['EXPECTED_CERT_SHA256']+'; received SHA-256='+','.join(cert))
         previous=root/'previous';previous.mkdir()
         run('gh','release','download',env['PREVIOUS_TAG'],'--pattern',env['PREVIOUS_APK'],'--dir',previous)
         assert certificate(bt,previous/env['PREVIOUS_APK'])==cert,'Previous official APK certificate mismatch'
