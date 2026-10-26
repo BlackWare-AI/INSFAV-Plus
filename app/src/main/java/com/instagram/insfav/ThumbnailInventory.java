@@ -46,7 +46,7 @@ final class ThumbnailInventory implements AutoCloseable {
   }
 
   private void remember(String key, List<Record> records) {
-    queryKey = records == null ? "" : key;
+    queryKey = key;
     queryRecords = records;
   }
 
@@ -91,8 +91,10 @@ final class ThumbnailInventory implements AutoCloseable {
         }
         return result(kind, start, queryRecords.size(), items, true);
       }
+      // A known oversized result keeps the original scan path on following pages.
+      boolean tryCache = !key.equals(queryKey);
       remember("", null);
-      List<Record> matches = new ArrayList<>();
+      List<Record> matches = tryCache ? new ArrayList<>() : null;
       catalogPasses++;
       Set<String> users = store.users();
       JSONObject profiles = store.index.optJSONObject("profiles");
