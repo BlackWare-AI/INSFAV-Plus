@@ -591,10 +591,11 @@ public final class Fetcher {
             }
             // Validate the whole container and decoder before replacing an existing view or
             // thumbnail.
-            byte[] thumbnail = ThumbnailCodec.convert(bytes);
+            ThumbnailCodec.convert(bytes);
             BitmapFactory.Options bounds = new BitmapFactory.Options();
             bounds.inJustDecodeBounds = true;
             BitmapFactory.decodeByteArray(bytes, 0, bytes.length, bounds);
+            byte[] thumbnailSource = null;
             synchronized (Fetcher.class) {
               if (id != generation.get() || !token.equals(viewerToken)) {
                 Arrays.fill(bytes, (byte) 0);
@@ -603,16 +604,13 @@ public final class Fetcher {
               fullBytes = bytes;
               fullMime = bounds.outMimeType;
               viewing = null;
+              try { thumbnailSource = bytes.clone(); } catch (OutOfMemoryError ignored) { }
             }
             for (Listener l : listeners)
               if (id == generation.get())
                 l.fullReady(name, token, bounds.outWidth, bounds.outHeight);
-            if (id == generation.get() && writable() && !host().catalogReadable(name)) {
-              String tree = host().tree();
-              OutputFolder folder = new OutputFolder(context, tree);
-              Uri uri = folder.commit(Identity.outputFilename(name), thumbnail, false);
-              host().imageWritten(name, uri, tree);
-            }
+            if (thumbnailSource != null && HdThumbnailWriter.save(context, host(), name, thumbnailSource))
+              for (Listener l : listeners) l.changed();
           } catch (OutOfMemoryError issue) {
             if (bytes != null && bytes != fullBytes) Arrays.fill(bytes, (byte) 0);
             memoryFailure();
