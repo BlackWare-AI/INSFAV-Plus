@@ -13,7 +13,7 @@ on:
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '8'
+        default: '9'
         required: true
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata
