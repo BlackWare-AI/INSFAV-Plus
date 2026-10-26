@@ -33,5 +33,7 @@ for attempt in $(seq 1 120); do
 done
 adb shell input keyevent 82
 check reboot
+adb shell am instrument -w -e scenario authenticate "$runner" | tee session-evidence/authenticate.txt
+grep -q OFFLINE_SESSION_AUTHENTICATED session-evidence/authenticate.txt
 adb shell am instrument -w -e scenario logout "$runner" | tee session-evidence/scoped-logout.txt
 grep -q OFFLINE_SESSION_LOGOUT_SCOPED session-evidence/scoped-logout.txt

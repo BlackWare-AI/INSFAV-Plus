@@ -47,15 +47,27 @@ public class ViewerThumbnailUpdateTest {
   @After public void close() { Fetcher.closeViewer(); }
 
   @Test public void successfulHdFetchUpdatesExistingWebpThroughVerifiedWritePath() throws Exception {
+    updateFromBroker();
+  }
+
+  @Test public void persistentHdReachesProviderWithoutCachedVerifiedPreference() throws Exception {
+    SessionState.prefs(context).edit().putBoolean("manualSession", false)
+        .putString("webSessionStatus", "Not verified").commit();
+    updateFromBroker();
+  }
+
+  private void updateFromBroker() throws Exception {
     byte[] remote = CodecTest.png(640, 480, Color.BLUE);
+    CountDownLatch fetched = new CountDownLatch(1);
     FetchBroker broker = new FetchBroker(context, full -> new ProfileProvider() {
-      public byte[] fetch(String user) { return remote.clone(); }
+      public byte[] fetch(String user) { fetched.countDown(); return remote.clone(); }
       public void cancel() { }
     }, new TestTime());
     ReflectionHelpers.setStaticField(FetchBroker.class, "instance", broker);
     try {
       Fetcher.view("example", "updated");
       assertTrue(written.await(5, TimeUnit.SECONDS));
+      assertEquals("HD must reach the session-aware provider", 0, fetched.getCount());
       assertFalse(Arrays.equals(before, ThumbnailUpdateTest.sha(target)));
       assertArrayEquals(java.security.MessageDigest.getInstance("SHA-256")
           .digest(ThumbnailCodec.convert(remote)), ThumbnailUpdateTest.sha(target));
@@ -67,11 +79,14 @@ public class ViewerThumbnailUpdateTest {
     for (String code : new String[] {"PROFILE_PAGE_UNAVAILABLE", "PROFILE_IMAGE_URL_MISSING",
         "PROFILE_DEFAULT_AVATAR", "PROFILE_NOT_FOUND_OR_UNAVAILABLE", "WEBVIEW_TIMEOUT",
         "HTTP_ERROR", "COOKIE_INVALID_EXPIRED", "CHALLENGE_REQUIRED", "NETWORK_ERROR"}) {
+      // Each response fixture is an independent request, without the prior case's durable stop.
+      SessionState.prefs(context).edit().remove("blocked").putLong("retryAt", 0).commit();
       CountDownLatch failed = new CountDownLatch(1);
+      java.util.concurrent.atomic.AtomicReference<String> reasonCode = new java.util.concurrent.atomic.AtomicReference<>();
       Fetcher.Listener listener = new Fetcher.Listener() {
         public void changed() { }
         public void fullReady(String user, String token, int width, int height) { fail("No image expected"); }
-        public void fullFailed(String token, String reason) { failed.countDown(); }
+        public void fullFailed(String token, String reason) { reasonCode.set(reason); failed.countDown(); }
       };
       FetchBroker broker = new FetchBroker(context, full -> new ProfileProvider() {
         public byte[] fetch(String user) throws Failure { throw new Failure(code, code.equals("HTTP_ERROR") ? 500 : 0, 0, false); }
@@ -82,6 +97,7 @@ public class ViewerThumbnailUpdateTest {
       try {
         Fetcher.view("example", "failed");
         assertTrue(code, failed.await(5, TimeUnit.SECONDS));
+        assertEquals("Preserve the actual session failure", code, reasonCode.get());
         assertArrayEquals(code, before, ThumbnailUpdateTest.sha(target));
         assertEquals(1, written.getCount());
       } finally { Fetcher.removeListener(listener); Fetcher.closeViewer(); broker.cancelAll(); }

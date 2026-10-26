@@ -26,10 +26,10 @@ function (expected, expectedId) {
         if (o.challenge_required === true || o.checkpoint_required === true) result.wall = "CHALLENGE_REQUIRED";
         if (o.login_required === true) result.wall = "COOKIE_INVALID_EXPIRED";
         const id = String(o.viewerId || o.viewer_id || "");
-        if (expectedId && id === expectedId && o.is_logged_in !== false && o.is_authenticated !== false) viewer = true;
+        if (/^[1-9][0-9]*$/.test(expectedId) && id === expectedId && o.is_logged_in !== false && o.is_authenticated !== false) viewer = true;
         for (const key of ["viewer", "current_user"]) {
             const u = o[key];
-            if (u && normalize(u.username) && /^[0-9]+$/.test(String(u.id || u.pk || "")) && expectedId && String(u.id || u.pk) === expectedId) viewer = true;
+            if (u && normalize(u.username) && /^[0-9]+$/.test(String(u.id || u.pk || "")) && /^[1-9][0-9]*$/.test(expectedId) && String(u.id || u.pk) === expectedId) viewer = true;
         }
         if (expected && normalize(o.username) === expected && /^[0-9]+$/.test(String(o.id || o.pk || ""))) {
             if (o.has_anonymous_profile_picture === true || o.has_profile_pic === false) anonymous = true;
@@ -46,6 +46,47 @@ function (expected, expectedId) {
         try { walk(JSON.parse(text), 0); } catch (_) {}
     }
     if (result.wall) return JSON.stringify(result);
+    // A signed-in inbox plus the account avatar in navigation is page evidence,
+    // unlike feed images or cookie presence. Keep checks on this HTTPS origin.
+    if (!expected && /^[1-9][0-9]*$/.test(expectedId)) {
+        const localPath = link => {
+            try { const u = new URL(link.href, location.href); return u.origin === location.origin && !u.username && !u.password ? u.pathname : ""; }
+            catch (_) { return ""; }
+        };
+        const inbox = Array.from(document.querySelectorAll('a[href]')).some(link => visible(link) && /^\/direct\/inbox\/?$/.test(localPath(link)));
+        const ownAvatar = Array.from(document.querySelectorAll('nav a[href], [role="navigation"] a[href], footer a[href]')).some(link => {
+            const match = /^\/([a-z0-9_.]{1,30})\/?$/i.exec(localPath(link));
+            return visible(link) && match && !["accounts", "direct", "explore", "reels", "stories", "p"].includes(match[1].toLowerCase()) && visible(link.querySelector('img'));
+        });
+        if (inbox && ownAvatar) viewer = true;
+    }
+    // Fall back to a first-party, read-only current-user response.
+    // No session-cookie credentials cross the JavaScript bridge; a cookie alone is never proof.
+    if (!expected && !viewer) {
+        let proof = window.__insfavSessionCheck;
+        if (!proof || proof.account !== expectedId) {
+            proof = {account: expectedId, authenticated: false, complete: false, authoritative: false, wall: ""};
+            window.__insfavSessionCheck = proof;
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
+            fetch("/api/v1/accounts/current_user/?edit=true", {credentials: "same-origin", cache: "no-store", redirect: "error", signal: controller.signal})
+                .then(async response => {
+                    if (response.status === 403) { proof.authoritative = true; proof.wall = "ACCESS_BLOCKED"; }
+                    if (response.status === 429) { proof.wall = "RATE_LIMITED"; return; }
+                    if (response.status === 401) { proof.wall = "COOKIE_INVALID_EXPIRED"; return; }
+                    if (!(response.headers.get("content-type") || "").includes("application/json")) return;
+                    const data = await response.json();
+                    if (data.challenge_required || data.checkpoint_required || data.challenge) { proof.wall = "CHALLENGE_REQUIRED"; return; }
+                    if (data.login_required || data.message === "login_required") { proof.wall = "COOKIE_INVALID_EXPIRED"; return; }
+                    const user = data.user;
+                    if (data.status === "ok" || data.status === "fail") proof.authoritative = true;
+                    proof.authenticated = response.ok && data.status === "ok" && !!user && typeof user.username === "string" && !!user.username && /^[1-9][0-9]*$/.test(String(user.pk || user.id || "")) && (!expectedId || String(user.pk || user.id) === expectedId);
+                }).catch(() => {}).finally(() => { proof.complete = true; clearTimeout(timeout); });
+        }
+        if (proof.wall) return wall(proof.wall, "COOKIE_OR_LOGIN_GATE");
+        if (!proof.complete) viewer = false;
+        else if (proof.authoritative) viewer = proof.authenticated;
+    }
     result.authenticated = viewer;
     if (!expected) return JSON.stringify(result);
     result.unavailableText = unavailableText;
