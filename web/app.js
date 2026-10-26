@@ -5,7 +5,14 @@ let choiceOpener=null;
 const listScroll=createListScroll();
 let viewMode=native?0:(()=>{try{return Number(localStorage.getItem('insfav-plus-columns'))||0;}catch(_){return 0;}})();
 if(![0,2,3,4,5].includes(viewMode))viewMode=0;
-function releaseRow(node){for(const button of node.querySelectorAll('.avatar'))releaseAvatar(button);}
+function releaseRow(node){
+ for(const button of node.querySelectorAll('.avatar')){releaseAvatar(button);button.onclick=null;button.removeAttribute('data-user');button._rowIndex=-1;button.replaceChildren();}
+ const link=node.querySelector('.card-link');if(!link)return;
+ clearTimeout(link._hold);link._hold=0;
+ link.onclick=link.oncontextmenu=link.onkeydown=link.onpointerdown=link.onpointermove=link.onpointerup=link.onpointercancel=null;
+ link.removeAttribute('title');link.removeAttribute('aria-label');
+ link.querySelector('.card-name')?.replaceChildren();link.querySelector('.card-user')?.replaceChildren();
+}
 function gridGeometry(){if(!viewMode)return null;const width=$('list').clientWidth,tile=(width-18-8*(viewMode-1))/viewMode,label=Math.max(24,Math.ceil(parseFloat(getComputedStyle(document.documentElement).fontSize)*.8125*1.45+6));$('list').style.setProperty('--grid-columns',viewMode);$('list').style.setProperty('--tile-size',tile+'px');$('list').style.setProperty('--grid-label-height',label+'px');return {columns:viewMode,height:tile+label+8};}
 function applyViewMode(columns){viewMode=[0,2,3,4,5].includes(Number(columns))?Number(columns):0;$('app').classList.toggle('matrix-mode',!!viewMode);rebuild();updateViewChoice();}
 
