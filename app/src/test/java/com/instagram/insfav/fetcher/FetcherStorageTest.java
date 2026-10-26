@@ -146,7 +146,49 @@ public class FetcherStorageTest {
     assertEquals(1, folder.list().length);
   }
 
+
+    @Test public void interruptedJournalRestoresOldOrKeepsVerifiedFinal() throws Exception {
+        byte[] old = ThumbnailCodec.convert(CodecTest.png(300, 300));
+        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(256, 256, android.graphics.Bitmap.Config.ARGB_8888);
+        bitmap.eraseColor(android.graphics.Color.BLUE);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.WEBP, 78, out);
+        bitmap.recycle();
+        byte[] next = out.toByteArray();
+        assertFalse(Arrays.equals(old, next));
+        for (int phase = 0; phase < 3; phase++) {
+            String directory = "root/recovery" + phase;
+            SessionState.prefs(context).edit().putString("directoryId", directory).commit();
+            File folder = new File(provider.root, "recovery" + phase);
+            assertTrue(folder.mkdir());
+            String nonce = java.util.UUID.randomUUID().toString();
+            String backupName = ".insfav-" + nonce + ".bak", pendingName = ".insfav-" + nonce + ".part";
+            File backup = new File(folder, backupName), pending = new File(folder, pendingName), target = new File(folder, "example.webp");
+            Files.write(backup.toPath(), old);
+            assertTrue(backup.setLastModified(123450000L));
+            long modified = backup.lastModified();
+            Files.write(pending.toPath(), next);
+            if (phase == 1) Files.write(target.toPath(), next);
+            if (phase == 2) Files.write(target.toPath(), new byte[] {1, 2, 3});
+            org.json.JSONObject value = new org.json.JSONObject()
+                .put("tree", tree.toString())
+                .put("folder", DocumentsContract.buildDocumentUriUsingTree(tree, directory).toString())
+                .put("name", "example.webp").put("pending", pendingName).put("backup", backupName);
+            android.util.AtomicFile journal = new android.util.AtomicFile(new File(context.getFilesDir(), "fetcher-write-journal.json"));
+            FileOutputStream journalOut = journal.startWrite();
+            journalOut.write(value.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            journal.finishWrite(journalOut);
+            new OutputFolder(context, tree.toString());
+            assertArrayEquals(phase == 1 ? next : old, Files.readAllBytes(target.toPath()));
+            if (phase != 1) assertEquals(modified, target.lastModified());
+            assertFalse(backup.exists());
+            assertFalse(pending.exists());
+            assertFalse(journal.getBaseFile().exists());
+        }
+    }
+
   public static class Fixture extends DocumentsProvider {
+    boolean rejectFinalRename, corruptFinal, crashAfterBackup, crashAfterFinal, rejectBackupDelete, rejectRestore;
     File root;
     int writes, opens, childQueries;
     boolean rejectRename;
@@ -230,13 +272,24 @@ public class FetcherStorageTest {
     @Override
     public String renameDocument(String old, String name) throws FileNotFoundException {
       if (rejectRename) throw new UnsupportedOperationException();
+      if (rejectFinalRename && old.endsWith(".part")) throw new FileNotFoundException("final rename rejected");
+      if (rejectRestore && old.endsWith(".bak")) throw new FileNotFoundException("restore temporarily unavailable");
       File target = new File(file(old).getParentFile(), name);
       if (!file(old).renameTo(target)) throw new FileNotFoundException();
+      if (crashAfterBackup && name.endsWith(".bak")) throw new AssertionError("simulated process exit after backup");
+      if (old.endsWith(".part")) {
+        if (corruptFinal) {
+          try { Files.write(target.toPath(), new byte[] {1,2,3}); }
+          catch (IOException error) { throw new FileNotFoundException(); }
+        }
+        if (crashAfterFinal) throw new AssertionError("simulated process exit after final rename");
+      }
       return id(target);
     }
 
     @Override
     public void deleteDocument(String id) throws FileNotFoundException {
+      if (rejectBackupDelete && id.endsWith(".bak")) throw new FileNotFoundException("backup cleanup rejected");
       if (!file(id).delete()) throw new FileNotFoundException();
     }
 

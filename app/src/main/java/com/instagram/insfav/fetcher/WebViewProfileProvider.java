@@ -75,7 +75,7 @@ final class WebViewProfileProvider implements ProfileProvider {
 
   WebViewProfileProvider(Context context, CookieJar cookies, Pages pages, Resources resources)
       throws Failure {
-    this(context, cookies, pages, resources, PublicProfileProvider::new);
+    this(context, cookies, pages, resources, () -> new PublicProfileProvider(new File(context.getCacheDir(), "profile-downloads"), null));
   }
 
   WebViewProfileProvider(

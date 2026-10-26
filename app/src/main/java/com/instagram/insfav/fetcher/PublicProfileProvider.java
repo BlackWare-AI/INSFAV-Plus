@@ -17,6 +17,7 @@ final class PublicProfileProvider implements ProfileProvider {
 
   private final Connections connections;
   private final CookieJar cookies;
+  private final File stagingDirectory;
 
   PublicProfileProvider() {
     this(url -> (HttpsURLConnection) url.openConnection(), null);
@@ -31,8 +32,17 @@ final class PublicProfileProvider implements ProfileProvider {
   }
 
   PublicProfileProvider(Connections connections, CookieJar cookies) {
+    this(connections, cookies, new File(System.getProperty("java.io.tmpdir"), "insfav-profile-downloads"));
+  }
+
+  PublicProfileProvider(File stagingDirectory, CookieJar cookies) {
+    this(url -> (HttpsURLConnection) url.openConnection(), cookies, stagingDirectory);
+  }
+
+  PublicProfileProvider(Connections connections, CookieJar cookies, File stagingDirectory) {
     this.connections = connections;
     this.cookies = cookies;
+    this.stagingDirectory = stagingDirectory;
   }
 
   @Override
@@ -131,6 +141,14 @@ final class PublicProfileProvider implements ProfileProvider {
     return host.endsWith(".cdninstagram.com") || host.endsWith(".fbcdn.net");
   }
 
+  static boolean placeholder(String raw) {
+    String lower = raw.toLowerCase(Locale.ROOT);
+    return lower.contains("anonymous")
+        || lower.contains("default")
+        || lower.contains("logo")
+        || lower.contains("44884218_345707102882519_2446069589734326272");
+  }
+
   static long retryAt(String header, long now) {
     if (header == null) return now + 60_000;
     try {
@@ -193,7 +211,8 @@ final class PublicProfileProvider implements ProfileProvider {
     for (int redirect = 0; redirect <= 3; redirect++) {
       if (cancelled) throw new Failure("REQUEST_CANCELLED");
       if (System.nanoTime() > deadline) throw new Failure("REQUEST_TIMEOUT");
-      if (!trusted(url, image)) throw new Failure("UNTRUSTED_SOURCE");
+      if (!trusted(url, image) || image && placeholder(url.toString()))
+        throw new Failure("UNTRUSTED_SOURCE");
       if (!image && !url.getPath().equals(user == null ? "/" : "/" + user + "/")) {
         String path = url.getPath().toLowerCase(Locale.ROOT);
         throw new Failure(
@@ -261,6 +280,12 @@ final class PublicProfileProvider implements ProfileProvider {
           throw new Failure("CONTENT_TYPE_REJECTED", status, 0, false);
         int limit = image ? 8 * 1024 * 1024 : 4 * 1024 * 1024;
         if (connection.getContentLengthLong() > limit) throw new Failure("RESPONSE_TOO_LARGE");
+        if (image) {
+          try (InputStream input = connection.getInputStream()) {
+            return DownloadStaging.read(input, stagingDirectory, limit,
+                connection.getContentLengthLong(), deadline, () -> cancelled);
+          }
+        }
         try (InputStream input = connection.getInputStream();
             ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
           byte[] buffer = new byte[8192];
@@ -356,12 +381,7 @@ final class PublicProfileProvider implements ProfileProvider {
           if (info == null) info = object.optJSONObject("profile_pic_url_info");
           if (info != null) picture = info.optString("url");
         }
-        String lower = picture.toLowerCase(Locale.ROOT);
-        if (!picture.isEmpty()
-            && !lower.contains("anonymous")
-            && !lower.contains("default")
-            && !lower.contains("logo")
-            && !lower.contains("44884218_345707102882519_2446069589734326272")) found.add(picture);
+        if (!picture.isEmpty() && !placeholder(picture)) found.add(picture);
       }
       Iterator<String> keys = object.keys();
       while (keys.hasNext())

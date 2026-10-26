@@ -22,7 +22,16 @@ final class HdThumbnailWriter {
             if (!active.add(key)) return false;
             acquired = true;
             OutputFolder folder = new OutputFolder(context, tree);
-            Uri uri = folder.commitMissingHd(Identity.outputFilename(user), source);
+            String filename = Identity.outputFilename(user);
+            Uri uri;
+            if (folder.valid(filename)) {
+                byte[] thumbnail = encode(source);
+                if (thumbnail == null) return false;
+                uri = folder.commit(filename, thumbnail, true);
+                if (!folder.lastWriteCreated) return false;
+            } else {
+                uri = folder.commitMissingHd(filename, source);
+            }
             if (uri == null) return false;
             host.imageWritten(user, uri, tree);
             host.flushImages();
@@ -63,6 +72,7 @@ final class HdThumbnailWriter {
             result = Bitmap.createBitmap(ThumbnailCodec.TARGET_SIZE, ThumbnailCodec.TARGET_SIZE, Bitmap.Config.ARGB_8888);
             new Canvas(result).drawBitmap(source, new Rect(left, top, left + side, top + side),
                     new Rect(0, 0, ThumbnailCodec.TARGET_SIZE, ThumbnailCodec.TARGET_SIZE), new Paint(Paint.FILTER_BITMAP_FLAG));
+            if (!ThumbnailCodec.visible(result)) throw new IOException("IMAGE_REJECTED");
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             if (!result.compress(Bitmap.CompressFormat.WEBP, 78, output)) throw new IOException("WEBP_ENCODE_FAILED");
             byte[] bytes = output.toByteArray();
