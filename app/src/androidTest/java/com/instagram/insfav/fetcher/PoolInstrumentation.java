@@ -19,6 +19,7 @@ import org.json.*;
  * fixtures.
  */
 public final class PoolInstrumentation extends Instrumentation {
+    private Bundle sessionArguments;
   private Bundle status(String s) {
     Bundle b = new Bundle();
     b.putString("stream", s + "\n");
@@ -26,13 +27,14 @@ public final class PoolInstrumentation extends Instrumentation {
   }
 
   @Override
-  public void onCreate(Bundle args) {
+  public void onCreate(Bundle args) { sessionArguments = args;
     super.onCreate(args);
     start();
   }
 
   @Override
   public void onStart() {
+        if (sessionArguments != null && sessionArguments.containsKey("scenario")) { SessionInstrumentation.run(this, sessionArguments); return; }
     Bundle result = new Bundle();
     try {
       Context c = getTargetContext();

@@ -2,7 +2,7 @@
 set -euo pipefail
 mkdir -p session-evidence
 package=com.instagram.insfav.plus
-runner=com.instagram.insfav.plus.test/com.instagram.insfav.fetcher.SessionInstrumentation
+runner=com.instagram.insfav.plus.test/com.instagram.insfav.fetcher.PoolInstrumentation
 apk=$(find app/build builds -name app-debug.apk -print -quit 2>/dev/null || true)
 test_apk=$(find app/build builds -name '*debug-androidTest.apk' -print -quit 2>/dev/null || true)
 adb install -r "$apk"

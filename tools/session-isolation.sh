@@ -3,7 +3,7 @@ set -euo pipefail
 mkdir -p session-isolation-evidence
 roots=(isolation/thumb isolation/insfav .)
 packages=(com.insfav.thumbfetcher com.instagram.insfav com.instagram.insfav.plus)
-runners=(com.insfav.thumbfetcher.SessionInstrumentation com.instagram.insfav.fetcher.SessionInstrumentation com.instagram.insfav.fetcher.SessionInstrumentation)
+runners=(com.insfav.thumbfetcher.PoolInstrumentation com.instagram.insfav.fetcher.PoolInstrumentation com.instagram.insfav.fetcher.PoolInstrumentation)
 for i in 0 1 2; do
   adb install -r "${roots[$i]}/app/build/outputs/apk/debug/app-debug.apk"
   adb install -r "${roots[$i]}/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"

@@ -8,17 +8,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 
 /** Synthetic offline browser data only; never makes an Instagram request. */
-public final class SessionInstrumentation extends Instrumentation {
-    private Bundle arguments;
-    @Override public void onCreate(Bundle args) { super.onCreate(args); arguments=args; start(); }
-    @Override public void onStart() {
+final class SessionInstrumentation {
+    static void run(Instrumentation host, Bundle arguments) {
         Bundle result=new Bundle();
         try {
-            Context c=getTargetContext(); boolean seed="seed".equals(arguments.getString("scenario"));
+            Context c=host.getTargetContext(); boolean seed="seed".equals(arguments.getString("scenario"));
             String value="OFFLINE_"+c.getPackageName().replace('.','_');
             CountDownLatch done=new CountDownLatch(1);
             java.util.concurrent.atomic.AtomicReference<Throwable> failure=new java.util.concurrent.atomic.AtomicReference<>();
-            runOnMainSync(() -> {
+            host.runOnMainSync(() -> {
                 try {
                     CookieManager m=CookieManager.getInstance(); m.setAcceptCookie(true);
                     WebView web=new WebView(c); web.getSettings().setJavaScriptEnabled(true); web.getSettings().setDomStorageEnabled(true);
@@ -52,7 +50,7 @@ public final class SessionInstrumentation extends Instrumentation {
             if(!done.await(20,TimeUnit.SECONDS))throw new AssertionError("Browser fixture timed out");
             if(failure.get()!=null)throw new AssertionError(failure.get());
             CountDownLatch manualDone=new CountDownLatch(1);
-            runOnMainSync(() -> {
+            host.runOnMainSync(() -> {
                 try {
                     if(!InstagramSession.profiles())throw new AssertionError("MULTI_PROFILE unavailable; update Android System WebView");
                     CookieManager manual=InstagramSession.manager(true); manual.setAcceptCookie(true);
@@ -84,10 +82,10 @@ public final class SessionInstrumentation extends Instrumentation {
                 if(!SessionState.prefs(c).getBoolean("webSessionHold",false))throw new AssertionError("Security hold lost");
             }
             if ("crash".equals(arguments.getString("scenario"))) {
-                Bundle marker=new Bundle(); marker.putString("stream","CRASHING_OFFLINE_FIXTURE\n"); sendStatus(0,marker);
+                Bundle marker=new Bundle(); marker.putString("stream","CRASHING_OFFLINE_FIXTURE\n"); host.sendStatus(0,marker);
                 android.os.Process.killProcess(android.os.Process.myPid()); return;
             }
-            result.putString("stream","OFFLINE_SESSION_"+(seed?"SEEDED":"PRESERVED")+"\n");finish(Activity.RESULT_OK,result);
-        } catch(Throwable error) { result.putString("stream","OFFLINE_SESSION_FAILED: "+error.getClass().getSimpleName()+"\n"); finish(Activity.RESULT_CANCELED,result); }
+            result.putString("stream","OFFLINE_SESSION_"+(seed?"SEEDED":"PRESERVED")+"\n");host.finish(Activity.RESULT_OK,result);
+        } catch(Throwable error) { result.putString("stream","OFFLINE_SESSION_FAILED: "+error.getClass().getSimpleName()+"\n"); host.finish(Activity.RESULT_CANCELED,result); }
     }
 }
