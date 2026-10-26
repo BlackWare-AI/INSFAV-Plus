@@ -44,7 +44,7 @@ def main():
         assert check['conclusion']=='success' and check['head_sha']==meta['validatedSource']
         jobs=api('repos/'+env['GH_REPO']+'/actions/runs/'+str(meta['validationRun'])+'/jobs')['jobs']
         for name in ['verify','emulator']: assert any(j['name']==name and j['conclusion']=='success' for j in jobs)
-        run('git','diff','--exit-code',meta['sourceCommit'],'HEAD','--','app','web','version.properties','build.gradle','settings.gradle','gradle.properties','gradle','gradlew','gradlew.bat')
+        run('git','diff','--exit-code',meta['validatedSource'],meta['sourceCommit'],'--','app','web','version.properties','build.gradle','settings.gradle','gradle.properties','gradle','gradlew','gradlew.bat')
         key=root/'official.jks';key.write_bytes(base64.b64decode(env['INSFAV_KEYSTORE_BASE64'],validate=True));key.chmod(0o600)
         signing_env=dict(env,INSFAV_KEY_PASSWORD=env.get('INSFAV_KEY_PASSWORD') or env['INSFAV_STORE_PASSWORD'])
         apk=output/env['APK_NAME']
