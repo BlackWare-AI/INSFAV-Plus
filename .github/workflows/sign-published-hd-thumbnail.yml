@@ -30,6 +30,8 @@ jobs:
       RELEASE_TAG: 'plus-v1.1.6-build.9'
       APK_NAME: 'app-release.apk'
       REQUIRE_KEY_PASSWORD: 'true'
+      PLUS_RELEASE_NOTES_FILE: artifacts/notes.md
+      PLUS_RELEASE_LATEST: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
