@@ -1,4 +1,4 @@
-name: Sign and publish verified HD thumbnail APK
+name: Sign and publish HD thumbnail with the authorized certificate
 on:
   workflow_dispatch:
 permissions:
@@ -21,13 +21,15 @@ jobs:
       EXPECTED_PACKAGE: 'com.instagram.insfav.plus'
       EXPECTED_VERSION: '1.1.6'
       EXPECTED_CODE: '9'
-      EXPECTED_CERT_SHA256: '9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f'
+      EXPECTED_CERT_SHA256: 'cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8'
+      PREVIOUS_CERT_SHA256: '9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f'
+      ALLOW_CERTIFICATE_CHANGE: 'true'
       UNSIGNED_TAG: 'plus-v1.1.6-build.9-hd-thumbnail-unsigned'
       UNSIGNED_SOURCE: 'f81abd2cd3edad08d7e20f000683bf4fa69bda9e'
       UNSIGNED_SHA256: '0b782598bf42427cd11dda8e6830b4ff044896b519d25e3f5752911c48da501e'
       PREVIOUS_TAG: 'plus-v1.1.6-build.8'
       PREVIOUS_APK: 'app-release.apk'
-      RELEASE_TAG: 'plus-v1.1.6-build.9'
+      RELEASE_TAG: 'plus-v1.1.6-build.9-hd-thumbnail-new-signing'
       APK_NAME: 'app-release.apk'
       REQUIRE_KEY_PASSWORD: 'true'
     steps:
@@ -44,25 +46,24 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
-      - name: Sign the tested unsigned APK and verify official certificate continuity
+      - name: Sign the tested APK and verify the authorized certificate and unchanged content
         env:
           INSFAV_KEYSTORE_BASE64: ${{ secrets.PLUS_KEYSTORE_BASE64 || secrets.KEYSTORE_BASE64 }}
           INSFAV_STORE_PASSWORD: ${{ secrets.PLUS_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           INSFAV_KEY_ALIAS: ${{ secrets.PLUS_KEY_ALIAS || secrets.KEY_ALIAS }}
           INSFAV_KEY_PASSWORD: ${{ secrets.PLUS_KEY_PASSWORD || secrets.KEY_PASSWORD }}
         run: python3 tools/sign-published-hd.py
-      - name: Publish signed release without replacing history
-        env:
-          PLUS_RELEASE_NOTES_FILE: artifacts/notes.md
-          PLUS_RELEASE_LATEST: 'false'
+      - name: Publish the authorized new-certificate release without replacing history
         run: |
           set -euo pipefail
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
             echo '::error::Release or tag already exists; refusing to overwrite.'
             exit 1
           fi
-          python3 tools/publish-plus.py
-          gh release upload "$RELEASE_TAG" artifacts/SHA256SUMS
+          gh release create "$RELEASE_TAG" "artifacts/$APK_NAME" artifacts/apk.json artifacts/SHA256SUMS --draft --latest=false --target "$PLUS_SOURCE_SHA" --title 'INSFAV Plus 1.1.6 — build 9 — New signing key' --notes-file artifacts/notes.md
+          gh release download "$RELEASE_TAG" --dir candidate-check
+          (cd candidate-check && sha256sum --check ../artifacts/SHA256SUMS)
+          gh release edit "$RELEASE_TAG" --draft=false --latest=false
       - name: Download and verify published signed APK
         run: |
           gh release download "$RELEASE_TAG" --dir downloaded
