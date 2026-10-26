@@ -70,7 +70,7 @@ final class ThumbnailCodec {
   }
 
   static byte[] convert(byte[] input) throws IOException {
-    if (input.length == 0 || input.length > 8 * 1024 * 1024)
+    if (input == null || input.length == 0 || input.length > 8 * 1024 * 1024)
       throw new IOException("IMAGE_SIZE_REJECTED");
     if (!completeContainer(input)) throw new IOException("IMAGE_CONTAINER_INVALID");
     BitmapFactory.Options bounds = new BitmapFactory.Options();
@@ -102,6 +102,7 @@ final class ThumbnailCodec {
               new Rect(left, top, left + side, top + side),
               new Rect(0, 0, TARGET_SIZE, TARGET_SIZE),
               new Paint(Paint.FILTER_BITMAP_FLAG));
+      if (!visible(result)) throw new IOException("IMAGE_REJECTED");
       ByteArrayOutputStream output = new ByteArrayOutputStream();
       if (!result.compress(Bitmap.CompressFormat.WEBP, 78, output))
         throw new IOException("WEBP_ENCODE_FAILED");
@@ -112,5 +113,13 @@ final class ThumbnailCodec {
       if (result != null) result.recycle();
       source.recycle();
     }
+  }
+  static boolean visible(Bitmap image) {
+    int[] row = new int[image.getWidth()];
+    for (int y = 0; y < image.getHeight(); y++) {
+      image.getPixels(row, 0, row.length, 0, y, row.length, 1);
+      for (int pixel : row) if ((pixel >>> 24) != 0) return true;
+    }
+    return false;
   }
 }

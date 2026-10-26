@@ -80,12 +80,8 @@ final class WebProfilePolicy {
           || data.optInt("height") > 20000)
         throw new ProfileProvider.Failure("PROFILE_IDENTITY_UNVERIFIED", 200, 0, false);
       URL url = new URL(data.getString("url"));
-      String lower = url.toString().toLowerCase(Locale.ROOT);
       if (!PublicProfileProvider.trusted(url, true)
-          || lower.contains("anonymous")
-          || lower.contains("default")
-          || lower.contains("logo")
-          || lower.contains("44884218_345707102882519_2446069589734326272"))
+          || PublicProfileProvider.placeholder(url.toString()))
         throw new ProfileProvider.Failure("UNTRUSTED_SOURCE");
       return url;
     } catch (JSONException | MalformedURLException error) {

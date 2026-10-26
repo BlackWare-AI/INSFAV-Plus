@@ -268,4 +268,26 @@ public class ProviderTest {
       assertFalse(error.pause);
     }
   }
+
+    @Test public void imageRedirectCannotBypassExistingAvatarFilter() throws Exception {
+        for (String name : new String[] {"default.jpg", "anonymous.jpg", "logo.jpg", "44884218_345707102882519_2446069589734326272.jpg"}) {
+            String location = "https://scontent.example.cdninstagram.com/" + name;
+            int[] requests = {0};
+            PublicProfileProvider provider = new PublicProfileProvider(url -> {
+                requests[0]++;
+                if (url.toString().equals(IMAGE)) return new Stub(url, 302, "") {
+                    @Override public String getHeaderField(String key) {
+                        return key.equals("Location") ? location : null;
+                    }
+                };
+                return new Stub(url, 200, "pixels") {
+                    @Override public String getContentType() { return "image/jpeg"; }
+                };
+            });
+            ProfileProvider.Failure failure = assertThrows(ProfileProvider.Failure.class,
+                () -> provider.download(new URL(IMAGE)));
+            assertEquals("UNTRUSTED_SOURCE", failure.code);
+            assertEquals(1, requests[0]);
+        }
+    }
 }
