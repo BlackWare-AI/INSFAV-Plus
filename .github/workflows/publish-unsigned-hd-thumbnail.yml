@@ -1,0 +1,94 @@
+name: Publish requested unsigned HD thumbnail APK
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: unsigned-hd-thumbnail-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      VALIDATED_SOURCE: '286576c7cbe2235b3b44899e288839ab6bc40e64'
+      VALIDATION_RUN: '40263786387'
+      EXPECTED_PACKAGE: 'com.instagram.insfav.plus'
+      EXPECTED_VERSION: '1.1.6'
+      EXPECTED_CODE: '9'
+      RELEASE_TAG: 'plus-v1.1.6-build.9-hd-thumbnail-unsigned'
+      APK_NAME: 'INSFAV-Plus-1.1.6-build.9-unsigned.apk'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify existing successful tests and unchanged application source
+        run: |
+          python3 - <<'PYTHON'
+          import json,os,subprocess
+          def api(path): return json.loads(subprocess.check_output(['gh','api',path],text=True))
+          base='repos/'+os.environ['GH_REPO']+'/actions/runs/'+os.environ['VALIDATION_RUN']
+          record=api(base)
+          assert record['head_sha']==os.environ['VALIDATED_SOURCE'] and record['conclusion']=='success'
+          jobs=api(base+'/jobs')['jobs']
+          for name in ['verify','emulator']:
+              assert any(j['name']==name and j['conclusion']=='success' for j in jobs)
+          subprocess.run(['git','diff','--exit-code',os.environ['VALIDATED_SOURCE'],'HEAD','--','app','web','version.properties','build.gradle','settings.gradle','gradle.properties','gradle','gradlew','gradlew.bat'],check=True)
+          PYTHON
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build unsigned release APK without signing material
+        run: |
+          test -z "${INSFAV_KEYSTORE:-}"
+          ./gradlew :app:assembleRelease --no-daemon --console=plain
+      - name: Verify package, version, unsigned state and APK integrity
+        run: |
+          mkdir candidate
+          cp app/build/outputs/apk/release/app-release-unsigned.apk "candidate/$APK_NAME"
+          python3 - <<'PYTHON'
+          import hashlib,json,os,re,subprocess,zipfile
+          from pathlib import Path
+          bt=Path(os.environ['ANDROID_HOME'])/'build-tools/35.0.0'
+          apk=Path('candidate')/os.environ['APK_NAME']
+          badging=subprocess.check_output([str(bt/'aapt2'),'dump','badging',str(apk)],text=True)
+          fields={k:re.search(r"\b"+k+r"='([^']*)'",badging.splitlines()[0])[1] for k in ['name','versionName','versionCode']}
+          assert fields==dict(name=os.environ['EXPECTED_PACKAGE'],versionName=os.environ['EXPECTED_VERSION'],versionCode=os.environ['EXPECTED_CODE'])
+          assert 'application-debuggable' not in badging.splitlines()
+          with zipfile.ZipFile(apk) as z:
+              assert z.testzip() is None
+              assert not any(n.upper().startswith('META-INF/') and n.upper().endswith(('.SF','.RSA','.DSA','.EC')) for n in z.namelist())
+          signature=subprocess.run([str(bt/'apksigner'),'verify','--verbose','--print-certs',str(apk)],capture_output=True,text=True)
+          assert signature.returncode!=0 and 'certificate SHA-256 digest:' not in signature.stdout,'Expected a genuinely unsigned APK'
+          subprocess.run([str(bt/'zipalign'),'-c','-P','16','4',str(apk)],check=True)
+          digest=hashlib.sha256(apk.read_bytes()).hexdigest()
+          meta=dict(file=apk.name,package=fields['name'],version=fields['versionName'],versionCode=int(fields['versionCode']),sourceCommit=os.environ['GITHUB_SHA'],validatedSource=os.environ['VALIDATED_SOURCE'],validationRun=int(os.environ['VALIDATION_RUN']),sha256=digest,bytes=apk.stat().st_size,unsigned=True,officialRelease=False,signatureVerified=False,certificateSha256=[],debuggable=False,installableWithoutSigning=False)
+          Path('candidate/apk.json').write_text(json.dumps(meta,indent=2)+'\n')
+          Path('candidate/SHA256SUMS').write_text(digest+'  '+apk.name+'\n')
+          Path('candidate/notes.md').write_text('## İmzasız APK — UNSIGNED\n\nKullanıcının açık isteğiyle imzasız yayımlanmıştır. Bu APK Android’e yüklenmeden önce imzalanmalıdır. Resmi imzalı güncelleme değildir.\n\nHD görüntüleyicinin doğrulanmış uzak görselinden eksik 256×256 WebP thumbnail otomatik kaydı.\n\nPaket: '+meta['package']+'\n\nSürüm: '+meta['version']+'; build: '+str(meta['versionCode'])+'\n\nKaynak commit: '+meta['sourceCommit']+'\n\nDoğrulanmış testler: https://github.com/'+os.environ['GH_REPO']+'/actions/runs/'+os.environ['VALIDATION_RUN']+'\n\nSHA-256: '+digest+'\n')
+          PYTHON
+      - name: Publish separate unsigned prerelease and verify uploaded assets
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo '::error::Release or tag already exists; refusing to overwrite.'
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" "candidate/$APK_NAME" candidate/apk.json candidate/SHA256SUMS --draft --prerelease --latest=false --target "$GITHUB_SHA" --title 'INSFAV-Plus 1.1.6 — build 9 — UNSIGNED' --notes-file candidate/notes.md
+          gh release download "$RELEASE_TAG" --dir downloaded
+          (cd downloaded && sha256sum --check ../candidate/SHA256SUMS)
+          cmp candidate/apk.json downloaded/apk.json
+          gh release edit "$RELEASE_TAG" --draft=false --prerelease --latest=false
+          gh release view "$RELEASE_TAG" --json url,isDraft,isPrerelease

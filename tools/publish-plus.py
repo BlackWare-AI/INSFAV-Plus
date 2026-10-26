@@ -26,6 +26,10 @@ for release in [r for page in pages for r in page]:
         assert asset['size']<16384
         prior=json.loads(gh('api','repos/'+REPOSITORY+'/releases/assets/'+str(asset['id']),'-H','Accept: application/octet-stream'))
         assert prior['package']==meta['package'] and prior['versionCode']<meta['versionCode'],'versionCode must increase for every published APK'
+        if prior.get('unsigned') is True:
+            assert release.get('prerelease') is True and release.get('tag_name','').endswith('-unsigned'),'Unsigned APK must be explicitly marked as a prerelease'
+            assert prior.get('officialRelease') is False and prior.get('signatureVerified') is False and prior.get('certificateSha256')==[],'Invalid unsigned APK metadata'
+            continue  # An explicitly unsigned artifact has no signing certificate to compare.
         assert prior.get('certificateSha256'),'Cannot verify the previous Plus signing certificate'
         assert {v.lower() for v in prior['certificateSha256']}=={v.lower() for v in meta['certificateSha256']},'Plus signing certificate must match previous releases for in-place updates'
 tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
