@@ -87,6 +87,7 @@ public final class Fetcher {
 
   public interface Listener {
     void changed();
+    default void changed(boolean critical){changed();}
 
     void fullReady(String user, String token, int width, int height);
 
@@ -157,7 +158,7 @@ public final class Fetcher {
         pendingUpdate = null;
       }
       lastPublished.set(now);
-      for (Listener listener : listeners) listener.changed();
+      for (Listener listener : listeners) listener.changed(critical);
     } else if (pendingUpdate == null)
       pendingUpdate =
           updates.schedule(
@@ -391,6 +392,7 @@ public final class Fetcher {
   public static JSONObject snapshot() throws Exception {
     SharedPreferences p = SessionState.prefs(context);
     JSONObject out = new JSONObject();
+    JSONObject resolution;
     int total = 0;
     Map<String, Integer> counts;
     try (QueueStore q = new QueueStore(context)) {
@@ -398,6 +400,8 @@ public final class Fetcher {
       out.put("phases", new JSONObject(q.phases()))
           .put("held", q.held())
           .put("recordedOutcomes", q.recordedOutcomes());
+      if (!running()) FetcherCatalog.seed(q);
+      resolution = FetcherCatalog.resolution(q, -1);
     }
     for (int n : counts.values()) total += n;
     int pending = counts.getOrDefault("PENDING", 0),
@@ -456,7 +460,7 @@ public final class Fetcher {
         .put("retryAt", p.getLong("retryAt", 0))
         .put("blockedHttp", p.getInt("blockedHttp", 0))
         .put("automaticResume", WorkScheduler.enabled(p))
-        .put("resolution", resolution(-1))
+        .put("resolution", resolution)
         .put("cookiesSaved", InstagramSession.configured(context)).put("manualCookiesSaved", new CookieVault(context).configured()).put("manualSession", InstagramSession.manual(context)).put("instagramSession", InstagramSession.status(context))
         .put("writable", writable())
         .put("minimum", r.minimum)

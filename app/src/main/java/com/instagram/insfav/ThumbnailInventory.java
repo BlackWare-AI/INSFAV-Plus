@@ -16,7 +16,39 @@ final class ThumbnailInventory implements AutoCloseable {
   private final Map<String, Preview> previews = new ConcurrentHashMap<>();
   private final Set<InputStream> streams = ConcurrentHashMap.newKeySet();
   private volatile boolean closed;
-  private static final int PAGE = 100;
+  private static final int PAGE = 100, CACHE_LIMIT = 20000;
+  private String queryKey = "";
+  private List<Record> queryRecords;
+  long catalogPasses;
+
+  private static final class Record {
+    final String name, user, uri;
+    final int width, height;
+    final boolean readable;
+    Record(String name, String user, JSONObject image, boolean readable) {
+      this(name, user, image == null ? null : image.optString("uri"),
+          image == null ? 0 : image.optInt("width"), image == null ? 0 : image.optInt("height"), readable);
+    }
+    Record(String name, String user, String uri, int width, int height, boolean readable) {
+      this.name = name; this.user = user; this.uri = uri;
+      this.width = width; this.height = height; this.readable = readable;
+    }
+    JSONObject image() throws JSONException {
+      return !readable || uri == null ? null : new JSONObject()
+          .put("uri", uri).put("width", width).put("height", height);
+    }
+  }
+
+  private List<Record> rememberMatch(List<Record> records, String name, String user, JSONObject image, boolean readable) throws JSONException {
+    if (records == null || records.size() >= CACHE_LIMIT) return null;
+    records.add(new Record(name, user, image, readable));
+    return records;
+  }
+
+  private void remember(String key, List<Record> records) {
+    queryKey = records == null ? "" : key;
+    queryRecords = records;
+  }
 
   private static final class Preview {
     final Uri uri;
@@ -49,6 +81,19 @@ final class ThumbnailInventory implements AutoCloseable {
                   .settings
                   .optString("treeUri")
                   .equals(store.index.optString("treeUri", "invalid"));
+      String key = kind + "\n" + needle + "\n" + scope + "\n"
+          + store.indexGeneration + "\n" + images.scanGeneration() + "\n" + images.scanning();
+      if (key.equals(queryKey) && queryRecords != null) {
+        int end = Math.min(queryRecords.size(), start + PAGE);
+        for (int n = start; n < end; n++) {
+          Record row = queryRecords.get(n);
+          items.put(item(row.name, row.user, row.image(), row.readable, scope));
+        }
+        return result(kind, start, queryRecords.size(), items, true);
+      }
+      remember("", null);
+      List<Record> matches = new ArrayList<>();
+      catalogPasses++;
       Set<String> users = store.users();
       JSONObject profiles = store.index.optJSONObject("profiles");
       if (!kind.equals("orphan")) {
@@ -58,8 +103,10 @@ final class ThumbnailInventory implements AutoCloseable {
           if (present != kind.equals("present") || !user.contains(needle)) continue;
           if (total >= start && items.length() < PAGE)
             items.put(item(user, user, image, present, scope));
+          matches = rememberMatch(matches, user, user, image, present);
           total++;
         }
+        remember(key, matches);
         return result(kind, start, total, items, true);
       }
       if (!store.hasDocument()) return result(kind, start, 0, items, false);
@@ -80,17 +127,18 @@ final class ThumbnailInventory implements AutoCloseable {
         while (cursor.moveToNext()) {
           String name = cursor.getString(0), user = ThumbnailPolicy.username(name);
           if (users.contains(user) || !name.toLowerCase(Locale.ROOT).contains(needle)) continue;
-          if (total >= start && items.length() < PAGE) {
-            JSONObject image =
-                new JSONObject()
-                    .put("uri", cursor.getString(1))
-                    .put("width", cursor.getInt(2))
-                    .put("height", cursor.getInt(3));
-            items.put(item(name, user, image, cursor.getInt(4) != 0, scope));
+          boolean onPage = total >= start && items.length() < PAGE;
+          if (matches != null || onPage) {
+            Record row = new Record(name, user, cursor.getString(1), cursor.getInt(2), cursor.getInt(3), cursor.getInt(4) != 0);
+            if (onPage) items.put(item(row.name, row.user, row.image(), row.readable, scope));
+            if (matches != null) {
+              if (matches.size() >= CACHE_LIMIT) matches = null; else matches.add(row);
+            }
           }
           total++;
         }
       }
+      remember(key, matches);
     }
     return result(kind, start, total, items, true);
   }
@@ -182,6 +230,7 @@ final class ThumbnailInventory implements AutoCloseable {
   public void close() {
     closed = true;
     previews.clear();
+    synchronized (store) { remember("", null); }
     for (InputStream stream : streams)
       try {
         stream.close();

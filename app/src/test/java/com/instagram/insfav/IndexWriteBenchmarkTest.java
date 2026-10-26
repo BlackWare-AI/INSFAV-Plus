@@ -75,7 +75,7 @@ public class IndexWriteBenchmarkTest {
     if (metrics != null)
       for (String key :
           new String[] {
-            "snapshotWrites", "snapshotSerializedBytes", "snapshotNanos", "deltaWrites"
+            "snapshotWrites", "snapshotSerializedBytes", "snapshotNanos", "deltaWrites", "journalSessions"
           }) measured.put(key, measured.optLong(key) - initial.optLong(key));
     System.out.println(
         "INDEX_WRITE "

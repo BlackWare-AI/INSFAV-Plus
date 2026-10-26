@@ -130,8 +130,13 @@ public final class InsfavApplication extends Application implements Fetcher.Host
   }
 
   public void imageWritten(String user, Uri uri, String tree) throws Exception {
+    String selectedDirectory;
+    JSONObject selectedIndex;
     synchronized (store) {
       if (!tree.equals(tree())) return;
+      selectedDirectory = directory();
+      selectedIndex = store.index;
+    }
       android.graphics.BitmapFactory.Options bounds = ImageCodec.bounds(getContentResolver(), uri);
       if (!ImageCodec.validate(getContentResolver(), uri, bounds))
         throw new java.io.IOException("Written thumbnail validation failed");
@@ -146,6 +151,8 @@ public final class InsfavApplication extends Application implements Fetcher.Host
                   null)) {
         if (c != null && c.moveToFirst() && !c.isNull(0)) size = c.getLong(0);
       }
+    synchronized (store) {
+      if (selectedIndex != store.index || !tree.equals(tree()) || !selectedDirectory.equals(directory())) return;
       store.updateProfile(
           user,
           new JSONObject()

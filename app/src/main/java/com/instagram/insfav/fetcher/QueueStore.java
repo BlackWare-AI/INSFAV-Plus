@@ -6,6 +6,7 @@ import android.database.sqlite.*;
 import java.util.*;
 
 final class QueueStore extends SQLiteOpenHelper {
+    long pointImageReads;
   QueueStore(Context context) {
     super(context, "fetcher-queue.db", null, 5);
     setWriteAheadLoggingEnabled(true);
@@ -99,6 +100,7 @@ final class QueueStore extends SQLiteOpenHelper {
   }
 
   Image image(String user) {
+    pointImageReads++;
     try (Cursor c =
         getReadableDatabase()
             .rawQuery(
@@ -119,6 +121,18 @@ final class QueueStore extends SQLiteOpenHelper {
       v.needsCheck = c.getInt(7) != 0;
       return v;
     }
+  }
+
+  Map<String, Image> images() {
+    Map<String, Image> result = new HashMap<>();
+    try (Cursor c = getReadableDatabase().rawQuery("SELECT username,uri,name,size,width,height,modified,readable,needs_check FROM fetch_images", null)) {
+      while (c.moveToNext()) {
+        Image image = new Image(c.getString(0), c.getString(1), c.getString(2), c.getLong(3), c.getInt(4), c.getInt(5), c.getLong(6), c.getInt(7) != 0);
+        image.needsCheck = c.getInt(8) != 0;
+        result.put(image.user, image);
+      }
+    }
+    return result;
   }
 
   void image(Image i) {

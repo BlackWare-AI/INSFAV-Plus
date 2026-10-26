@@ -22,6 +22,7 @@ final class LocalImages {
   private final Context context;
   private final ContentResolver resolver;
   private final Store store;
+  private final MatchedSummary summary = new MatchedSummary();
   private final File dataRoot;
   private long storageMeasuredAt;
   private JSONObject storage = new JSONObject();
@@ -30,6 +31,8 @@ final class LocalImages {
   private final File cache;
   private final Object cacheLock = new Object();
   private volatile boolean accessible, scanning;
+    private final AtomicLong scanGeneration = new AtomicLong();
+    long scanGeneration() { return scanGeneration.get(); }
   private volatile String accessMessage = "";
   private volatile JSONObject progress = new JSONObject();
   private volatile CancellationSignal cancellation;
@@ -198,7 +201,7 @@ final class LocalImages {
   void scan(Listener listener, boolean cleanupRequested, CancellationSignal request) {
     synchronized (this) {
       if (scanning) return;
-      scanning = true;
+      scanning = true; scanGeneration.incrementAndGet();
     }
     cancellation = request;
     String treeValue;
@@ -359,7 +362,7 @@ final class LocalImages {
       store.log("thumbnail_scan_error", error.getClass().getSimpleName());
       if (error instanceof InterruptedException) Thread.currentThread().interrupt();
     } finally {
-      scanning = false;
+      scanning = false; scanGeneration.incrementAndGet();
       try {
         listener.event("status", snapshot(true));
       } catch (Exception ignored) {
@@ -437,12 +440,11 @@ final class LocalImages {
                   .optString("treeUri")
                   .equals(store.index.optString("treeUri", "invalid"));
       Set<String> users = store.users();
-      int matched = 0;
+      int matched = summary.count(store, usable);
       JSONObject profiles = new JSONObject();
-      for (String user : users) {
+      if (includeProfiles) for (String user : users) {
         JSONObject image = source.optJSONObject(user);
         if (usable && image != null && image.optBoolean("readable")) {
-          matched++;
           if (includeProfiles) profiles.put(user, profileSnapshot(image));
         }
       }
@@ -729,6 +731,7 @@ final class LocalImages {
             }
           };
       openStreams.add(stream);
+      if (!acceptingReads) { stream.close(); return new ByteArrayInputStream(new byte[0]); }
       return stream;
     } catch (Exception | OutOfMemoryError error) {
       group.release();
@@ -804,7 +807,8 @@ final class LocalImages {
           }
         }
       }
-    } catch (Exception ignored) {
+    } catch (Exception failure) {
+      store.log("image_index", "UPDATE_FAILED");
     }
     return new byte[0];
   }
