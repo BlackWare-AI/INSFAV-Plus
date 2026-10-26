@@ -13,7 +13,7 @@ REPO = "BlackWare-AI/INSFAV-Plus"
 
 
 class PublishGuardTest(unittest.TestCase):
-    def run_case(self, previous=None, multiple_pages=False, source_sha=None, **changes):
+    def run_case(self, previous=None, multiple_pages=False, source_sha=None, release_changes=None, **changes):
         prior = dict(package="com.instagram.insfav.plus", versionCode=1,
                      certificateSha256=["ab12"])
         prior.update(previous or {})
@@ -28,6 +28,7 @@ class PublishGuardTest(unittest.TestCase):
             (root / "artifacts/apk.json").write_text(json.dumps(current))
             (root / "prior.json").write_text(json.dumps(prior))
             release = {"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
+            release.update(release_changes or {})
             pages = ([{"assets": []}] * 100, [release]) if multiple_pages else ([release],)
             (root / "pages.json").write_text("\n".join(json.dumps(page) for page in pages))
             fake = root / "bin/gh"
@@ -93,6 +94,34 @@ else:
         code, published, error = self.run_case(source_sha="f" * 40)
         self.assertEqual(0, code, error)
         self.assertTrue(published)
+
+    def test_explicit_unsigned_prerelease_keeps_future_official_signing_guard_usable(self):
+        code, published, error = self.run_case(
+            previous=dict(unsigned=True,officialRelease=False,signatureVerified=False,certificateSha256=[]),
+            release_changes=dict(prerelease=True,tag_name='plus-v1.0.0-build.1-unsigned'))
+        self.assertEqual(0, code, error)
+        self.assertTrue(published)
+
+    def test_unsigned_metadata_cannot_hide_a_certificate(self):
+        code, published, _ = self.run_case(
+            previous=dict(unsigned=True,officialRelease=False,signatureVerified=False),
+            release_changes=dict(prerelease=True,tag_name='plus-v1.0.0-build.1-unsigned'))
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+
+    def test_unsigned_metadata_requires_an_unsigned_prerelease(self):
+        code, published, _ = self.run_case(
+            previous=dict(unsigned=True,officialRelease=False,signatureVerified=False,certificateSha256=[]))
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+
+    def test_unsigned_prerelease_still_requires_a_higher_future_version_code(self):
+        code, published, error = self.run_case(
+            previous=dict(unsigned=True,officialRelease=False,signatureVerified=False,certificateSha256=[]),
+            release_changes=dict(prerelease=True,tag_name='plus-v1.0.0-build.1-unsigned'),versionCode=1)
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+        self.assertIn('versionCode must increase',error)
 
     def test_debug_artifact_is_rejected(self):
         code, published, _ = self.run_case(debuggable=True)
