@@ -1,0 +1,52 @@
+name: Check existing session signing identity
+on:
+  push:
+    branches: [diagnostics/session-key-compatibility]
+    paths: ['.github/workflows/session-key-compatibility.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-certificates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: plus-release
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Check public certificates in the supplied existing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          EXPECTED_CERTIFICATE: 9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f
+        run: |
+          python3 - <<'PYCODE'
+          import base64,hashlib,os,re,ssl,subprocess,tempfile
+          from pathlib import Path
+          names=['KEYSTORE_BASE64','KEYSTORE_PASSWORD','KEY_ALIAS','KEY_PASSWORD']
+          missing=[name for name in names if not os.environ.get(name)]
+          if missing:raise SystemExit('Unavailable repository inputs: '+', '.join(missing))
+          print('All four repository signing inputs are available')
+          with tempfile.TemporaryDirectory(dir=os.environ['RUNNER_TEMP']) as folder:
+              store=Path(folder)/'existing-keystore'
+              store.write_bytes(base64.b64decode(''.join(os.environ['KEYSTORE_BASE64'].split()),validate=True));store.chmod(0o600)
+              cmd=[str(Path(os.environ['JAVA_HOME'])/'bin/keytool'),'-J-Duser.language=en','-J-Duser.country=US','-list','-rfc','-keystore',str(store),'-storepass:env','KEYSTORE_PASSWORD']
+              result=subprocess.run(cmd,text=True,capture_output=True)
+              if result.returncode:raise SystemExit('The existing keystore could not be inspected using KEYSTORE_PASSWORD; sensitive tool output withheld')
+              fingerprints=[];selected=None
+              for block in re.split(r'^Alias name: ',result.stdout,flags=re.M)[1:]:
+                  if 'Entry type: PrivateKeyEntry' not in block:continue
+                  cert=re.search(r'-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----',block)
+                  if not cert:raise SystemExit('Private-key certificate was not found')
+                  fingerprint=hashlib.sha256(ssl.PEM_cert_to_DER_cert(cert.group())).hexdigest()
+                  fingerprints.append(fingerprint)
+                  if block.splitlines()[0].strip().casefold()==os.environ['KEY_ALIAS'].casefold():selected=fingerprint
+              print('Private-key entries: '+str(len(fingerprints)))
+              print('Configured alias public certificate SHA-256: '+(selected or 'not found'))
+              print('Prior signed APK certificate SHA-256: '+os.environ['EXPECTED_CERTIFICATE'])
+              print('Matching private-key entries: '+str(fingerprints.count(os.environ['EXPECTED_CERTIFICATE'])))
+          PYCODE
