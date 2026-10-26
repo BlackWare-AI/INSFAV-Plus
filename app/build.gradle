@@ -60,6 +60,11 @@ tasks.register('verifyWebAssets') {
             def digest = { file -> java.security.MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString() }
             if (!source.isFile() || !asset.isFile() || digest(source) != entry.sourceSha256 || digest(asset) != entry.bundleSha256)
                 throw new GradleException("Web asset mismatch: ${name}. Run npm run web before building.")
+            entry.includedSources?.each { included, metadata ->
+                def part = rootProject.file("web/${included}")
+                if (!part.isFile() || digest(part) != metadata.sourceSha256)
+                    throw new GradleException("Web source mismatch: ${included}. Run npm run web before building.")
+            }
         }
     }
 }
