@@ -71,16 +71,17 @@ jobs:
       - name: Prepare existing Plus signing material
         if: inputs.kind != 'debug'
         env:
-          PLUS_KEYSTORE_BASE64: ${{ secrets.PLUS_KEYSTORE_BASE64 }}
-          PLUS_STORE_PASSWORD: ${{ secrets.PLUS_STORE_PASSWORD }}
-          PLUS_KEY_PASSWORD: ${{ secrets.PLUS_KEY_PASSWORD }}
-          PLUS_KEY_ALIAS: ${{ secrets.PLUS_KEY_ALIAS }}
+          PLUS_KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          PLUS_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          PLUS_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          PLUS_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           python3 - <<'PY'
           import base64,os
           from pathlib import Path
-          for k in ['PLUS_KEYSTORE_BASE64','PLUS_STORE_PASSWORD','PLUS_KEY_PASSWORD','PLUS_KEY_ALIAS']:
-              if not os.environ.get(k):raise SystemExit('Required Plus signing secret is missing')
+          bindings={'KEYSTORE_BASE64':'PLUS_KEYSTORE_BASE64','KEYSTORE_PASSWORD':'PLUS_STORE_PASSWORD','KEY_PASSWORD':'PLUS_KEY_PASSWORD','KEY_ALIAS':'PLUS_KEY_ALIAS'}
+          missing=[name for name,variable in bindings.items() if not os.environ.get(variable)]
+          if missing:raise SystemExit('Required repository signing secrets are unavailable: '+', '.join(missing))
           p=Path(os.environ['RUNNER_TEMP'])/'plus-release.jks'
           p.write_bytes(base64.b64decode(os.environ['PLUS_KEYSTORE_BASE64'],validate=True));p.chmod(0o600)
           PY
@@ -88,9 +89,9 @@ jobs:
         if: inputs.kind != 'debug'
         env:
           INSFAV_KEYSTORE: ${{ runner.temp }}/plus-release.jks
-          INSFAV_STORE_PASSWORD: ${{ secrets.PLUS_STORE_PASSWORD }}
-          INSFAV_KEY_PASSWORD: ${{ secrets.PLUS_KEY_PASSWORD }}
-          INSFAV_KEY_ALIAS: ${{ secrets.PLUS_KEY_ALIAS }}
+          INSFAV_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          INSFAV_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          INSFAV_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: ./gradlew :app:assembleRelease
       - name: Verify APK
         env:
