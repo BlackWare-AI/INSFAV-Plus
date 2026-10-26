@@ -34,4 +34,21 @@ public class MatchedSummaryTest {
   store.saveSettings();assertEquals(1000,file.lastModified());
   store.settings.put("fixture",false);store.saveSettings();assertNotEquals(1000,file.lastModified());
  }
+ @Test public void failedInPlaceSnapshotStillInvalidatesCountsAndProfileDeltas() throws Exception {
+  java.io.File isolatedRoot=java.nio.file.Files.createTempDirectory("index-write-failure").toFile();
+  android.content.Context isolated=new android.content.ContextWrapper(RuntimeEnvironment.getApplication()) {
+    @Override public java.io.File getFilesDir(){return isolatedRoot;}
+  };
+  Store store=new Store(isolated);store.settings.put("treeUri","fixture");store.saveSettings();
+  store.importDocument("[{\"name\":\"Synthetic\",\"items\":[{\"pageId\":\"one\"}]}]");
+  store.replaceIndex(new JSONObject().put("revision",1).put("profiles",new JSONObject().put("one",new JSONObject().put("readable",true))));
+  MatchedSummary summary=new MatchedSummary();assertEquals(1,summary.count(store,true));long previous=store.index.optLong("revision");
+  store.index.getJSONObject("profiles").getJSONObject("one").put("readable",false);
+  java.io.File target=new java.io.File(store.root,"thumbnail-index.json");assertTrue(target.delete());
+  for(String suffix:new String[]{"",".bak",".new"}) {
+    java.nio.file.Path blocked=new java.io.File(store.root,"thumbnail-index.json"+suffix).toPath();java.nio.file.Files.createDirectories(blocked);java.nio.file.Files.write(blocked.resolve("blocked"),new byte[]{1});
+  }
+  assertThrows(java.io.IOException.class,()->store.replaceIndex(store.index));
+  assertEquals(0,summary.count(store,true));assertNull(store.changesSince(previous));
+ }
 }

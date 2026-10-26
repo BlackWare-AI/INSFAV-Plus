@@ -277,6 +277,12 @@ final class Store {
       } catch (JSONException error) {
         throw new IOException("INDEX_REVISION_FAILED", error);
       }
+    // In-place callers have already changed memory. Invalidate even if the disk write fails.
+    if (next == index) {
+      indexGeneration++;
+      profileChanges.clear();
+      deltaFloor = next.optLong("revision");
+    }
     writeIndex(next);
     index = next;
     indexGeneration++;
