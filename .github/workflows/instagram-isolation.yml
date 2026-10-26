@@ -13,13 +13,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: BlackWare-AI/INSFAV-Thumb-Fetcher
-          ref: db12438cb28e835d28f53ab90db68f726f32e8cc
+          ref: 1962194fcc6684519238366ff6e8be6dc0a07d26
           path: isolation/thumb
           persist-credentials: false
       - uses: actions/checkout@v4
         with:
           repository: BlackWare-AI/INSFAV
-          ref: 83993c624ddeb75d0199a67f5283decc5347a075
+          ref: 5437ae3d0fb25b0a7f92432be017ea0717497341
           path: isolation/insfav
           persist-credentials: false
       - uses: actions/setup-java@v4
