@@ -52,7 +52,7 @@ window.nativeEvent=(event,data)=>{
    remoteLoader=new Image();remoteLoader.onload=()=>{if(viewerToken===data.token){remoteShown=true;$('full-image').src=remoteLoader.src;$('viewer-caption').textContent='@'+data.user+' · '+t('Instagram image')+' · '+data.width+' × '+data.height;applyTransform();}};
    remoteLoader.src='/remote-full/'+encodeURIComponent(data.token);
   }
-  if(event==='remote-full-failed'&&viewerToken===data.token){$('viewer-caption').textContent+=' · '+t('Online image unavailable; local image retained');}
+  if(event==='remote-full-failed'&&viewerToken===data.token){$('viewer-caption').textContent+=' · '+t(profiles[viewerUser]?.file?'Online image unavailable; local image retained':'Online image unavailable');}
   if(event==='language')I.choose(data.choice);if(event==='message'||event==='error')message(data);
  }catch(error){if(event==='bootstrap'||!bootstrapReady)showStartupFailure();else message(t('Unable to read data')+': '+error.message);}
 };
@@ -301,14 +301,13 @@ let scale=1,tx=0,ty=0,pointers=new Map(),gesture=null,lastTap=0,lastTapX=0,lastT
 function applyTransform(){const img=$('full-image'),stage=$('image-stage');const mx=Math.max(0,(img.offsetWidth*scale-stage.clientWidth)/2),my=Math.max(0,(img.offsetHeight*scale-stage.clientHeight)/2);tx=Math.min(mx,Math.max(-mx,tx));ty=Math.min(my,Math.max(-my,ty));img.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;}
 function resetTransform(){scale=1;tx=ty=0;applyTransform();}
 function openViewer(user){
- if(!profiles[user]?.file&&!fetcherState.cookiesSaved){message('No readable local image. Select a thumbnail folder or rescan in Settings.');return;}
  previousFocus=document.activeElement;viewerUser=user;viewerToken='v'+Date.now().toString(36)+Math.random().toString(36).slice(2);remoteShown=false;$('viewer').hidden=false;document.body.classList.add('overlay-open');
- $('full-image').src='/thumb/'+encodeURIComponent(user)+'?v='+cacheVersion;
+ if(profiles[user]?.file)$('full-image').src='/thumb/'+encodeURIComponent(user)+'?v='+cacheVersion;else $('full-image').removeAttribute('src');
  const image=profiles[user]||{},dimensions=image.width&&image.height?` · ${image.width} × ${image.height}`:'';
- $('viewer-caption').textContent='@'+user+' · '+t('Local image')+dimensions+(Math.max(image.width||0,image.height||0)>2048?' · '+t('Preview up to 2048 px'):'');
+ $('viewer-caption').textContent='@'+user+(image.file?' · '+t('Local image'):'')+dimensions+(Math.max(image.width||0,image.height||0)>2048?' · '+t('Preview up to 2048 px'):'');
  resetTransform();$('viewer-back').focus();
- fullLoader=new Image();fullLoader.onload=()=>{if(viewerUser===user&&!remoteShown){$('full-image').src=fullLoader.src;applyTransform();}};
- fullLoader.onerror=()=>{if(viewerUser===user)notifyImageFailure();};fullLoader.src='/full/'+encodeURIComponent(user)+'?v='+cacheVersion;
+ if(profiles[user]?.file){fullLoader=new Image();fullLoader.onload=()=>{if(viewerUser===user&&!remoteShown){$('full-image').src=fullLoader.src;applyTransform();}};
+ fullLoader.onerror=()=>{if(viewerUser===user)notifyImageFailure();};fullLoader.src='/full/'+encodeURIComponent(user)+'?v='+cacheVersion;}
  request('view-remote',{user,token:viewerToken});
 }
 function closeViewer(){
