@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Exercise the real publication guard with a local fake gh; no network or uploads."""
+import hashlib
+import io
 import json
+import zipfile
 import os
 from pathlib import Path
 import subprocess
@@ -13,7 +16,7 @@ REPO = "BlackWare-AI/INSFAV-Plus"
 
 
 class PublishGuardTest(unittest.TestCase):
-    def run_case(self, previous=None, multiple_pages=False, source_sha=None, release_changes=None, **changes):
+    def run_case(self, previous=None, multiple_pages=False, source_sha=None, release_changes=None, unsigned_payload=None, candidate_payload=None, **changes):
         prior = dict(package="com.instagram.insfav.plus", versionCode=1,
                      certificateSha256=["ab12"])
         prior.update(previous or {})
@@ -21,13 +24,28 @@ class PublishGuardTest(unittest.TestCase):
                        certificateSha256=["ab12"], sha256="fixture-apk", officialRelease=True,
                        debuggable=False, signatureVerified=True)
         current.update(changes)
+        def archive(contents):
+            output=io.BytesIO()
+            with zipfile.ZipFile(output,'w') as z:
+                for name,data in contents.items():z.writestr(name,data)
+            return output.getvalue()
+        source_apk=archive(unsigned_payload or {'AndroidManifest.xml':b'manifest','classes.dex':b'code'})
+        signed_apk=archive(candidate_payload or {'AndroidManifest.xml':b'manifest','classes.dex':b'code','META-INF/CERT.SF':b'signature'})
+        if prior.get('unsigned'):
+            prior.setdefault('file','source-unsigned.apk')
+            prior.setdefault('sha256',hashlib.sha256(source_apk).hexdigest())
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
+            (root/'app/build/outputs/apk/release').mkdir(parents=True)
+            (root/'app/build/outputs/apk/release/app-release.apk').write_bytes(signed_apk)
+            (root/'unsigned-source.apk').write_bytes(source_apk)
             (root / "bin").mkdir()
             (root / "artifacts").mkdir()
             (root / "artifacts/apk.json").write_text(json.dumps(current))
             (root / "prior.json").write_text(json.dumps(prior))
             release = {"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
+            if prior.get('unsigned'):
+                release['assets'][0]=dict(name=prior['file'],id=11,size=len(source_apk))
             release.update(release_changes or {})
             pages = ([{"assets": []}] * 100, [release]) if multiple_pages else ([release],)
             (root / "pages.json").write_text("\n".join(json.dumps(page) for page in pages))
@@ -39,6 +57,8 @@ args=sys.argv[1:]
 if args[:1]==['api']:
     if '--paginate' in args:
         print(Path('pages.json').read_text())
+    elif args[1].endswith('/11'):
+        sys.stdout.buffer.write(Path('unsigned-source.apk').read_bytes())
     else:
         print(Path('prior.json').read_text())
 elif args[:2]==['release','create']:
@@ -115,13 +135,40 @@ else:
         self.assertNotEqual(0, code)
         self.assertFalse(published)
 
-    def test_unsigned_prerelease_still_requires_a_higher_future_version_code(self):
-        code, published, error = self.run_case(
-            previous=dict(unsigned=True,officialRelease=False,signatureVerified=False,certificateSha256=[]),
-            release_changes=dict(prerelease=True,tag_name='plus-v1.0.0-build.1-unsigned'),versionCode=1)
-        self.assertNotEqual(0, code)
+    def same_build(self, **overrides):
+        previous=dict(unsigned=True,officialRelease=False,signatureVerified=False,certificateSha256=[],version='1.1.0')
+        previous.update(overrides.pop('previous',{}))
+        return self.run_case(previous=previous,
+            release_changes=dict(prerelease=True,tag_name='plus-v1.1.0-build.1-unsigned'),versionCode=1,**overrides)
+
+    def test_identical_unsigned_payload_can_receive_its_official_signature_at_the_same_build(self):
+        code,published,error=self.same_build()
+        self.assertEqual(0,code,error)
+        self.assertTrue(published)
+
+    def test_same_build_unsigned_promotion_rejects_changed_application_payload(self):
+        code,published,error=self.same_build(candidate_payload={'AndroidManifest.xml':b'manifest','classes.dex':b'changed'})
+        self.assertNotEqual(0,code)
         self.assertFalse(published)
-        self.assertIn('versionCode must increase',error)
+        self.assertIn('entire APK payload',error)
+
+    def test_same_build_unsigned_promotion_rejects_changed_version_name(self):
+        code,published,error=self.same_build(previous={'version':'0.9.0'})
+        self.assertNotEqual(0,code)
+        self.assertFalse(published)
+        self.assertIn('versionName',error)
+
+    def test_same_build_unsigned_promotion_rejects_a_digest_mismatch(self):
+        code,published,error=self.same_build(previous={'sha256':'incorrect'})
+        self.assertNotEqual(0,code)
+        self.assertFalse(published)
+        self.assertIn('SHA-256 mismatch',error)
+
+    def test_unsigned_prerelease_cannot_decrease_version_code(self):
+        code,published,error=self.same_build(previous={'versionCode':2})
+        self.assertNotEqual(0,code)
+        self.assertFalse(published)
+        self.assertIn('versionCode cannot decrease',error)
 
     def test_debug_artifact_is_rejected(self):
         code, published, _ = self.run_case(debuggable=True)
