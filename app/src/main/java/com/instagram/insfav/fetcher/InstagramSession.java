@@ -71,7 +71,7 @@ public final class InstagramSession {
             String value = part.trim();
             if (value.startsWith("ds_user_id=")) {
                 String id = value.substring(11);
-                if (id.matches("[0-9]+")) return id;
+                if (id.matches("[1-9][0-9]*")) return id;
             }
         }
         return "";

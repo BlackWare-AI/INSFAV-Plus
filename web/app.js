@@ -62,7 +62,11 @@ window.nativeEvent=(event,data)=>{
    remoteLoader=new Image();remoteLoader.onload=()=>{if(viewerToken===data.token){remoteShown=true;$('full-image').src=remoteLoader.src;$('viewer-caption').textContent='@'+data.user+' · '+t('Instagram image')+' · '+data.width+' × '+data.height;applyTransform();}};
    remoteLoader.src='/remote-full/'+encodeURIComponent(data.token);
   }
-  if(event==='remote-full-failed'&&viewerToken===data.token){$('viewer-caption').textContent+=' · '+t(profiles[viewerUser]?.file?'Online image unavailable; local image retained':'Online image unavailable');}
+  if(event==='remote-full-failed'&&viewerToken===data.token){
+   const login=['COOKIE_REQUIRED','COOKIE_INVALID_EXPIRED','COOKIE_EXPIRED','LOGIN_VERIFICATION_REQUIRED','LOGIN_REQUIRED','ACCESS_BLOCKED'].includes(data.code);
+   const detail=data.code==='CHALLENGE_REQUIRED'?t('Complete verification in Instagram Login, then tap Check.'):login?t('Open Instagram Login and tap Check to verify the session.'):data.code==='WEBVIEW_TIMEOUT'?t('Instagram did not respond. Open Instagram Login and check the session.'):t('Online image unavailable');
+   $('viewer-caption').textContent+=' · '+detail;
+  }
   if(event==='language')I.choose(data.choice);if(event==='message'||event==='error')message(data);
  }catch(error){if(event==='bootstrap'||!bootstrapReady)showStartupFailure();else message(t('Unable to read data')+': '+error.message);}
 };

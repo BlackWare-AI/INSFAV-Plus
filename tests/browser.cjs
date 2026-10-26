@@ -80,6 +80,8 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   check(await page.locator('#viewer').isVisible(),'HD viewer opens without a local thumbnail or cached session status');
   check(await page.evaluate(()=>commands.some(c=>c.command==='view-remote'&&c.user==='missing.local')),'missing thumbnail still submits the native HD request');
   const missingToken=await page.evaluate(()=>viewerToken);
+  await page.evaluate(token=>nativeEvent('remote-full-failed',{token,code:'LOGIN_VERIFICATION_REQUIRED'}),missingToken);
+  check((await page.locator('#viewer-caption').innerText()).includes('Instagram Login'),'session failures explain how to verify instead of a generic unavailable image');
   await page.evaluate(token=>nativeEvent('remote-full',{token,user:'missing.local',width:640,height:480}),missingToken);
   for(let i=0;i<100&&!await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/'));i++)await page.waitForTimeout(50);
   check(await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/')),'remote HD displays without a local thumbnail');

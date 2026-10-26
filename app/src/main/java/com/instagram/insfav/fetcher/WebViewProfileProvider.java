@@ -480,7 +480,16 @@ final class WebViewProfileProvider implements ProfileProvider {
             ServiceWorkerController.getInstance().getServiceWorkerWebSettings();
         workerSettings.setAllowFileAccess(false);
         workerSettings.setAllowContentAccess(false);
-        workerSettings.setBlockNetworkLoads(true);
+        // Instagram's own worker may perform the authenticated session request.
+                // Apply the same origin policy instead of globally disabling its network.
+                workerSettings.setBlockNetworkLoads(false);
+                ServiceWorkerController.getInstance().setServiceWorkerClient(new ServiceWorkerClient() {
+                    @Override public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
+                        String url = request.getUrl().toString();
+                        return WebProfilePolicy.resource(url) ? resources.intercept(url)
+                            : new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream(new byte[0]));
+                    }
+                });
         view.setWebViewClient(client());
         view.setWebChromeClient(
             new WebChromeClient() {
