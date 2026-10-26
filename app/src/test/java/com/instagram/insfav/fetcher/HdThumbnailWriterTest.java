@@ -129,7 +129,8 @@ public class HdThumbnailWriterTest {
         AtomicInteger requests=new AtomicInteger(),readyCount=new AtomicInteger();CountDownLatch ready=new CountDownLatch(1),failed=new CountDownLatch(1);
         byte[] remote=invalid?new byte[]{1,2,3}:CodecTest.png(640,480);
         FetchBroker broker=new FetchBroker(context,full->new ProfileProvider(){
-            public byte[] fetch(String user){assertTrue(full);requests.incrementAndGet();return remote;}
+            public byte[] fetch(String user){requests.incrementAndGet();return remote;}
+            public byte[] fetch(String user,boolean highResolution){assertTrue(highResolution);return fetch(user);}
             public void cancel(){}
         },new TestTime());
         ReflectionHelpers.setStaticField(FetchBroker.class,"instance",broker);
