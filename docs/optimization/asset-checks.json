@@ -1,0 +1,14 @@
+{
+  "negativeChecks": [
+    {
+      "tampered": "web/avatar-loader.js",
+      "rejected": true
+    },
+    {
+      "tampered": "app/src/main/assets/app.js",
+      "rejected": true
+    }
+  ],
+  "restoredCheck": true,
+  "debugApkManifestHashesMatch": true
+}

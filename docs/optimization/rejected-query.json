@@ -1,0 +1,33 @@
+{
+  "accounts": 20000,
+  "repetitions": 20,
+  "oldMedianNanos": 137889947,
+  "combinedMedianNanos": 226294926,
+  "plans": [
+    {
+      "sql": "SELECT status,COUNT(*) FROM accounts GROUP BY status",
+      "plan": [
+        "SCAN TABLE accounts USING COVERING INDEX account_work_order"
+      ]
+    },
+    {
+      "sql": "SELECT phase,COUNT(*) FROM accounts GROUP BY phase",
+      "plan": [
+        "SCAN TABLE accounts USING COVERING INDEX account_phase"
+      ]
+    },
+    {
+      "sql": "SELECT status,phase,COUNT(*) FROM accounts GROUP BY status,phase",
+      "plan": [
+        "SCAN TABLE accounts USING INDEX account_work_order",
+        "USE TEMP B-TREE FOR GROUP BY"
+      ]
+    },
+    {
+      "sql": "SELECT username,uri,name,size,width,height,modified,readable,needs_check FROM fetch_images",
+      "plan": [
+        "SCAN TABLE fetch_images"
+      ]
+    }
+  ]
+}

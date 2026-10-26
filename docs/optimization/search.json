@@ -1,0 +1,167 @@
+{
+  "nodeVersion": "v22.23.4",
+  "records": [
+    {
+      "round": 0,
+      "variant": "before",
+      "measurements": [
+        {
+          "count": 5000,
+          "parseMs": 8.718754,
+          "repeatedSearch20Ms": 4.009159999999994,
+          "rowsMs": 0.9760780000000011,
+          "rows": 5002
+        },
+        {
+          "count": 15000,
+          "parseMs": 24.521603,
+          "repeatedSearch20Ms": 12.790458000000001,
+          "rowsMs": 2.836435999999992,
+          "rows": 15002
+        },
+        {
+          "count": 20000,
+          "parseMs": 30.410900999999967,
+          "repeatedSearch20Ms": 17.63982199999998,
+          "rowsMs": 7.2653080000000045,
+          "rows": 20002
+        }
+      ]
+    },
+    {
+      "round": 0,
+      "variant": "after",
+      "measurements": [
+        {
+          "count": 5000,
+          "parseMs": 10.259059999999998,
+          "repeatedSearch20Ms": 0.0029949999999985266,
+          "rowsMs": 0.8899489999999979,
+          "rows": 5002
+        },
+        {
+          "count": 15000,
+          "parseMs": 23.470433,
+          "repeatedSearch20Ms": 0.0009510000000005903,
+          "rowsMs": 3.1839300000000037,
+          "rows": 15002
+        },
+        {
+          "count": 20000,
+          "parseMs": 25.25541700000001,
+          "repeatedSearch20Ms": 0.0009609999999895535,
+          "rowsMs": 7.869045999999997,
+          "rows": 20002
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "variant": "before",
+      "measurements": [
+        {
+          "count": 5000,
+          "parseMs": 8.958635000000001,
+          "repeatedSearch20Ms": 4.014158000000002,
+          "rowsMs": 0.9407549999999958,
+          "rows": 5002
+        },
+        {
+          "count": 15000,
+          "parseMs": 19.688913999999997,
+          "repeatedSearch20Ms": 12.415383999999989,
+          "rowsMs": 2.810366999999985,
+          "rows": 15002
+        },
+        {
+          "count": 20000,
+          "parseMs": 22.555937,
+          "repeatedSearch20Ms": 17.776468000000023,
+          "rowsMs": 6.182109000000025,
+          "rows": 20002
+        }
+      ]
+    },
+    {
+      "round": 1,
+      "variant": "after",
+      "measurements": [
+        {
+          "count": 5000,
+          "parseMs": 9.785979000000001,
+          "repeatedSearch20Ms": 0.0030140000000002942,
+          "rowsMs": 0.9638099999999987,
+          "rows": 5002
+        },
+        {
+          "count": 15000,
+          "parseMs": 21.962062999999993,
+          "repeatedSearch20Ms": 0.0009010000000060359,
+          "rowsMs": 5.694063999999997,
+          "rows": 15002
+        },
+        {
+          "count": 20000,
+          "parseMs": 29.413531000000006,
+          "repeatedSearch20Ms": 0.000990999999999076,
+          "rowsMs": 9.092735999999988,
+          "rows": 20002
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "variant": "before",
+      "measurements": [
+        {
+          "count": 5000,
+          "parseMs": 10.188104,
+          "repeatedSearch20Ms": 4.124434000000001,
+          "rowsMs": 1.1144369999999952,
+          "rows": 5002
+        },
+        {
+          "count": 15000,
+          "parseMs": 22.050255000000007,
+          "repeatedSearch20Ms": 12.485569000000027,
+          "rowsMs": 2.5233360000000005,
+          "rows": 15002
+        },
+        {
+          "count": 20000,
+          "parseMs": 23.534198000000004,
+          "repeatedSearch20Ms": 16.979509000000007,
+          "rowsMs": 6.025582999999983,
+          "rows": 20002
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "variant": "after",
+      "measurements": [
+        {
+          "count": 5000,
+          "parseMs": 9.656002999999998,
+          "repeatedSearch20Ms": 0.0018030000000024415,
+          "rowsMs": 0.9604250000000008,
+          "rows": 5002
+        },
+        {
+          "count": 15000,
+          "parseMs": 20.320124,
+          "repeatedSearch20Ms": 0.0009119999999995798,
+          "rowsMs": 2.4550529999999924,
+          "rows": 15002
+        },
+        {
+          "count": 20000,
+          "parseMs": 24.287771000000006,
+          "repeatedSearch20Ms": 0.0009709999999927277,
+          "rowsMs": 6.969742999999994,
+          "rows": 20002
+        }
+      ]
+    }
+  ]
+}

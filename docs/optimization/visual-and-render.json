@@ -1,0 +1,590 @@
+{
+  "applicationBeforeSha256": "cfa2b32a49a934644d5c3d7210afffca46390f7d45f5cb4b3f136249238b71bc",
+  "applicationAfterSha256": "1faeaf1793c92b566267fefb74644167e7b99fa644bbe00d3feed378ec5ca1b4",
+  "physicalDevice": false,
+  "viewport": [
+    393,
+    820
+  ],
+  "fontScale": 1,
+  "comparisonTolerance": {
+    "maxChannelDifference": 2,
+    "maxDifferingPixels": 128
+  },
+  "comparisons": [
+    {
+      "count": 5000,
+      "screen": "closed",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "1b23f9910c33b7ccdf56261d0c3d4a64e64f5a32ef69d577d0c72e614ecb53de",
+      "sha256After": "1b23f9910c33b7ccdf56261d0c3d4a64e64f5a32ef69d577d0c72e614ecb53de"
+    },
+    {
+      "count": 5000,
+      "screen": "list",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "859229aba01b6bd7756f84655b7b6ff2e291f63d332fd3b158eaeee1cc13c12c",
+      "sha256After": "859229aba01b6bd7756f84655b7b6ff2e291f63d332fd3b158eaeee1cc13c12c"
+    },
+    {
+      "count": 5000,
+      "screen": "scroll",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "666acc502b9ae429827095dfe0b01126135c3281865a3155e70eb98c1c309909",
+      "sha256After": "666acc502b9ae429827095dfe0b01126135c3281865a3155e70eb98c1c309909"
+    },
+    {
+      "count": 5000,
+      "screen": "search",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "db6ff99b1b78f1f3a7ad7645f33d23827484b6e05cd6f027274b8a056373bf1f",
+      "sha256After": "db6ff99b1b78f1f3a7ad7645f33d23827484b6e05cd6f027274b8a056373bf1f"
+    },
+    {
+      "count": 5000,
+      "screen": "matrix2",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "0af79ff7e3220dd39dc86ba3c85f11cd37bf61fdc4963eeb8850e75d5b031590",
+      "sha256After": "0af79ff7e3220dd39dc86ba3c85f11cd37bf61fdc4963eeb8850e75d5b031590"
+    },
+    {
+      "count": 5000,
+      "screen": "matrix3",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "911217a03dd30f75297d9d0a7b5c1060d981ac45a11b1daf2fb8d33d0fd53175",
+      "sha256After": "911217a03dd30f75297d9d0a7b5c1060d981ac45a11b1daf2fb8d33d0fd53175"
+    },
+    {
+      "count": 5000,
+      "screen": "matrix4",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "9e9b90330f65d24f5c311b4251e8a7407a2ecdbb444166f0d80151c2911405e6",
+      "sha256After": "9e9b90330f65d24f5c311b4251e8a7407a2ecdbb444166f0d80151c2911405e6"
+    },
+    {
+      "count": 5000,
+      "screen": "matrix5",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "b803aae5c4f12cd2391229580ee4f39ba9db21868f862b2eb3996f7a18457288",
+      "sha256After": "b803aae5c4f12cd2391229580ee4f39ba9db21868f862b2eb3996f7a18457288"
+    },
+    {
+      "count": 5000,
+      "screen": "about",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "9b7a00982361799756fbee66e049659be7be67f2ef6256c65f927f9c64a67fc3",
+      "sha256After": "9b7a00982361799756fbee66e049659be7be67f2ef6256c65f927f9c64a67fc3"
+    },
+    {
+      "count": 5000,
+      "screen": "settings",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "aac9e174e8191fb89cb65ae7f3e7c8fde42d71575d40e7a554c25abfd564496c",
+      "sha256After": "aac9e174e8191fb89cb65ae7f3e7c8fde42d71575d40e7a554c25abfd564496c"
+    },
+    {
+      "count": 5000,
+      "screen": "fetcher",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "4df5dbe4a71c90632eb83caacb5eb1cc8fe5440c8b8ca0234e4455745fc39f21",
+      "sha256After": "4df5dbe4a71c90632eb83caacb5eb1cc8fe5440c8b8ca0234e4455745fc39f21"
+    },
+    {
+      "count": 5000,
+      "screen": "viewer",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "3a3e40eaf93dd78b8e8bd8c2dd844093e42b7d2c0bddbc7f09e8a561b703bdcc",
+      "sha256After": "3a3e40eaf93dd78b8e8bd8c2dd844093e42b7d2c0bddbc7f09e8a561b703bdcc"
+    },
+    {
+      "count": 15000,
+      "screen": "closed",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "0881000d816eef98a26ab445274fee5fbd937e128d0410c60608619b33e421f3",
+      "sha256After": "0881000d816eef98a26ab445274fee5fbd937e128d0410c60608619b33e421f3"
+    },
+    {
+      "count": 15000,
+      "screen": "list",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "e9b34ef0a1c59bc3f018236ce5992f81ece871e8d4669c0f4cf84504774afd14",
+      "sha256After": "e9b34ef0a1c59bc3f018236ce5992f81ece871e8d4669c0f4cf84504774afd14"
+    },
+    {
+      "count": 15000,
+      "screen": "scroll",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "78f83378af0e120302d8bb9b2d6fceede33b522fb50f2bf23c7e53f07d0b8a20",
+      "sha256After": "78f83378af0e120302d8bb9b2d6fceede33b522fb50f2bf23c7e53f07d0b8a20"
+    },
+    {
+      "count": 15000,
+      "screen": "search",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "aaeb6d45fc11c8285796af2595d39678be9117c75a2346a9a65294ed15371941",
+      "sha256After": "aaeb6d45fc11c8285796af2595d39678be9117c75a2346a9a65294ed15371941"
+    },
+    {
+      "count": 15000,
+      "screen": "matrix2",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "77df47814ff5aa1aa79a47ea2f990e2f9eeaecb56776561879186d43ac5c49e2",
+      "sha256After": "77df47814ff5aa1aa79a47ea2f990e2f9eeaecb56776561879186d43ac5c49e2"
+    },
+    {
+      "count": 15000,
+      "screen": "matrix3",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "fdb8f8ffb375e5c6adfdcd83479fd15a3c74b204f230445062b4640c4f2ff562",
+      "sha256After": "fdb8f8ffb375e5c6adfdcd83479fd15a3c74b204f230445062b4640c4f2ff562"
+    },
+    {
+      "count": 15000,
+      "screen": "matrix4",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "d8cf58e00e3535824aad88c963b7773a3995eb3bf8931951e14f47431185ecd1",
+      "sha256After": "d8cf58e00e3535824aad88c963b7773a3995eb3bf8931951e14f47431185ecd1"
+    },
+    {
+      "count": 15000,
+      "screen": "matrix5",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "c3673a0d3053586d83a270bc9250e987339f80c1715dd144a4ce909d3c89bb09",
+      "sha256After": "c3673a0d3053586d83a270bc9250e987339f80c1715dd144a4ce909d3c89bb09"
+    },
+    {
+      "count": 15000,
+      "screen": "about",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "178a8ea1257bbaf7192639d8b7e348cc9e0b75e68525337786c7134341b25cf8",
+      "sha256After": "178a8ea1257bbaf7192639d8b7e348cc9e0b75e68525337786c7134341b25cf8"
+    },
+    {
+      "count": 15000,
+      "screen": "settings",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "2d122d3a309279b886e83e1c55e1ff1080cf35c1160aae781afb248eb4390152",
+      "sha256After": "2d122d3a309279b886e83e1c55e1ff1080cf35c1160aae781afb248eb4390152"
+    },
+    {
+      "count": 15000,
+      "screen": "fetcher",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "4df5dbe4a71c90632eb83caacb5eb1cc8fe5440c8b8ca0234e4455745fc39f21",
+      "sha256After": "4df5dbe4a71c90632eb83caacb5eb1cc8fe5440c8b8ca0234e4455745fc39f21"
+    },
+    {
+      "count": 15000,
+      "screen": "viewer",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "3a3e40eaf93dd78b8e8bd8c2dd844093e42b7d2c0bddbc7f09e8a561b703bdcc",
+      "sha256After": "3a3e40eaf93dd78b8e8bd8c2dd844093e42b7d2c0bddbc7f09e8a561b703bdcc"
+    },
+    {
+      "count": 20000,
+      "screen": "closed",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "b260422b9b68bbc726013f0d19e558d3d3409756f45833f657d076e4405c8b4b",
+      "sha256After": "b260422b9b68bbc726013f0d19e558d3d3409756f45833f657d076e4405c8b4b"
+    },
+    {
+      "count": 20000,
+      "screen": "list",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "627a90d44d63e38913723dee10aad6fa419ff966af9a38fb3eef214055df18dc",
+      "sha256After": "627a90d44d63e38913723dee10aad6fa419ff966af9a38fb3eef214055df18dc"
+    },
+    {
+      "count": 20000,
+      "screen": "scroll",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "78f83378af0e120302d8bb9b2d6fceede33b522fb50f2bf23c7e53f07d0b8a20",
+      "sha256After": "78f83378af0e120302d8bb9b2d6fceede33b522fb50f2bf23c7e53f07d0b8a20"
+    },
+    {
+      "count": 20000,
+      "screen": "search",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "aaeb6d45fc11c8285796af2595d39678be9117c75a2346a9a65294ed15371941",
+      "sha256After": "aaeb6d45fc11c8285796af2595d39678be9117c75a2346a9a65294ed15371941"
+    },
+    {
+      "count": 20000,
+      "screen": "matrix2",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "82b5fd631a263c136cf417a05b1fd766f3c1824da58b63ac1358ffca949381e9",
+      "sha256After": "82b5fd631a263c136cf417a05b1fd766f3c1824da58b63ac1358ffca949381e9"
+    },
+    {
+      "count": 20000,
+      "screen": "matrix3",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "26bb9faadb138edd0b9966067a3242bff4e83022bb261663db225bb355be0614",
+      "sha256After": "26bb9faadb138edd0b9966067a3242bff4e83022bb261663db225bb355be0614"
+    },
+    {
+      "count": 20000,
+      "screen": "matrix4",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "5580186ac2f203d7a8e1a9735d8fdde3ee158ba60c7b081803bd06d7f954e0dd",
+      "sha256After": "5580186ac2f203d7a8e1a9735d8fdde3ee158ba60c7b081803bd06d7f954e0dd"
+    },
+    {
+      "count": 20000,
+      "screen": "matrix5",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "3ed904258d9705934b0e91315e906fcb494c5c7c40714a9462a7ec0ef2b7981a",
+      "sha256After": "3ed904258d9705934b0e91315e906fcb494c5c7c40714a9462a7ec0ef2b7981a"
+    },
+    {
+      "count": 20000,
+      "screen": "about",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "bb7366dc64a934167d8adc8861d7e284fbbb8e0c00c5c4aeaecc5e2b89d8aaff",
+      "sha256After": "bb7366dc64a934167d8adc8861d7e284fbbb8e0c00c5c4aeaecc5e2b89d8aaff"
+    },
+    {
+      "count": 20000,
+      "screen": "settings",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "c5bfbcd793fcfe6d06c0981698af1dceb936645b3668343e6d78dd8ce6305e2c",
+      "sha256After": "c5bfbcd793fcfe6d06c0981698af1dceb936645b3668343e6d78dd8ce6305e2c"
+    },
+    {
+      "count": 20000,
+      "screen": "fetcher",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "4df5dbe4a71c90632eb83caacb5eb1cc8fe5440c8b8ca0234e4455745fc39f21",
+      "sha256After": "4df5dbe4a71c90632eb83caacb5eb1cc8fe5440c8b8ca0234e4455745fc39f21"
+    },
+    {
+      "count": 20000,
+      "screen": "viewer",
+      "identical": true,
+      "differingPixels": 0,
+      "maxChannelDifference": 0,
+      "visuallyEquivalent": true,
+      "sha256Before": "3a3e40eaf93dd78b8e8bd8c2dd844093e42b7d2c0bddbc7f09e8a561b703bdcc",
+      "sha256After": "3a3e40eaf93dd78b8e8bd8c2dd844093e42b7d2c0bddbc7f09e8a561b703bdcc"
+    }
+  ],
+  "datasets": [
+    {
+      "count": 5000,
+      "variant": "before",
+      "rendering": {
+        "renderP95Ms": 1.5,
+        "renderSamples": 87,
+        "frameIntervalP95Ms": 16.799999999999727,
+        "frameIntervalsOver25Ms": 0,
+        "peakRows": 26,
+        "peakActive": 3,
+        "peakRetained": 64
+      },
+      "stateRetainsRaw": true,
+      "stateRetainsProfileMap": true,
+      "stableMap": false,
+      "untouchedRecord": true,
+      "stableAvatar": true,
+      "transformWritesFor100Inputs": 0,
+      "avatarRectReads": 2468,
+      "metrics": {
+        "hits": 105,
+        "misses": 249,
+        "cancelled": 0,
+        "loaded": 249,
+        "loadMs": 1277.5000000409782,
+        "active": 0,
+        "retained": 64,
+        "rows": 15,
+        "pool": 0
+      },
+      "poolBeforeClear": 14,
+      "collectionReleased": false,
+      "pooledBindingsReleased": false,
+      "reusedRowCorrect": true
+    },
+    {
+      "count": 5000,
+      "variant": "after",
+      "rendering": {
+        "renderP95Ms": 0.8000000007450581,
+        "renderSamples": 87,
+        "frameIntervalP95Ms": 16.700000000000273,
+        "frameIntervalsOver25Ms": 0,
+        "peakRows": 26,
+        "peakActive": 1,
+        "peakRetained": 64
+      },
+      "stateRetainsRaw": false,
+      "stateRetainsProfileMap": false,
+      "stableMap": true,
+      "untouchedRecord": true,
+      "stableAvatar": true,
+      "transformWritesFor100Inputs": 1,
+      "avatarRectReads": 0,
+      "metrics": {
+        "hits": 105,
+        "misses": 249,
+        "cancelled": 0,
+        "loaded": 249,
+        "loadMs": 1579.100000038743,
+        "active": 0,
+        "retained": 64,
+        "rows": 15,
+        "pool": 0
+      },
+      "poolBeforeClear": 14,
+      "collectionReleased": true,
+      "pooledBindingsReleased": true,
+      "reusedRowCorrect": true
+    },
+    {
+      "count": 15000,
+      "variant": "before",
+      "rendering": {
+        "renderP95Ms": 1.2000000029802322,
+        "renderSamples": 87,
+        "frameIntervalP95Ms": 16.700000000000273,
+        "frameIntervalsOver25Ms": 0,
+        "peakRows": 26,
+        "peakActive": 0,
+        "peakRetained": 64
+      },
+      "stateRetainsRaw": true,
+      "stateRetainsProfileMap": true,
+      "stableMap": false,
+      "untouchedRecord": true,
+      "stableAvatar": true,
+      "transformWritesFor100Inputs": 100,
+      "avatarRectReads": 2472,
+      "metrics": {
+        "hits": 105,
+        "misses": 251,
+        "cancelled": 0,
+        "loaded": 251,
+        "loadMs": 1260.9000000320375,
+        "active": 0,
+        "retained": 64,
+        "rows": 15,
+        "pool": 0
+      },
+      "poolBeforeClear": 14,
+      "collectionReleased": false,
+      "pooledBindingsReleased": false,
+      "reusedRowCorrect": true
+    },
+    {
+      "count": 15000,
+      "variant": "after",
+      "rendering": {
+        "renderP95Ms": 0.8000000007450581,
+        "renderSamples": 87,
+        "frameIntervalP95Ms": 16.700000000000273,
+        "frameIntervalsOver25Ms": 0,
+        "peakRows": 26,
+        "peakActive": 4,
+        "peakRetained": 64
+      },
+      "stateRetainsRaw": false,
+      "stateRetainsProfileMap": false,
+      "stableMap": true,
+      "untouchedRecord": true,
+      "stableAvatar": true,
+      "transformWritesFor100Inputs": 0,
+      "avatarRectReads": 0,
+      "metrics": {
+        "hits": 105,
+        "misses": 251,
+        "cancelled": 0,
+        "loaded": 251,
+        "loadMs": 1445.1000000014901,
+        "active": 0,
+        "retained": 64,
+        "rows": 15,
+        "pool": 0
+      },
+      "poolBeforeClear": 14,
+      "collectionReleased": true,
+      "pooledBindingsReleased": true,
+      "reusedRowCorrect": true
+    },
+    {
+      "count": 20000,
+      "variant": "before",
+      "rendering": {
+        "renderP95Ms": 1.5,
+        "renderSamples": 87,
+        "frameIntervalP95Ms": 16.700000000000273,
+        "frameIntervalsOver25Ms": 0,
+        "peakRows": 26,
+        "peakActive": 1,
+        "peakRetained": 64
+      },
+      "stateRetainsRaw": true,
+      "stateRetainsProfileMap": true,
+      "stableMap": false,
+      "untouchedRecord": true,
+      "stableAvatar": true,
+      "transformWritesFor100Inputs": 100,
+      "avatarRectReads": 2472,
+      "metrics": {
+        "hits": 105,
+        "misses": 251,
+        "cancelled": 0,
+        "loaded": 251,
+        "loadMs": 1424.2999999970198,
+        "active": 0,
+        "retained": 64,
+        "rows": 15,
+        "pool": 0
+      },
+      "poolBeforeClear": 14,
+      "collectionReleased": false,
+      "pooledBindingsReleased": false,
+      "reusedRowCorrect": true
+    },
+    {
+      "count": 20000,
+      "variant": "after",
+      "rendering": {
+        "renderP95Ms": 0.8000000007450581,
+        "renderSamples": 87,
+        "frameIntervalP95Ms": 16.700000000000273,
+        "frameIntervalsOver25Ms": 0,
+        "peakRows": 26,
+        "peakActive": 4,
+        "peakRetained": 64
+      },
+      "stateRetainsRaw": false,
+      "stateRetainsProfileMap": false,
+      "stableMap": true,
+      "untouchedRecord": true,
+      "stableAvatar": true,
+      "transformWritesFor100Inputs": 1,
+      "avatarRectReads": 0,
+      "metrics": {
+        "hits": 105,
+        "misses": 251,
+        "cancelled": 0,
+        "loaded": 251,
+        "loadMs": 1761.7999999672174,
+        "active": 0,
+        "retained": 64,
+        "rows": 15,
+        "pool": 0
+      },
+      "poolBeforeClear": 14,
+      "collectionReleased": true,
+      "pooledBindingsReleased": true,
+      "reusedRowCorrect": true
+    }
+  ],
+  "baselineCommit": "dfdd035e7e37b7588b32bc62a0d8f3ed2c9ca39a",
+  "candidateCommit": "ba0ee27e416b5244c261939a5a0480d89f4533ce"
+}
