@@ -6,6 +6,13 @@ REPOSITORY='BlackWare-AI/INSFAV-Plus'
 assert os.environ['GITHUB_REPOSITORY']==REPOSITORY
 meta=json.loads(Path('artifacts/apk.json').read_text());assert meta['officialRelease'] and not meta['debuggable'] and meta['signatureVerified']
 assert meta.get('certificateSha256'),'Release signing certificate is missing'
+# The owner approved this identity change starting with session build 10.
+# Older installations require reinstalling; subsequent releases retain this key.
+APPROVED_CERTIFICATE='cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8'
+LEGACY_CERTIFICATE='9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f'
+current_certificates={v.lower() for v in meta['certificateSha256']}
+if meta['versionCode']>=10:
+    assert current_certificates=={APPROVED_CERTIFICATE},'APK must use the owner-approved signing certificate'
 def gh(*args):
     result=subprocess.run(['gh',*args],text=True,capture_output=True)
     if result.returncode:raise SystemExit('GitHub release API failed; no credentials exported')
@@ -48,7 +55,10 @@ for release in [r for page in pages for r in page]:
             continue  # Same-build signing is allowed only for identical, explicitly unsigned content.
         assert prior['versionCode']<meta['versionCode'],'versionCode must increase for every published signed APK'
         assert prior.get('certificateSha256'),'Cannot verify the previous Plus signing certificate'
-        assert {v.lower() for v in prior['certificateSha256']}=={v.lower() for v in meta['certificateSha256']},'Plus signing certificate must match previous releases for in-place updates'
+        prior_certificates={v.lower() for v in prior['certificateSha256']}
+        if meta['versionCode']>=10 and prior['versionCode']<10 and prior_certificates=={LEGACY_CERTIFICATE}:
+            continue  # Explicitly approved migration; no in-place update from this legacy key.
+        assert prior_certificates==current_certificates,'Plus signing certificate must match previous releases for in-place updates'
 tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
 notes=Path(os.environ['PLUS_RELEASE_NOTES_FILE']).read_text() if os.environ.get('PLUS_RELEASE_NOTES_FILE') else Path('INSTAGRAM-SESSION-RELEASE.md').read_text() if Path('INSTAGRAM-SESSION-RELEASE.md').exists() else 'Instagram session management update.\n'
 with tempfile.NamedTemporaryFile(mode='w',suffix='.md') as f:

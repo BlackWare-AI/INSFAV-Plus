@@ -13,6 +13,8 @@ import unittest
 
 SCRIPT = Path(__file__).with_name("publish-plus.py")
 REPO = "BlackWare-AI/INSFAV-Plus"
+APPROVED_CERTIFICATE = "cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8"
+LEGACY_CERTIFICATE = "9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0da22f0f"
 
 
 class PublishGuardTest(unittest.TestCase):
@@ -80,6 +82,47 @@ else:
         code, published, error = self.run_case(previous={"certificateSha256": ["AB12"]})
         self.assertEqual(0, code, error)
         self.assertTrue(published)
+
+    def test_owner_approved_identity_can_replace_legacy_before_build_ten(self):
+        code, published, error = self.run_case(versionCode=10, certificateSha256=[APPROVED_CERTIFICATE],
+            previous=dict(versionCode=9, certificateSha256=[LEGACY_CERTIFICATE]))
+        self.assertEqual(0, code, error)
+        self.assertTrue(published)
+
+    def test_build_ten_rejects_unknown_and_legacy_current_signers(self):
+        for certificate in ["unknown", LEGACY_CERTIFICATE]:
+            with self.subTest(certificate=certificate):
+                code, published, error = self.run_case(versionCode=10, certificateSha256=[certificate])
+                self.assertNotEqual(0, code)
+                self.assertFalse(published)
+                self.assertIn("owner-approved signing certificate", error)
+
+    def test_future_builds_keep_the_approved_identity(self):
+        code, published, error = self.run_case(versionCode=11, certificateSha256=[APPROVED_CERTIFICATE],
+            previous=dict(versionCode=10, certificateSha256=[APPROVED_CERTIFICATE.upper()]))
+        self.assertEqual(0, code, error)
+        self.assertTrue(published)
+
+    def test_legacy_signer_exception_does_not_extend_to_build_ten(self):
+        code, published, error = self.run_case(versionCode=11, certificateSha256=[APPROVED_CERTIFICATE],
+            previous=dict(versionCode=10, certificateSha256=[LEGACY_CERTIFICATE]))
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+        self.assertIn("signing certificate must match", error)
+
+    def test_migration_rejects_unknown_historical_identity(self):
+        code, published, error = self.run_case(versionCode=10, certificateSha256=[APPROVED_CERTIFICATE],
+            previous=dict(versionCode=9, certificateSha256=["unknown"]))
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+        self.assertIn("signing certificate must match", error)
+
+    def test_migration_still_requires_an_increasing_signed_build(self):
+        code, published, error = self.run_case(versionCode=10, certificateSha256=[APPROVED_CERTIFICATE],
+            previous=dict(versionCode=10, certificateSha256=[APPROVED_CERTIFICATE]))
+        self.assertNotEqual(0, code)
+        self.assertFalse(published)
+        self.assertIn("versionCode must increase", error)
 
     def test_changed_certificate_is_rejected_before_upload(self):
         code, published, error = self.run_case(certificateSha256=["different"])
