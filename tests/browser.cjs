@@ -76,6 +76,15 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   check(await page.evaluate(()=>viewerToken===''&&remoteLoader===null&&fullLoader===null&&!document.getElementById('full-image').hasAttribute('src')),'viewer close releases all frontend image and token references');
   check(await page.evaluate(()=>commands.at(-1).command==='view-closed'),'viewer close requests native high-resolution memory release');
   await page.evaluate(token=>nativeEvent('remote-full',{token,user:'test.user',width:900,height:900}),remoteToken);check(await page.locator('#viewer').isHidden(),'stale remote completion cannot reopen the viewer');
+  await page.evaluate(()=>{fetcherState={};openViewer('missing.local');});
+  check(await page.locator('#viewer').isVisible(),'HD viewer opens without a local thumbnail or cached session status');
+  check(await page.evaluate(()=>commands.some(c=>c.command==='view-remote'&&c.user==='missing.local')),'missing thumbnail still submits the native HD request');
+  const missingToken=await page.evaluate(()=>viewerToken);
+  await page.evaluate(token=>nativeEvent('remote-full',{token,user:'missing.local',width:640,height:480}),missingToken);
+  for(let i=0;i<100&&!await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/'));i++)await page.waitForTimeout(50);
+  check(await page.locator('#full-image').evaluate(el=>el.src.includes('/remote-full/')),'remote HD displays without a local thumbnail');
+  check(await page.evaluate(()=>fullLoader===null),'missing thumbnail skips local full-image loading');
+  await page.keyboard.press('Escape');await page.locator('#viewer').waitFor({state:'hidden'});
   await page.locator('#search-input').fill('user9999');await page.waitForTimeout(180);check(await page.locator('.account').count()===1,'search reaches unmounted accounts');
   await page.locator('#clear-search').click();check(await page.locator('#search-input').inputValue()==='','search clear restores view');
   await page.evaluate(()=>scrollTo(0,400000));await page.waitForTimeout(100);check(await page.locator('.account').count()<30,'deep scrolling recycles rows');
