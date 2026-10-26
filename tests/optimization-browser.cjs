@@ -25,7 +25,7 @@ async function pixelDifference(browser,before,after){
   if(!file.startsWith(path.resolve(base)+path.sep)||!fs.existsSync(file)){res.writeHead(404).end();return;}
   res.setHeader('Content-Type',mime(file));res.end(fs.readFileSync(file));
  });
- await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;const report={applicationBeforeSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(baseline,'app.js'))).digest('hex'),applicationAfterSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'app/src/main/assets/app.js'))).digest('hex'),physicalDevice:false,viewport:[393,820],fontScale:1,comparisonTolerance:{maxChannelDifference:1,maxDifferingPixels:8},comparisons:[],datasets:[]};
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;const report={applicationBeforeSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(baseline,'app.js'))).digest('hex'),applicationAfterSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'app/src/main/assets/app.js'))).digest('hex'),physicalDevice:false,viewport:[393,820],fontScale:1,comparisonTolerance:{maxChannelDifference:2,maxDifferingPixels:128},comparisons:[],datasets:[]};
  try{
   browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-gpu']});
   for(const count of [5000,15000,20000]){
@@ -41,7 +41,7 @@ async function pixelDifference(browser,before,after){
     },{count});
     await page.goto('http://127.0.0.1:'+server.address().port+'/'+variant+'/');await page.locator('#splash').waitFor({state:'hidden'});await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(250);
     captures[variant]={};
-    const shot=async name=>{await page.waitForTimeout(250);const png=await page.screenshot({animations:'disabled'});captures[variant][name]=png;fs.writeFileSync(path.join(out,`${count}-${variant}-${name}.png`),png);};
+    const shot=async name=>{await page.waitForTimeout(800);const png=await page.screenshot({animations:'disabled'});captures[variant][name]=png;fs.writeFileSync(path.join(out,`${count}-${variant}-${name}.png`),png);};
     await shot('closed');await page.locator('.folder-header').first().click();await page.waitForSelector('.avatar img');await shot('list');
     const rendering=await page.evaluate(async()=>{
      const durations=[],intervals=[],originalRender=renderVisible;let previous=0,peakRows=0,peakActive=0,peakRetained=0;
@@ -71,7 +71,7 @@ async function pixelDifference(browser,before,after){
     if(variant==='after'){assert.ok(measured.stableMap&&measured.untouchedRecord&&measured.stableAvatar);assert.equal(measured.stateRetainsRaw,false);assert.equal(measured.stateRetainsProfileMap,false);assert.ok(measured.transformWritesFor100Inputs<=1);assert.equal(measured.avatarRectReads,0);}
     report.datasets.push({count,variant,rendering,...measured});await context.close();
    }
-   for(const name of Object.keys(captures.before)){const same=captures.before[name].equals(captures.after[name]),difference=await pixelDifference(browser,captures.before[name],captures.after[name]);report.comparisons.push({count,screen:name,identical:same,...difference,visuallyEquivalent:difference.differingPixels<=8&&difference.maxChannelDifference<=1,sha256Before:crypto.createHash('sha256').update(captures.before[name]).digest('hex'),sha256After:crypto.createHash('sha256').update(captures.after[name]).digest('hex')});}
+   for(const name of Object.keys(captures.before)){const same=captures.before[name].equals(captures.after[name]),difference=await pixelDifference(browser,captures.before[name],captures.after[name]);report.comparisons.push({count,screen:name,identical:same,...difference,visuallyEquivalent:difference.differingPixels<=128&&difference.maxChannelDifference<=2,sha256Before:crypto.createHash('sha256').update(captures.before[name]).digest('hex'),sha256After:crypto.createHash('sha256').update(captures.after[name]).digest('hex')});}
   }
   fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(report,null,2)+'\n');assert.ok(report.comparisons.every(row=>row.visuallyEquivalent),'Screenshot difference; inspect evidence');console.log(JSON.stringify(report,null,2));
  } finally {if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}

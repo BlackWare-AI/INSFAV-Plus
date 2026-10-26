@@ -169,4 +169,13 @@ public class IndexJournalTest {
       assertTrue(j.pending(scope).isEmpty());
     }
   }
+  @Test public void durableJournalUsesFullSynchronousWalBeforeAcknowledgment() throws Exception {
+    try (IndexJournal journal = new IndexJournal(context)) {
+      journal.record(scope, "one", profile(), 11);
+      android.database.sqlite.SQLiteOpenHelper helper = org.robolectric.util.ReflectionHelpers.getField(journal, "queue");
+      try (android.database.Cursor cursor = helper.getWritableDatabase().rawQuery("PRAGMA synchronous", null)) {
+        assertTrue(cursor.moveToFirst());assertEquals(2, cursor.getInt(0));
+      }
+    }
+  }
 }
