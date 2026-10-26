@@ -20,7 +20,7 @@ import org.robolectric.util.ReflectionHelpers;
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class ViewerSourcePreservationTest {
   @Test
-  public void remoteViewerDoesNotCreate256WebpBesideAnExistingPngAndReleasesMemory()
+  public void remoteViewerCreatesMissingWebpAndPreservesExistingPngAndReleasesMemory()
       throws Exception {
     FetcherStorageTest harness = new FetcherStorageTest();
     harness.setup();
@@ -65,12 +65,12 @@ public class ViewerSourcePreservationTest {
           }
 
           public boolean catalogReadable(String u) {
-            checked.countDown();
             return true;
           }
 
           public void imageWritten(String u, Uri uri, String tree) {
             written.incrementAndGet();
+            checked.countDown();
           }
         });
     byte[] remote = CodecTest.png(640, 480);
@@ -103,8 +103,8 @@ public class ViewerSourcePreservationTest {
       Fetcher.view("example", "fixture");
       assertTrue(ready.await(5, TimeUnit.SECONDS));
       assertTrue(checked.await(5, TimeUnit.SECONDS));
-      assertEquals(0, written.get());
-      assertFalse(new File(folder, "example.webp").exists());
+      assertEquals(1, written.get());
+      assertTrue(ThumbnailCodec.valid(Files.readAllBytes(new File(folder, "example.webp").toPath())));
       assertArrayEquals(png, Files.readAllBytes(original.toPath()));
       assertEquals(modified, original.lastModified());
       byte[] held = Fetcher.full("fixture");
