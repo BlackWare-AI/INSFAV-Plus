@@ -119,6 +119,8 @@ final class WebViewProfileProvider implements ProfileProvider {
   private volatile boolean verifiedSession;
 
   @Override
+  public boolean requiresAuthentication() { return false; }
+  @Override
   public void authenticate() throws Failure {
     if (sessionReady.getCount() == 0 && sessionFailure == null)
       log.session("SHARED_COOKIES_REUSED");

@@ -576,7 +576,8 @@ public final class MainActivity extends Activity {
                   case "fetcher-paste": runOnUiThread(MainActivity.this::pasteCookieText); break;
                         case "instagram-session-method":
                             Fetcher.closeViewer();
-                            com.instagram.insfav.fetcher.InstagramSession.select(MainActivity.this, input.optBoolean("manual"));
+                            if (input.has("engine")) com.instagram.insfav.fetcher.InstagramSession.selectEngine(MainActivity.this, input.getString("engine"));
+                            else com.instagram.insfav.fetcher.InstagramSession.select(MainActivity.this, input.optBoolean("manual"));
                             send("fetcher-status", Fetcher.snapshot()); break;
                         case "instagram-session-open":
                             Fetcher.closeViewer();

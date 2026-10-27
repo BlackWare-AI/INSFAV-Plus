@@ -31,6 +31,7 @@ final class BrowserProfileProvider implements ProfileProvider {
         context=c.getApplicationContext();this.jar=jar;this.network=network;this.legacy=legacy;
         agent=WebSettings.getDefaultUserAgent(c);
     }
+    @Override public boolean requiresAuthentication() { return false; }
     @Override public void authenticate() throws Failure {
         try {
             JSONObject json=new JSONObject(new String(request(new URL(InstagramSession.ORIGIN+"api/v1/accounts/current_user/?edit=true"),""),StandardCharsets.UTF_8));
@@ -39,8 +40,9 @@ final class BrowserProfileProvider implements ProfileProvider {
             if(!"ok".equals(json.optString("status"))||user==null||!user.optString("pk",user.optString("id")).matches("[1-9][0-9]*")||(!expected.isEmpty()&&!expected.equals(user.optString("pk",user.optString("id")))))throw new Failure("COOKIE_AUTH_UNVERIFIED");
             InstagramSession.recordVerified(context,InstagramSession.manual(context));
         }catch(JSONException|MalformedURLException e){throw new Failure("COOKIE_AUTH_UNVERIFIED");}
-        catch(Failure e){if(FailurePolicy.pause(e)){barrier=e;throw e;}legacy().authenticate();}
+        catch(Failure e){if(FailurePolicy.pause(e)){stop(e);throw e;}legacy().authenticate();}
     }
+    private void stop(Failure failure) { barrier=failure; InstagramSession.blocked(context,InstagramSession.manual(context),failure.code); }
     private synchronized ProfileProvider legacy() throws Failure {if(fallback==null)fallback=legacy.open();return fallback;}
     @Override public byte[] fetch(String user) throws Failure {return fetch(user,false);}
     @Override public byte[] fetch(String user,boolean full) throws Failure {
@@ -48,7 +50,7 @@ final class BrowserProfileProvider implements ProfileProvider {
         if(cancelled)throw new Failure("REQUEST_CANCELLED"); if(barrier!=null)throw barrier;
         URL picture;
         try { picture=resolveNative(user); }
-        catch(Failure e){if(FailurePolicy.pause(e)){barrier=e;throw e;}return legacy().fetch(user,full);}
+        catch(Failure e){if(FailurePolicy.pause(e)){stop(e);throw e;}return legacy().fetch(user,full);}
         PublicProfileProvider transfer=new PublicProfileProvider(network,null,new File(context.getCacheDir(),"profile-downloads"));
         transfer.userAgent=agent;images.put(user,transfer);
         try {if(cancelled)throw new Failure("REQUEST_CANCELLED");return transfer.download(picture);}

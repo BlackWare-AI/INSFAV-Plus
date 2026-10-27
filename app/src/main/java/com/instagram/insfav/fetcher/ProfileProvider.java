@@ -1,6 +1,7 @@
 package com.instagram.insfav.fetcher;
 
 interface ProfileProvider extends AutoCloseable {
+  default boolean requiresAuthentication() { return true; }
   default void authenticate() throws Failure {
     throw new Failure("COOKIE_AUTH_UNVERIFIED", 0, 0, false);
   }

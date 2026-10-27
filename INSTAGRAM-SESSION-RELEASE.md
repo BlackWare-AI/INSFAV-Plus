@@ -1,5 +1,9 @@
-Restored direct use of Instagram browser cookies for HD and thumbnail retrieval. Instagram Login now has Get cookies for downloads: it flushes the app's WebView, reads its own default Chromium cookie metadata with CookieManager values (including HttpOnly), and saves a separate AES-GCM browser snapshot. Downloads reuse this snapshot without outside copy/paste; manual cookies remain separate. Logout removes only the browser snapshot and Instagram browser session.
+Instagram oturumu ve HD indirme yolları:
 
-HD first requests identity-bound profile JSON/HTML with the captured Cookie header and normal WebView user agent, selects HD profile data before small avatar data, and downloads the image without leaking Instagram cookies to the CDN. It no longer requires hidden-home-page authentication before an explicit profile image request. Existing WebView resolution remains a fallback. Actual login/challenge/rate-limit responses still stop work. Bulk disable remains independent of HD and its existing 256×256 WebP write path.
+- Ayarlarda üç kalıcı WebView yöntemi: mevcut HTTP yolu, YTDLnis tarzı Netscape çerez çıkarma ve eski WebView profil motoru.
+- Elle çerez yapıştırma/kaydetme alternatifi ve mevcut kayıtlar korunur.
+- Otomatik oturum doğrulama döngüsü ve indirme öncesi zorunlu çerez testi kaldırıldı. Gerçek Instagram güvenlik yanıtları hâlâ işlemleri durdurur.
+- Eski motor, uygulamanın kalıcı WebView oturumunu çerezleri yeniden yüklemeden kullanır.
+- Yöntem değişikliği indirmeyi otomatik başlatmaz; oturum, kuyruk ve görseller korunur.
 
-Tests use synthetic cookies and controlled HTTP responses, including a mandatory Android CookieManager → Keystore → production factory → HTTP → HD → missing 256 WebP fixture with bulk disabled. No live Instagram account success or server-side session lifetime is claimed. Package IDs, signing certificates and existing manual-cookie/data formats are unchanged.
+Otomatik kontroller kontrollü yanıtlarla çalışır. Canlı Instagram hesabıyla ve kullanıcının fiziksel cihazında başarı doğrulanmamıştır. Instagram'ın iptal ettiği veya süresi dolan oturumların korunması garanti edilmez.

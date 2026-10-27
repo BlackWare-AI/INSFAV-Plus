@@ -14,6 +14,11 @@ final class SessionInstrumentation {
         try {
             Context c=host.getTargetContext(); boolean seed="seed".equals(arguments.getString("scenario"));
             String value="OFFLINE_"+c.getPackageName().replace('.','_');
+            if ("netscape-hd".equals(arguments.getString("scenario")) || "legacy-hd".equals(arguments.getString("scenario"))) {
+                boolean legacy="legacy-hd".equals(arguments.getString("scenario"));
+                NativeCookieHdDeviceCheck.run(host, legacy ? "legacy" : "netscape");
+                result.putString("stream",legacy ? "OFFLINE_LEGACY_HD_256_OK\n" : "OFFLINE_NETSCAPE_COOKIE_HD_256_OK\n");host.finish(Activity.RESULT_OK,result);return;
+            }
             if ("native-hd".equals(arguments.getString("scenario"))) {
                 NativeCookieHdDeviceCheck.run(host);result.putString("stream","OFFLINE_NATIVE_COOKIE_HD_256_OK\n");host.finish(Activity.RESULT_OK,result);return;
             }

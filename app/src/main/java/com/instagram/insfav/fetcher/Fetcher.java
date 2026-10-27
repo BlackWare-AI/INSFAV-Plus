@@ -373,7 +373,7 @@ public final class Fetcher {
     }
     sync();
     if (!action.equals("verify_index")) InstagramSession.requireReady(context);
-    if (!action.equals("verify_index") && !InstagramSession.configured(context))
+    if (!action.equals("verify_index") && InstagramSession.manual(context) && !InstagramSession.configured(context))
       throw new IOException("Sign in through Instagram Login or select and save Manual Cookies first.");
     if (host().tree().isEmpty())
       throw new IOException("Select the thumbnail folder in Profile Images first.");
@@ -478,7 +478,7 @@ public final class Fetcher {
         .put("blockedHttp", p.getInt("blockedHttp", 0))
         .put("automaticResume", WorkScheduler.enabled(p))
         .put("resolution", resolution)
-        .put("cookiesSaved", InstagramSession.configured(context)).put("manualCookiesSaved", new CookieVault(context).configured()).put("bulkDisabled",bulkDisabled()).put("manualSession", InstagramSession.manual(context)).put("instagramSession", InstagramSession.status(context))
+        .put("cookiesSaved", InstagramSession.configured(context)).put("manualCookiesSaved", new CookieVault(context).configured()).put("bulkDisabled",bulkDisabled()).put("browserEngine", InstagramSession.engine(context)).put("manualSession", InstagramSession.manual(context)).put("instagramSession", InstagramSession.status(context))
         .put("writable", writable())
         .put("minimum", r.minimum)
         .put("maximum", r.maximum)
