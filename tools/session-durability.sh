@@ -37,5 +37,7 @@ adb shell am instrument -w -e scenario authenticate "$runner" | tee session-evid
 grep -q OFFLINE_SESSION_AUTHENTICATED session-evidence/authenticate.txt
 adb shell am instrument -w -e scenario clipboard "$runner" | tee session-evidence/clipboard.txt
 grep -q OFFLINE_COOKIE_PASTE_VERIFIED session-evidence/clipboard.txt
+adb shell am instrument -w -e scenario native-hd "$runner" | tee session-evidence/native-hd.txt
+grep -q OFFLINE_NATIVE_COOKIE_HD_256_OK session-evidence/native-hd.txt
 adb shell am instrument -w -e scenario logout "$runner" | tee session-evidence/scoped-logout.txt
 grep -q OFFLINE_SESSION_LOGOUT_SCOPED session-evidence/scoped-logout.txt

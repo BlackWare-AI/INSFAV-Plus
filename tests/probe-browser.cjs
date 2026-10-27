@@ -10,6 +10,8 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  let high;
  for(let i=0;i<20;i++){high=JSON.parse(await page.evaluate(source=>eval('('+source+')')("example","1"),probe('profile-probe-hd.js')));if(high.url)break;await page.waitForTimeout(50);}
  assert.equal(high.url,hd);assert.equal(high.width,640);assert.equal(high.height,480);console.log('PASS original thumbnail probe is retained; HD adapter selects actual larger identity-bound image');
+ await page.evaluate(({small,hd})=>{document.querySelector('script[type="application/json"]').textContent=JSON.stringify({username:'example',id:'1',profile_pic_url:small,hd_profile_pic_url_info:{url:hd}});},{small,hd});
+ const withInfo=JSON.parse(await page.evaluate(source=>eval('('+source+')')("example","1"),probe('profile-probe-hd.js')));assert.equal(withInfo.url,hd);console.log('PASS explicit HD info wins over the small profile URL');
  const wrong=JSON.parse(await page.evaluate(source=>eval('('+source+')')("different","1"),probe('profile-probe-hd.js')));assert.equal(wrong.url,undefined);console.log('PASS HD adapter rejects another account and never uses post images');
  assert.equal(escaped,0);console.log('PASS all probe fixtures are intercepted; no live requests');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

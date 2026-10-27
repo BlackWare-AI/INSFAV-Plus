@@ -179,11 +179,7 @@ final class WebViewProfileProvider implements ProfileProvider {
       throw new Failure("COOKIE_EXPIRED", 0, 0, true);
     ensureSession();
     if (barrier != null) throw barrier;
-    if (cookies == null && !user.isEmpty() && !persistentAuthenticated) {
-      synchronized (authenticationLock) {
-        if (!persistentAuthenticated) { resolve("", false); persistentAuthenticated = true; }
-      }
-    }
+
 
     Operation operation =
         new Operation(

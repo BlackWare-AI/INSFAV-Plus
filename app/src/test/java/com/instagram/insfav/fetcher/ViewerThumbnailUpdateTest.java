@@ -64,6 +64,23 @@ public class ViewerThumbnailUpdateTest {
     assertFalse(SessionState.prefs(context).getBoolean("armed",true));
   }
 
+  @Test public void actualBrowserCookiesAndHttpProfileDataCreateMissing256ThumbnailWithBulkDisabled() throws Exception {
+    Files.delete(target.toPath());
+    Fetcher.setBulkDisabled(true);SessionState.prefs(context).edit().putBoolean("manualSession",false).commit();
+    android.webkit.CookieManager.getInstance().setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_HD%3AFIXTURE; Secure; HttpOnly");
+    CookieJar jar=BrowserCookies.read(context);byte[] png=CodecTest.png(640,480,Color.BLUE);
+    BrowserProfileProvider provider=new BrowserProfileProvider(context,jar,url->{
+      if(url.getHost().equals("www.instagram.com"))return new ProviderTest.Stub(url,200,BrowserCookieRecoveryTest.profile()){
+        @Override public int getResponseCode(){assertTrue(getRequestProperty("Cookie").contains("OFFLINE_HD%3AFIXTURE"));return 200;}};
+      return new ProviderTest.Stub(url,200,""){
+        @Override public String getContentType(){return "image/png";}
+        @Override public java.io.InputStream getInputStream(){return new java.io.ByteArrayInputStream(png);}};
+    },()->{throw new AssertionError("HD must not need hidden home verification");});
+    FetchBroker broker=new FetchBroker(context,full->provider,new TestTime());ReflectionHelpers.setStaticField(FetchBroker.class,"instance",broker);
+    try{Fetcher.view("example","nativecookies");assertTrue(written.await(5,TimeUnit.SECONDS));assertTrue(ThumbnailCodec.valid(Files.readAllBytes(target.toPath())));assertTrue(Fetcher.bulkDisabled());assertFalse(SessionState.prefs(context).getBoolean("armed",true));}
+    finally{broker.cancelAll();provider.close();}
+  }
+
   private void updateFromBroker() throws Exception {
     byte[] remote = CodecTest.png(640, 480, Color.BLUE);
     CountDownLatch fetched = new CountDownLatch(1);

@@ -43,12 +43,21 @@ final class CookieVault {
         });
   }
 
-  CookieVault(Context context, Keys keys) {
-    file = new AtomicFile(new File(context.getFilesDir(), "fetcher-cookies.enc"));
+  CookieVault(Context context, Keys keys) { this(context, keys, "fetcher-cookies.enc"); }
+
+  CookieVault(Context context, Keys keys, String name) {
+    file = new AtomicFile(new File(context.getFilesDir(), name));
     this.keys = keys;
   }
 
-  synchronized boolean configured() {
+  static CookieVault browser(Context c) {
+        CookieVault original = new CookieVault(c);
+        return new CookieVault(c, original.keys, "instagram-webview-cookies.enc");
+    }
+    private SecretKey key() throws GeneralSecurityException, IOException {
+        synchronized(CookieVault.class) { return keys.get(); }
+    }
+    synchronized boolean configured() {
     return file.getBaseFile().isFile();
   }
 
@@ -57,7 +66,7 @@ final class CookieVault {
     FileOutputStream output = null;
     try {
       Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-      cipher.init(Cipher.ENCRYPT_MODE, keys.get());
+      cipher.init(Cipher.ENCRYPT_MODE, key());
       cipher.updateAAD("INSFAV_COOKIE_V1".getBytes(StandardCharsets.US_ASCII));
       byte[] iv = cipher.getIV(), encrypted = cipher.doFinal(plain);
       output = file.startWrite();
@@ -82,7 +91,7 @@ final class CookieVault {
       Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
       cipher.init(
           Cipher.DECRYPT_MODE,
-          keys.get(),
+          key(),
           new GCMParameterSpec(128, Arrays.copyOfRange(bytes, 2, 14)));
       cipher.updateAAD("INSFAV_COOKIE_V1".getBytes(StandardCharsets.US_ASCII));
       plain = cipher.doFinal(bytes, 14, bytes.length - 14);

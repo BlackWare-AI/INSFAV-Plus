@@ -23,10 +23,10 @@ public final class InstagramSession {
         SessionState.prefs(c).edit().putBoolean("manualSession", manual).commit();
         SessionState.changed(c);
     }
-    static boolean configured(Context c) { return manual(c) ? new CookieVault(c).configured() : "Verified".equals(SessionState.prefs(c).getString("webSessionStatus", "")); }
-    static WebViewProfileProvider open(Context c) throws ProfileProvider.Failure {
+    static boolean configured(Context c) { return manual(c) ? new CookieVault(c).configured() : (CookieVault.browser(c).configured() || "Verified".equals(SessionState.prefs(c).getString("webSessionStatus", ""))); }
+    static ProfileProvider open(Context c) throws ProfileProvider.Failure {
         requireReady(c);
-        return new WebViewProfileProvider(c, manual(c) ? new CookieVault(c).load() : null);
+        return new BrowserProfileProvider(c, manual(c) ? new CookieVault(c).load() : BrowserCookies.forDownload(c), manual(c));
     }
     static void requireReady(Context c) throws ProfileProvider.Failure {
         if (SessionState.prefs(c).getBoolean("instagramSecurityHold", false) || SessionState.prefs(c).getBoolean(key(manual(c)), false))
@@ -132,6 +132,10 @@ public final class InstagramSession {
         for (String cookie : removals) m.setCookie(ORIGIN, cookie, accepted -> { if (pending.decrementAndGet() == 0) finish.run(); });
     }
     private static void signedOut(Context c) {
+        synchronized(BrowserCookies.LOCK) {
+            SessionState.prefs(c).edit().putLong("browserCookieEpoch",SessionState.prefs(c).getLong("browserCookieEpoch",0)+1).commit();
+            CookieVault.browser(c).remove();
+        }
         SessionState.prefs(c).edit().putString("webSessionStatus", "Signed out").putBoolean("webSessionHold", true).commit();
         SessionState.changed(c);
     }
