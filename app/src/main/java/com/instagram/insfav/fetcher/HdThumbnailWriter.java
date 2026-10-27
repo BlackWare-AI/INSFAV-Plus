@@ -45,6 +45,20 @@ final class HdThumbnailWriter {
         }
     }
 
+    static BitmapFactory.Options validate(byte[] input) throws IOException {
+        if(input==null||input.length==0||input.length>8*1024*1024||!ThumbnailCodec.completeContainer(input))throw new IOException("IMAGE_CONTAINER_INVALID");
+        BitmapFactory.Options bounds=new BitmapFactory.Options();bounds.inJustDecodeBounds=true;
+        BitmapFactory.decodeByteArray(input,0,input.length,bounds);
+        if(bounds.outWidth<1||bounds.outHeight<1||bounds.outWidth>16384||bounds.outHeight>16384||(long)bounds.outWidth*bounds.outHeight>40000000
+            || !("image/jpeg".equals(bounds.outMimeType)||"image/png".equals(bounds.outMimeType)||"image/webp".equals(bounds.outMimeType)))throw new IOException("IMAGE_REJECTED");
+        BitmapFactory.Options sample=new BitmapFactory.Options();sample.inSampleSize=1;
+        while(Math.max(bounds.outWidth,bounds.outHeight)/sample.inSampleSize>512)sample.inSampleSize*=2;
+        Bitmap decoded=BitmapFactory.decodeByteArray(input,0,input.length,sample);
+        if(decoded==null)throw new IOException("IMAGE_DECODE_FAILED");
+        try{if(!ThumbnailCodec.visible(decoded))throw new IOException("IMAGE_REJECTED");}finally{decoded.recycle();}
+        return bounds;
+    }
+
     static byte[] encode(byte[] input) throws IOException {
         if (input == null || input.length == 0 || input.length > 8 * 1024 * 1024
                 || !ThumbnailCodec.completeContainer(input)) throw new IOException("IMAGE_CONTAINER_INVALID");

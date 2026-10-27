@@ -19,9 +19,6 @@ final class SessionInstrumentation {
                 NativeCookieHdDeviceCheck.run(host, legacy ? "legacy" : "netscape");
                 result.putString("stream",legacy ? "OFFLINE_LEGACY_HD_256_OK\n" : "OFFLINE_NETSCAPE_COOKIE_HD_256_OK\n");host.finish(Activity.RESULT_OK,result);return;
             }
-            if ("native-hd".equals(arguments.getString("scenario"))) {
-                NativeCookieHdDeviceCheck.run(host);result.putString("stream","OFFLINE_NATIVE_COOKIE_HD_256_OK\n");host.finish(Activity.RESULT_OK,result);return;
-            }
             if ("clipboard".equals(arguments.getString("scenario"))) {
                 com.instagram.insfav.UiDeviceChecks.run(host);
                 result.putString("stream", "OFFLINE_COOKIE_PASTE_VERIFIED\n");host.finish(Activity.RESULT_OK,result);return;

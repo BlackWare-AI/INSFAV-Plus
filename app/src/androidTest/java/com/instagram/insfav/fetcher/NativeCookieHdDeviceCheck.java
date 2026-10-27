@@ -18,7 +18,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 /** Real CookieManager, Keystore, production factory, HTTP headers/parser, HD and Binder SAF write. */
 final class NativeCookieHdDeviceCheck {
-    static void run(Instrumentation host) throws Exception { run(host, "native"); }
+    static void run(Instrumentation host) throws Exception { run(host, "legacy"); }
     static void run(Instrumentation host, String engine) throws Exception {
         Context c=host.getTargetContext();String user="native_cookie_hd";
         c.sendBroadcast(new Intent().setClassName(c.getPackageName()+".test",FixtureDocuments.Grant.class.getName()));
@@ -67,8 +67,17 @@ final class NativeCookieHdDeviceCheck {
             downloads.set(provider,(WebViewProfileProvider.Downloads)()->new PublicProfileProvider(transport,null,new File(c.getCacheDir(),"profile-downloads")));
         }
         FetchBroker broker=new FetchBroker(c,full->provider);java.lang.reflect.Field instance=FetchBroker.class.getDeclaredField("instance");instance.setAccessible(true);instance.set(null,broker);
+        CountDownLatch allowEncoding=new CountDownLatch(1),hdReady=new CountDownLatch(1);
+        java.lang.reflect.Field workerField=HdThumbnailJobs.class.getDeclaredField("worker");workerField.setAccessible(true);
+        ((ExecutorService)workerField.get(null)).execute(()->{try{allowEncoding.await(20,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}});
+        Fetcher.Listener navigation=new Fetcher.Listener(){public void changed(){}public void fullFailed(String token,String code){}
+            public void fullReady(String name,String token,int w,int h){Fetcher.closeViewer();hdReady.countDown();}};
+        Fetcher.addListener(navigation);
         try{
             Fetcher.view(user,"nativeCookieHD");
+            if(!hdReady.await(15,TimeUnit.SECONDS))throw new AssertionError("HD rendering waited for thumbnail encoding");
+            if(written.getCount()!=1)throw new AssertionError("Encoder barrier was bypassed");
+            allowEncoding.countDown();
             if(!written.await(25,TimeUnit.SECONDS))throw new AssertionError("Cookie -> HD -> 256 WebP write did not complete",fixtureFailure.get());
             if(fixtureFailure.get()!=null)throw new AssertionError("Unexpected browser fixture request",fixtureFailure.get());
             host.runOnMainSync(()->{String header=CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);if(header==null||!header.contains("OFFLINE_NATIVE_HD%3AFIXTURE"))throw new AssertionError("Browser did not retain its session");});
@@ -76,6 +85,6 @@ final class NativeCookieHdDeviceCheck {
             if(!Fetcher.bulkDisabled()||SessionState.prefs(c).getBoolean("armed",true))throw new AssertionError("HD started the bulk queue");
             File snapshot=new File(c.getFilesDir(),engine.equals("netscape") ? "instagram-netscape-cookies.enc" : "instagram-webview-cookies.enc");
             if(!engine.equals("legacy") && (!snapshot.isFile()||new String(java.nio.file.Files.readAllBytes(snapshot.toPath()),StandardCharsets.ISO_8859_1).contains("OFFLINE_NATIVE_HD")))throw new AssertionError("Browser snapshot was not encrypted");
-        }finally{Fetcher.closeViewer();broker.cancelAll();provider.close();Fetcher.setBulkDisabled(false);}
+        }finally{allowEncoding.countDown();Fetcher.removeListener(navigation);Fetcher.closeViewer();broker.cancelAll();provider.close();Fetcher.setBulkDisabled(false);}
     }
 }
