@@ -1,0 +1,45 @@
+{
+  "commands": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "web"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/workspace/toolchains/gradle-8.13/bin/gradle",
+        ":app:testDebugUnitTest",
+        ":app:lintDebug",
+        ":app:assembleDebug",
+        ":app:assembleDebugAndroidTest"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "unitTests": {
+    "tests": 334,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Warning": 30,
+    "Information": 0
+  },
+  "physicalDevice": false,
+  "emulator": false,
+  "liveService": false,
+  "testedCommit": "ba0ee27e416b5244c261939a5a0480d89f4533ce",
+  "nodeVersion": "v22.23.4"
+}

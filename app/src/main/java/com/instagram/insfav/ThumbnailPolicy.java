@@ -4,19 +4,22 @@ import java.util.*;
 
 /** Filename identity and deterministic candidate selection; no Android or filesystem access. */
 final class ThumbnailPolicy {
+  private static final java.util.regex.Pattern ACCOUNT = java.util.regex.Pattern.compile("[a-z0-9._]{1,30}");
+  private static final java.util.regex.Pattern PREFIX = java.util.regex.Pattern.compile("^@");
+  private static final java.util.regex.Pattern IMAGE = java.util.regex.Pattern.compile(".*\\.(webp|jpe?g|png)$");
   static String normalize(String value) {
-    return value == null ? "" : value.trim().replaceFirst("^@", "").toLowerCase(Locale.ROOT);
+    return value == null ? "" : PREFIX.matcher(value.trim()).replaceFirst("").toLowerCase(Locale.ROOT);
   }
 
   static String username(String filename) {
     int dot = filename.lastIndexOf('.');
     if (dot <= 0 || !supported(filename)) return "";
     String user = normalize(filename.substring(0, dot));
-    return user.matches("[a-z0-9._]{1,30}") ? user : "";
+    return ACCOUNT.matcher(user).matches() ? user : "";
   }
 
   static boolean supported(String filename) {
-    return filename != null && filename.toLowerCase(Locale.ROOT).matches(".*\\.(webp|jpe?g|png)$");
+    return filename != null && IMAGE.matcher(filename.toLowerCase(Locale.ROOT)).matches();
   }
 
   static final class Candidate {

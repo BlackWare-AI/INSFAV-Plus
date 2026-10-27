@@ -1,0 +1,50 @@
+[
+  {
+    "script": "browser",
+    "exitCode": 0
+  },
+  {
+    "script": "clipboard-preview",
+    "exitCode": 0
+  },
+  {
+    "script": "about-counters",
+    "exitCode": 0
+  },
+  {
+    "script": "probe-browser",
+    "exitCode": 0
+  },
+  {
+    "script": "probe-classification",
+    "exitCode": 0
+  },
+  {
+    "script": "avatar-layout",
+    "exitCode": 0
+  },
+  {
+    "script": "settings-language",
+    "exitCode": 0
+  },
+  {
+    "script": "font-coverage",
+    "exitCode": 0
+  },
+  {
+    "script": "recovery-inventory-filters",
+    "exitCode": 0
+  },
+  {
+    "script": "choice-dialogs",
+    "exitCode": 0
+  },
+  {
+    "script": "list-scroll",
+    "exitCode": 0
+  },
+  {
+    "script": "matrix-view",
+    "exitCode": 0
+  }
+]

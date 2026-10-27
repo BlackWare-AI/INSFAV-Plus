@@ -25,6 +25,10 @@ public final class MainActivity extends Activity {
   private LocalImages images;
   private ThumbnailInventory inventory;
   private final ExecutorService io = Executors.newSingleThreadExecutor();
+  private final StatusTasks statusTasks = new StatusTasks(io);
+  private void queueFetcherStatus(boolean critical, Runnable task) {
+    if (critical) io.execute(task); else statusTasks.execute("fetcher-status", task);
+  }
   private final ExecutorService scans = Executors.newSingleThreadExecutor();
   private String pendingExport;
   private boolean clientProfileDeltas;
@@ -51,15 +55,17 @@ public final class MainActivity extends Activity {
   private static final int IMPORT = 20, EXPORT = 21, FOLDER = 22, WRITE_FOLDER = 23;
   private final Fetcher.Listener fetchListener =
       new Fetcher.Listener() {
-        public void changed() {
+        public void changed() { changed(false); }
+        public void changed(boolean critical) {
           if (!foreground) return;
           if (!io.isShutdown())
             try {
-              io.execute(
+              queueFetcherStatus(critical,
                   () -> {
                     try {
                       send("fetcher-status", Fetcher.snapshot());
-                    } catch (Exception ignored) {
+                    } catch (Exception error) {
+                      store.log("fetcher_status", "FAILED");
                     }
                   });
             } catch (RejectedExecutionException ignored) {
@@ -499,7 +505,7 @@ public final class MainActivity extends Activity {
       } catch (org.json.JSONException | RuntimeException ignored) { /* Normal bridge error handling below. */ }
 
       try {
-        io.execute(
+        statusTasks.request(raw,
             () -> {
               try {
                 JSONObject input = new JSONObject(raw);

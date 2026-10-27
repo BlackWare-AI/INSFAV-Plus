@@ -168,7 +168,7 @@ const {chromium}=require('playwright');
    if(stop==='list-change')await page.evaluate(()=>{opened.delete(1);rebuild(true);});
    if(stop==='resize')await page.setViewportSize({width:394,height:850});
    await page.clock.runFor(150);await active(false,stop);check((await metrics(page)).top===0,stop+' cancels without scrolling');
-   if(stop==='modal'){check(await page.locator('#main-scroll').isHidden(),'Open modal hides controls');await page.keyboard.press('Escape');}
+   if(stop==='modal'){check(await page.locator('#main-scroll').isHidden(),'Open modal hides controls');await page.keyboard.press('Escape');await page.clock.runFor(200);await page.locator('#dialog').waitFor({state:'hidden'});}
    if(stop==='visibility')await page.evaluate(()=>{delete document.hidden;});
    if(stop==='list-change')await page.evaluate(()=>{opened.add(1);rebuild(true);});
    await pointer('pointerup');await page.clock.runFor(32);
@@ -188,7 +188,7 @@ const {chromium}=require('playwright');
    if(stop==='list-change')await page.evaluate(()=>rebuild(true));
    if(stop==='multitouch'){await pointer('pointerdown',{id:2,primary:false});await pointer('pointerup',{id:2,primary:false});}
    await page.clock.runFor(32);await active(false);await pointer('pointerup');
-   if(stop==='modal'){await page.keyboard.press('Escape');await page.clock.runFor(32);}
+   if(stop==='modal'){await page.keyboard.press('Escape');await page.clock.runFor(200);await page.locator('#dialog').waitFor({state:'hidden'});}
   }
   await thumb.focus();await page.keyboard.press('ArrowDown');await page.clock.runFor(32);check((await metrics(page)).top===65,'Keyboard down scrolls one account row immediately');
   await page.keyboard.press('PageDown');await page.clock.runFor(32);check((await metrics(page)).top>65,'PageDown scrolls by a viewport');

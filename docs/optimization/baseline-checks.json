@@ -1,0 +1,15 @@
+{
+  "unitTests": {
+    "tests": 319,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Warning": 27,
+    "Information": 0
+  },
+  "assembleDebug": true,
+  "environment": "JDK17 SDK35 host Robolectric; not an Android device"
+}

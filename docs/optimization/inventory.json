@@ -1,0 +1,171 @@
+{
+  "baselineCommit": "70911576b65e04de45dd6d98a7fed9a0d4820089",
+  "candidateSourceSha256": "b42ac44a162b5e30a373dd6930d4906a93204c08e47603c2515c01e0b8ca2d83",
+  "baselineSourceSha256": "bf720bb4afd8423316ad9c6d820938a9e31adfa449a3b775efc33db22e3d80e3",
+  "physicalDevice": false,
+  "records": [
+    {
+      "variant": "before",
+      "round": 0,
+      "measurements": [
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 5000,
+          "pages": 50,
+          "elapsedNanos": 117635836,
+          "catalogPasses": -1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 15000,
+          "pages": 150,
+          "elapsedNanos": 525814682,
+          "catalogPasses": -1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 20000,
+          "pages": 200,
+          "elapsedNanos": 526603279,
+          "catalogPasses": -1
+        }
+      ]
+    },
+    {
+      "variant": "after",
+      "round": 0,
+      "measurements": [
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 5000,
+          "pages": 50,
+          "elapsedNanos": 63075779,
+          "catalogPasses": 1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 15000,
+          "pages": 150,
+          "elapsedNanos": 152771977,
+          "catalogPasses": 1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 20000,
+          "pages": 200,
+          "elapsedNanos": 152945659,
+          "catalogPasses": 1
+        }
+      ]
+    },
+    {
+      "variant": "after",
+      "round": 1,
+      "measurements": [
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 5000,
+          "pages": 50,
+          "elapsedNanos": 86662950,
+          "catalogPasses": 1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 15000,
+          "pages": 150,
+          "elapsedNanos": 86554923,
+          "catalogPasses": 1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 20000,
+          "pages": 200,
+          "elapsedNanos": 134100091,
+          "catalogPasses": 1
+        }
+      ]
+    },
+    {
+      "variant": "before",
+      "round": 1,
+      "measurements": [
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 5000,
+          "pages": 50,
+          "elapsedNanos": 182931455,
+          "catalogPasses": -1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 15000,
+          "pages": 150,
+          "elapsedNanos": 519882371,
+          "catalogPasses": -1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 20000,
+          "pages": 200,
+          "elapsedNanos": 641486029,
+          "catalogPasses": -1
+        }
+      ]
+    },
+    {
+      "variant": "before",
+      "round": 2,
+      "measurements": [
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 5000,
+          "pages": 50,
+          "elapsedNanos": 181977305,
+          "catalogPasses": -1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 15000,
+          "pages": 150,
+          "elapsedNanos": 491996510,
+          "catalogPasses": -1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 20000,
+          "pages": 200,
+          "elapsedNanos": 968145346,
+          "catalogPasses": -1
+        }
+      ]
+    },
+    {
+      "variant": "after",
+      "round": 2,
+      "measurements": [
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 5000,
+          "pages": 50,
+          "elapsedNanos": 82417232,
+          "catalogPasses": 1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 15000,
+          "pages": 150,
+          "elapsedNanos": 155832303,
+          "catalogPasses": 1
+        },
+        {
+          "kind": "INVENTORY_PAGES",
+          "accounts": 20000,
+          "pages": 200,
+          "elapsedNanos": 195674785,
+          "catalogPasses": 1
+        }
+      ]
+    }
+  ],
+  "measuredCandidateCommit": "1f43a9c8432cd93edf05634d24e638bad0b18274"
+}
