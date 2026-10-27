@@ -22,6 +22,11 @@ public class SettingsArchiveTest {
     new CookieVault(c).remove();
   }
 
+ @Test public void fourDigitPinRoundTripsAndOtherShortPasswordsAreRejected()throws Exception {
+  char[] pin="0123".toCharArray();String raw=SettingsArchive.export(c,pin,new JSONObject());assertNotNull(SettingsArchive.inspect(c,raw,pin));
+  for(String invalid:new String[]{"123","12345","abcd","12a4"})assertThrows(java.io.IOException.class,()->SettingsArchive.export(c,invalid.toCharArray(),new JSONObject()));
+  assertTrue(BackupPinUi.valid(pin));assertFalse(BackupPinUi.valid("١٢٣٤".toCharArray()));
+ }
   @Test
   public void exportChangeImportRestoresAllUserPreferencesWithoutFavorites() throws Exception {
     SharedPreferences p = SessionState.prefs(c);

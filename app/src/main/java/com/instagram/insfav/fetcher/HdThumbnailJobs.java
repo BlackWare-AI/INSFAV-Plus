@@ -14,6 +14,7 @@ final class HdThumbnailJobs {
     private static final ExecutorService worker=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"insfav-hd-thumbnail");t.setDaemon(true);return t;});
     private static File directory(Context c){return new File(c.getCacheDir(),"hd-thumbnail-jobs");}
     private static String scope(Fetcher.Host h,String user){return h.tree()+"\n"+h.directory()+"\n"+user;}
+    static boolean anyBusy(){return !active.isEmpty();}
     static boolean busy(Fetcher.Host h,String user){return active.contains(scope(h,user));}
     static void enqueue(Context c,Fetcher.Host h,String user,byte[] bytes)throws Exception {
         if(!Identity.valid(user))throw new IOException("INVALID_PROFILE");

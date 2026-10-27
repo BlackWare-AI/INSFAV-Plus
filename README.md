@@ -2,84 +2,60 @@
 
 <img src="web/static/logo.jpg" alt="INSFAV Plus" width="128">
 
-[Download the signed INSFAV Plus 1.1.6 release APK](https://github.com/BlackWare-AI/INSFAV-Plus/releases/latest).
+[Son yayımlanan imzalı APK](https://github.com/BlackWare-AI/INSFAV-Plus/releases/latest)
 
-INSFAV Plus is an independent Android collection manager based on INSFAV commit
-`0a4ba915418e0652618879d4af2c0745ef9ca4f0`. The original INSFAV repository and
-INSFAV 5.0.0 remain separate.
+INSFAV Plus, InstaPro’dan dışa aktarılmış Instagram Favoriler koleksiyonlarını Android’de görüntülemek ve yönetmek için bağımsız bir uygulamadır. Instagram ile favori eşitlemesi yapmaz. [INSFAV](https://github.com/BlackWare-AI/INSFAV) ayrı bir uygulamadır; paketleri, verileri ve Instagram oturumları birbirinden bağımsızdır.
 
-- **App:** INSFAV Plus 1.1.6, build 8; `com.instagram.insfav.plus`.
-- One Java/Gradle Android application, one APK; Android 8.0+ (min 26), target 35.
-- AMOLED black interface, 60×60 profile images in contiguous 65px virtual rows.
-- Optional 2/3/4/5-column square matrices with usernames below images; view choice is saved.
-- A translucent scroll ball reveals on tap and slides halfway offscreen after 3s idle; its rail stays hidden. Arrows slide/fade after 3s; dragging uses a 250ms hold.
-- Existing collection formats, list memberships, 128/256 WebP files, HD viewer,
-  Fetcher, scheduling, notifications, WorkManager, SAF and diagnostics remain supported.
-- English and Turkish, system language by default with a saved override.
-- Read-only missing/present/orphan candidates relative to loaded collections; incomplete imports can misclassify images. No deletion.
-- Hold an account name or use Shift+F10 to read full text at large font sizes.
-- Download outcome filters keep list order and memberships; Refresh updates the explicit filter snapshot.
-- Optional measured diagnostics, bounded redacted operation history and recoverable startup errors.
+## Başlarken
 
-The optional Fetcher accesses a third-party service automatically. Its use may
-conflict with that service's terms or access restrictions. Android controls when
-background work can run; force stop does not guarantee an automatic restart.
+1. SamMods InstaPro 15.30 veya daha eski, uyumlu bir sürümden alınmış JSON yedeğini içe aktarın. Uygulama `favorite_page_pref` alanındaki koleksiyonları okur ve özgün JSON’u korur.
+2. Yerel profil görselleri için `.thumbnails` klasörünüzü Android’in klasör seçicisinden seçin. Paylaşımlı depolamanın tamamına erişim gerekmez.
+3. Çevrimiçi HD görüntüleme için Ayarlar → Thumbnail Fetcher → Instagram bölümünden giriş yapın. İki aşamalı doğrulama ve güvenlik kontrollerini görünür giriş sayfasında kendiniz tamamlayın.
+4. Toplu thumbnail indirmek isterseniz klasöre yazma izni verin ve **Eksikleri Başlat** veya **Devam Et** seçin. Uygulamayı açmak kendi başına toplu indirmeyi başlatmaz.
 
-## Build and verify
+## Neler yapabilir?
 
-Use JDK 17, Android SDK 35/build-tools 35.0.0 and Node 22.
+- Koleksiyonları, hesapları ve koleksiyon üyeliklerini gösterir; arama ve liste / 2–5 sütunlu matris görünümü sunar.
+- AMOLED siyah tasarım, Türkçe / İngilizce arayüz ve kalıcı görünüm ayarları kullanır.
+- Yerel WebP thumbnail’ları ve çevrimiçi HD profil görsellerini görüntüler. HD için önceden thumbnail dosyası bulunması gerekmez.
+- HD görselden 256×256 WebP thumbnail’ı bağımsız arka plan işiyle kaydeder; eksik thumbnail için dönüşüm göstergesi sunar. Görüntüleyicide başka profile geçmek yerel dönüşümü iptal etmez.
+- İsteğe bağlı Thumbnail Fetcher’da kalıcı kuyruk, zamanlama, eşzamanlılık, duraklatma/devam etme, başarısızları yeniden deneme ve tanılama dışa aktarma bulunur.
+- Fetcher tamamen kapatılabilir; toplu bağlantılar, zamanlama ve indirme bildirimleri durur. HD görüntüleme ve onun thumbnail dönüşümü kullanılabilir.
+- JSON dışa aktarma ve uygulamaya özgü AES-GCM şifreli ayar/çerez yedeği bulunur. Normal ayar yedeği, Favoriler JSON yedeğinden ayrıdır.
+
+## Instagram oturumu
+
+- **Legacy · Kalıcı WebView:** Uygulamanın kendi kalıcı WebView oturumunu kullanır; varsayılan yöntemdir.
+- **YTDLnis tarzı · Netscape / HTTP:** Aynı uygulamanın WebView çerezlerini Netscape biçimine dönüştürerek HTTP sağlayıcısına aktarır. YTDLnis’ten bağımsız uygulanmıştır; Instagram’ın tüm hesaplar için bu yolu kabul edeceği garanti edilmez.
+- **Manuel çerezler:** `cookies.txt` veya HTTP Cookie Header yapıştırma, kaydetme ve kaldırma korunur. Alternatif yöntemler birbirlerinin kayıtlarını silmez.
+
+Giriş ekranında yenileme, çerezi görüntüleme ve çıkış seçenekleri bulunur. Zorunlu **Test Session** adımı yoktur. Çerezler tanılama raporlarına eklenmez; başka uygulamalarla paylaşılmaz. Uygulama açılışında WebView verileri temizlenmez. Instagram sunucusunda iptal edilmiş veya süresi dolmuş bir oturum uygulama tarafından korunamaz. Güvenlik doğrulaması gerektiğinde yeni istekler durur; kullanıcı tamamlamadan otomatik devam edilmez.
+
+## Hazırlanan, henüz APK olarak yayımlanmamış değişiklikler
+
+Bu bölüm kaynak daldaki hazırlıkları anlatır. Yukarıdaki son yayımlanan APK bu değişiklikleri henüz içermeyebilir; bu çalışma sürüm/build numarasını yükseltmez.
+
+- **Tekrarlanan HD işlemlerini doğrulama:** Her açılışta güncel profil kimliği kontrol edilir. Aynı fotoğrafın kimliği ve doğrulanmış HD önbelleği eşleşirse görsel gövdesi yeniden indirilmez. Thumbnail’ın gerçek SHA-256 değeri de eşleşiyorsa dönüşüm/yazma atlanır. Eksik/değiştirilmiş dosya onarılır; yeni fotoğraf eskisini günceller. Önbellek kaybında veya doğrulanamayan değişken URL’lerde yeni indirme gerekebilir.
+- **Uygulama içi güncelleme:** Ayarlar’ın en altında yalnızca bu uygulamanın [kendi GitHub Releases sayfası](https://github.com/BlackWare-AI/INSFAV-Plus/releases) kontrol edilir. Otomatik kontrol, indirme ve inceleme sonrası kurulum ekranını açma izinleri ayrı ve kalıcıdır; başlangıçta kapalıdır. Kontrol yaklaşık 12 saatte birdir; Android zamanlamayı geciktirebilir.
+- **İncelenebilir yayın notları:** Güncelleme butonuna ilk dokunuşta yenilikler/düzeltmeler gösterilir. Son 50 görülen sürümün notları aynı panelden yeniden açılabilir. Notlar çalıştırılabilir HTML olarak işlenmez.
+- **Güvenli güncelleme yolu:** İndirilen APK’nın boyutu, varsa GitHub SHA-256 özeti, paket kimliği, artan versionCode’u ve mevcut kurulumla aynı imzası kontrol edilir. Hatalı/eksik paket kuruluma gönderilmez. Android’in kaynak izni ve kurulum onayı korunur; sıradan Android uygulaması arka planda sessiz kurulum yapamaz. Otomatik indirme arka planda yapılabilir; inceleme, yedek PIN’i ve kurulum ekranı için uygulamaya dönülür.
+- **Kurulum öncesi tam veri yedeği:** Seçilen klasöre favoriler, tüm özel ayarlar, manuel/WebView çerezleri, indeksler, SQLite verileri, kuyruk, geçmiş ve loglardan şifreli `.ifbackup` arşivi yazılır ve geri okunarak doğrulanır. Başarısız yedek kurulumu engeller. Aktif tarama/indirme/dönüşüm bitmeden yedek alınmaz. Harici thumbnail dosyaları, HD önbelleği ve WebView site depolaması kopyalanmaz; mevcut dosyalar yerinde kalır. Oturumun sunucuda geçersizleşmesini bu yedek engellemez.
+- **Dört rakamlı PIN:** Yeni ayar yedekleri ve güncelleme yedekleri, yan yana ve görünür dört rakam kutusu kullanır. Eski 8+ karakterli parolalı ayar yedekleri açılabilir. AES-GCM ve PBKDF2 yapısı korunur; kısa PIN nedeniyle yedeği güvenli klasörde saklayın.
+- **AMOLED seçim penceresi:** Legacy/YTDLnis seçimi, aynı konumdaki düğmeden siyah seçim penceresiyle açılır.
+
+Tam veri yedeği ve kurtarma ayrıntıları: [docs/app-updates.md](docs/app-updates.md).
+
+## Derleme ve doğrulama
+
+JDK 17, Android SDK 35 / build-tools 35.0.0 ve Node.js kullanılır.
 
 ```sh
 npm ci
 npm run web
 npm test
-npx playwright install --with-deps chromium
-npm run test:chromium
-./gradlew :app:testDebugUnitTest
-./gradlew :app:lintDebug
-./gradlew :app:assembleDebug
-./gradlew :app:jacocoDebugReport
+./gradlew :app:testDebugUnitTest :app:lintDebug
 ```
 
-`CHROME_BIN` optionally selects installed Chromium. Browser tests recover their
-baseline locally from the preserved Git bundle. `npm run test:performance` runs
-host-browser comparisons separately. `python3 tools/verify.py --phase NAME
---browser` retains actual exit codes and reports under ignored `artifacts/`.
+Arayüz kaynakları `web/` içindedir; `npm run web` paketlenmiş varlıkları yeniden üretir. Paket kimliği `com.instagram.insfav.plus` olarak korunur. Release APK’ları mevcut GitHub Actions imzalama akışıyla üretilir. Yeni sürüm yayımlanmadan sürüm numarası/build değiştirilmez ve imzasız paket dağıtılmaz.
 
-Edit the UI in `web/` only; `npm run web` generates packaged assets, Android
-translations and source maps. `npm run web:check` checks reproducibility after a
-clean checkout. [MIGRATION.md](MIGRATION.md) explains data transfer;
-[ARCHITECTURE.md](ARCHITECTURE.md) describes storage and lifecycle;
-[PERFORMANCE.md](PERFORMANCE.md) distinguishes measurements from device limits.
-
-Debug APKs are test artifacts, never official releases. The manual Plus publish
-workflow verifies package, versionCode, signature, checksum and non-debuggable
-state before a release. It requires separately supplied Plus signing secrets;
-no key is generated. See [release guidance](docs/RELEASE.md).
-
-MIT application license: [LICENSE](LICENSE). Inter fonts retain their
-[SIL Open Font License](INTER-LICENSE.txt). Original source history and legacy
-release checksums/certificates are preserved in [docs/archive/source](docs/archive/source).
-The current source is also preserved on `preservation/current-main-2026-10-24`.
-
-## Open source and development
-
-This public repository can be forked to study, modify and extend INSFAV Plus.
-Third-party contributions are welcome through pull requests. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes. Plus remains a
-separate application with its own package name, release history and signing key.
-
-The detailed Turkish delivery report is [here](docs/IMPLEMENTATION-REPORT-TR.md);
-[verification evidence](docs/verification/README.md) records counts, coverage and limits.
-
-For paired offline measurements (Python 3.12+), run `python3 tools/benchmark.py --kind all`.
-It restores the exact baseline bundle into ignored artifacts, adds external test
-harnesses without editing tracked source, and disables the coverage agent for
-both measurement variants. Run the full verification and coverage commands again
-after these filtered benchmarks. Android, browser heap and host filesystem
-results have separate scopes in PERFORMANCE.md.
-
-Safety policy evidence: `python3 tools/benchmark.py --kind policies` compares
-15/30/45-second profile deadlines and identical 256/512 scanner batches. The
-selected defaults are 45 seconds (retryable) and 256 records with two workers.
-See the scope and measured results in PERFORMANCE.md.
+Gerçek Instagram erişimi, hesap kısıtları, Android WebView sürümü ve ağ koşullarına bağlıdır. Kontrollü otomatik testlerin geçmesi her hesapta canlı erişimin doğrulandığı anlamına gelmez.
