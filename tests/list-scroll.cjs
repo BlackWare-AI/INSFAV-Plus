@@ -166,7 +166,12 @@ const {chromium}=require('playwright');
    if(stop==='native-background')await page.evaluate(()=>nativeEvent('app-background',''));
    if(stop==='modal')await page.locator('#result-filter').dispatchEvent('click');
    if(stop==='list-change')await page.evaluate(()=>{opened.delete(1);rebuild(true);});
-   if(stop==='resize')await page.setViewportSize({width:394,height:850});
+   if(stop==='resize'){
+    // Native window/visualViewport events are delivered outside Playwright's frozen JS clock.
+    await page.evaluate(()=>{window.fixtureResize=Promise.all([new Promise(done=>addEventListener('resize',done,{once:true})),new Promise(done=>visualViewport.addEventListener('resize',done,{once:true}))]);});
+    await page.setViewportSize({width:394,height:850});
+    await page.evaluate(()=>window.fixtureResize.then(()=>{delete window.fixtureResize;}));
+   }
    await page.clock.runFor(150);await active(false,stop);check((await metrics(page)).top===0,stop+' cancels without scrolling');
    if(stop==='modal'){check(await page.locator('#main-scroll').isHidden(),'Open modal hides controls');await page.keyboard.press('Escape');await page.clock.runFor(200);await page.locator('#dialog').waitFor({state:'hidden'});}
    if(stop==='visibility')await page.evaluate(()=>{delete document.hidden;});
