@@ -18,6 +18,10 @@ on:
         description: VERSION_CODE (must exceed every earlier published APK)
         default: '14'
         required: true
+      icon_refresh:
+        description: Owner-requested same-version/build rebuild; APK payload may change only the two icon images
+        type: boolean
+        default: false
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata
         required: false
@@ -116,6 +120,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version || '1.1.11' }}
           CODE: ${{ inputs.code || '14' }}
+          PLUS_ICON_REFRESH: ${{ inputs.icon_refresh && 'true' || 'false' }}
+          PLUS_RELEASE_NOTES_FILE: ${{ inputs.icon_refresh && 'ICON-REFRESH-RELEASE.md' || '' }}
         run: python3 tools/publish-plus.py
       - name: Remove temporary signing file
         if: always()
