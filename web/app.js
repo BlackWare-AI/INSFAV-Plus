@@ -66,7 +66,7 @@ window.nativeEvent=(event,data)=>{
   }
   if(event==='remote-full-failed'&&viewerToken===data.token){
    const login=['COOKIE_REQUIRED','COOKIE_INVALID_EXPIRED','COOKIE_EXPIRED','LOGIN_VERIFICATION_REQUIRED','LOGIN_REQUIRED','ACCESS_BLOCKED'].includes(data.code);
-   const detail=data.code==='CHALLENGE_REQUIRED'?t('Complete verification in Instagram Login, then tap Check.'):login?t('Open Instagram Login and tap Check to verify the session.'):data.code==='WEBVIEW_TIMEOUT'?t('Instagram did not respond. Open Instagram Login and check the session.'):t('Online image unavailable');
+   const detail=data.code==='CHALLENGE_REQUIRED'?t('Complete verification in Instagram Login, then tap Refresh.'):login?t('Open Instagram Login and tap Refresh to verify the session.'):data.code==='WEBVIEW_TIMEOUT'?t('Instagram did not respond. Open Instagram Login and check the session.'):t('Online image unavailable');
    $('viewer-caption').textContent+=' · '+detail;
   }
   if(event==='language')I.choose(data.choice);if(event==='message'||event==='error')message(data);
@@ -233,6 +233,7 @@ function closeFetcher(){clearInterval(fetcherPoll);fetcherPoll=0;$('cookie-text'
 function outsideSchedule(f){return t('Outside working hours. Configured window: {start}–{end}. Next eligible time: {next}.',{start:f.start,end:f.end,next:f.nextAllowedAt?new Date(f.nextAllowedAt).toLocaleString(I.locale(),{hour12:false}):'—'});}
 function updateFetcher(){
  const f=fetcherState;if($('fetcher-screen').hidden)return;
+ $('fetcher-disabled').checked=!!f.bulkDisabled;
  changedText($('instagram-session-state'),f.instagramSession||'Persistent WebView Session · Not verified');
  changedText($('cookie-state'),f.manualCookiesSaved?t('Cookies saved · session checked during retrieval'):t('Not configured'));
  changedText($('fetcher-state'),(f.outsideScheduleMessage?outsideSchedule(f):(I.status(f.scheduleStatus||'')+' · '+I.status(f.state||'Idle')))+(f.blocked==='RATE_LIMITED'?' · '+(f.blockedHttp===429?'HTTP 429':'Instagram restriction')+(f.retryAt?' · Cooldown until '+new Date(f.retryAt).toLocaleTimeString(I.locale(),{hour12:false}):'')+(f.automaticResume?' · Automatic resume scheduled':' · Manual resume'):''));changedText($('fetcher-folder'),t(f.folder||'Not selected')+' · '+t(f.writable?'Write access granted':'Read only'));$('fetcher-write').hidden=!!f.writable;
@@ -249,14 +250,14 @@ function updateFetcher(){
  $('fetcher-run-progress').max=Math.max(1,f.total||0);$('fetcher-run-progress').value=reviewed;
  changedText($('fetcher-history'),t('{reviewed} / {total} accounts reviewed · {saved} saved outcomes · Retried only with Retry Skipped / Failed Profiles',{reviewed,total:f.total||0,saved:(f.skipped||0)+(f.failed||0)+(f.held||0)}));
  changedText($('fetcher-current'),(f.resolution?.verificationRecommended?'External folder changes detected · Verify Fetcher Index recommended · ':'')+t('Elapsed')+' '+(f.elapsedSeconds||0)+' s'+(f.etaSeconds>=0?' · ETA '+f.etaSeconds+' s':''));
- $('fetcher-verify').disabled=!!f.running;$('fetcher-missing').disabled=!!f.running;$('fetcher-resume').disabled=!!f.running;$('fetcher-retry-skipped').disabled=!!f.running;
+ $('fetcher-verify').disabled=!!f.running||!!f.bulkDisabled;$('fetcher-missing').disabled=!!f.running||!!f.bulkDisabled;$('fetcher-resume').disabled=!!f.running||!!f.bulkDisabled;$('fetcher-retry-skipped').disabled=!!f.running||!!f.bulkDisabled;
 }
 $('fetcher-menu').onclick=openFetcher;$('fetcher-back').onclick=closeFetcher;
 for(const input of $('fetcher-screen').querySelectorAll('input'))input.addEventListener('input',()=>input.dataset.edited='true');
 $('instagram-webview').onclick=()=>request('instagram-session-method',{manual:false});
 $('instagram-manual').onclick=()=>request('instagram-session-method',{manual:true});
 $('instagram-login').onclick=()=>request('instagram-session-open');
-$('instagram-test').onclick=()=>request('instagram-session-test');
+$('fetcher-disabled').onchange=()=>request('fetcher-disabled',{disabled:$('fetcher-disabled').checked});
 $('cookie-paste').onclick=async()=>{if(native){request('fetcher-paste');return;}try{$('cookie-text').value=await navigator.clipboard.readText();}catch(error){$('cookie-text').focus();message('Use the Android Paste command in the cookie field.');}};
 $('cookie-save').onclick=()=>{const text=$('cookie-text').value;for(const id of ['cookie-text','cookie-save','cookie-paste'])$(id).disabled=true;request('fetcher-cookies-save',{text});};
 $('cookie-remove').onclick=()=>{$('cookie-text').value='';confirmAction('Remove Instagram Cookies?','Retrieval stops. Collections and local photos stay unchanged.',()=>request('fetcher-cookies-remove'));};

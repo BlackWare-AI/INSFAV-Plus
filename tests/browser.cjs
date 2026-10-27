@@ -174,6 +174,13 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   await page.locator('#fetcher-menu').click();check(await page.locator('#fetcher-screen').isVisible(),'Thumbnail Fetcher opens its own settings screen');
   check(await page.getByRole('button',{name:'Test Cookies',exact:true}).count()===0,'no Test Cookies gate or button remains');
   check(await page.locator('#cookie-state').innerText()==='Cookies saved · session checked during retrieval','cookie status does not claim verified authentication');
+  check(await page.locator('#instagram-test').count()===0,'explicit Test Session control is removed');
+  await page.locator('#fetcher-disabled').check();check(await page.evaluate(()=>commands.at(-1).command==='fetcher-disabled'&&commands.at(-1).disabled),'bulk disable uses its separate native control');
+  await page.evaluate(()=>nativeEvent('fetcher-status',{...fetcherState,bulkDisabled:true,running:false}));
+  check(await page.locator('#fetcher-missing').isDisabled()&&await page.locator('#fetcher-resume').isDisabled(),'disabled fetcher blocks Start and Resume');
+  await page.locator('#fetcher-disabled').uncheck();
+  await page.evaluate(()=>nativeEvent('fetcher-status',{...fetcherState,bulkDisabled:false,running:false}));
+  check(await page.evaluate(()=>!commands.some(c=>c.command==='fetcher-action')),'enabling the module does not start bulk retrieval');
   await page.locator('#cookie-paste').click();check(await page.evaluate(()=>commands.at(-1).command==='fetcher-paste'),'Paste uses the Android foreground clipboard adapter');
   await page.evaluate(()=>nativeEvent('cookie-paste','sessionid=FAKE_FOR_TEST; ds_user_id=1'));check((await page.locator('#cookie-text').inputValue()).startsWith('sessionid='),'native paste fills only the transient cookie editor');await page.locator('#cookie-save').click();
   check((await page.locator('#cookie-text').inputValue()).includes('FAKE_FOR_TEST'),'Save retains the editor until private storage confirms success');

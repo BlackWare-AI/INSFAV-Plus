@@ -113,6 +113,7 @@ public final class Fetcher {
     // A new process must not replay an old foreground/background start request.
     SessionState.requireManualStart(context);
     lastSynced = null;
+    if (!running()) DownloadNotification.clear(context);
     try {
       watchSource();
     } catch (RuntimeException unavailable) {
@@ -174,6 +175,7 @@ public final class Fetcher {
 
   /** Re-register cheaply on cold launch/resume without cloning the catalog or seeding the queue. */
   public static synchronized void watchSource() {
+    if (bulkDisabled()) return;
     String tree = host().tree(), key = tree + "\n" + host().directory();
     if (key.equals(observerTree)) return;
     if (catalogObserver != null) {
@@ -187,7 +189,7 @@ public final class Fetcher {
               new android.os.Handler(android.os.Looper.getMainLooper())) {
             @Override
             public void onChange(boolean self, Uri uri) {
-              CompletableFuture.runAsync(() -> FetcherCatalog.observe(context, uri));
+              CompletableFuture.runAsync(() -> { if (!bulkDisabled()) FetcherCatalog.observe(context, uri); });
             }
           };
       context.getContentResolver().registerContentObserver(Uri.parse(tree), true, next);
@@ -197,6 +199,7 @@ public final class Fetcher {
   }
 
   public static synchronized void sync() throws Exception {
+    if (bulkDisabled()) return;
     if (QueueControl.lock.get())
       throw new IOException("Pause the fetcher before changing collections or folder.");
     SharedPreferences s = SessionState.prefs(context);
@@ -326,11 +329,25 @@ public final class Fetcher {
     publish();
   }
 
+
+ public static boolean bulkDisabled() { return BulkControl.disabled(context); }
+ public static synchronized void setBulkDisabled(boolean disabled) {
+  SessionState.prefs(context).edit().putBoolean("bulkDisabled",disabled).putBoolean("armed",false).putBoolean("userPaused",true).commit();
+  QueueControl.pause(context,true);
+  if (disabled) {
+   if (catalogObserver != null) { context.getContentResolver().unregisterContentObserver(catalogObserver); catalogObserver=null; }
+   observerTree=""; lastSynced=null;
+   context.stopService(new Intent(context,FetchService.class));
+  }
+  SessionState.prefs(context).edit().putString("state",disabled?"Thumbnail Fetcher disabled":"Stopped").commit();
+  DownloadNotification.clear(context); publish();
+ }
   public static void action(String action) throws Exception {
     if (action.equals("pause") || action.equals("stop")) {
       QueueControl.pause(context, action.equals("stop"));
       return;
     }
+    BulkControl.requireEnabled(context);
     if (!action.equals("missing")
         && !action.equals("resume")
         && !action.equals("retry_skipped")
@@ -461,7 +478,7 @@ public final class Fetcher {
         .put("blockedHttp", p.getInt("blockedHttp", 0))
         .put("automaticResume", WorkScheduler.enabled(p))
         .put("resolution", resolution)
-        .put("cookiesSaved", InstagramSession.configured(context)).put("manualCookiesSaved", new CookieVault(context).configured()).put("manualSession", InstagramSession.manual(context)).put("instagramSession", InstagramSession.status(context))
+        .put("cookiesSaved", InstagramSession.configured(context)).put("manualCookiesSaved", new CookieVault(context).configured()).put("bulkDisabled",bulkDisabled()).put("manualSession", InstagramSession.manual(context)).put("instagramSession", InstagramSession.status(context))
         .put("writable", writable())
         .put("minimum", r.minimum)
         .put("maximum", r.maximum)
@@ -512,7 +529,7 @@ public final class Fetcher {
 
   public static JSONObject resolution(int offset) throws Exception {
     try (QueueStore q = new QueueStore(context)) {
-      if (!running()) FetcherCatalog.seed(q);
+      if (!running() && !bulkDisabled()) FetcherCatalog.seed(q);
       return FetcherCatalog.resolution(q, offset);
     }
   }

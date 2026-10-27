@@ -61,7 +61,7 @@ public final class UiDeviceChecks {
       JSONObject proof=
           new JSONObject()
               .put("sdk", Build.VERSION.SDK_INT)
-              .put("nativeBridgeClipboardVerified", true).put("manualCookiePasteVerified", true)
+              .put("nativeBridgeClipboardVerified", true).put("manualCookiePasteVerified", true).put("bulkDisableVerified",true)
               .put("copiedUsernames", 3)
               .put("folderNamesExcluded", true)
               .put("duplicatesRemoved", true)

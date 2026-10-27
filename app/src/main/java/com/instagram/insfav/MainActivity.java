@@ -581,14 +581,15 @@ public final class MainActivity extends Activity {
                         case "instagram-session-open":
                             Fetcher.closeViewer();
                             runOnUiThread(() -> com.instagram.insfav.fetcher.InstagramSession.show(MainActivity.this)); break;
-                        case "instagram-session-test":
-                            runOnUiThread(() -> com.instagram.insfav.fetcher.InstagramSession.test(MainActivity.this)); break;
+                        case "fetcher-disabled":
+                            Fetcher.setBulkDisabled(input.optBoolean("disabled"));
+                            send("fetcher-status", Fetcher.snapshot()); break;
                         case "fetcher-cookies-save": {
                             try { Fetcher.saveCookies(input.getString("text")); }
                             catch (Exception issue) { send("cookie-save-failed", new JSONObject()); throw issue; }
                             send("cookie-saved", new JSONObject());
                             send("fetcher-status", Fetcher.snapshot());
-                            send("message",com.instagram.insfav.fetcher.InstagramSession.manual(MainActivity.this) ? "Manual cookies saved securely. Tap Test Session to verify them. Retrieval remains paused." : "Manual cookies saved securely. Select Manual Cookies and tap Test Session. Retrieval remains paused.");
+                            send("message",com.instagram.insfav.fetcher.InstagramSession.manual(MainActivity.this) ? "Manual cookies saved securely. The session is checked when HD or retrieval is requested. Retrieval remains paused." : "Manual cookies saved securely. Select Manual Cookies to use them. Retrieval remains paused.");
                             break;
                         }
                         case "fetcher-cookies-remove":
@@ -610,7 +611,7 @@ public final class MainActivity extends Activity {
                       throw new IOException("Wait for the thumbnail scan to finish.");
                     runOnUiThread(
                         () -> {
-                          if (Build.VERSION.SDK_INT >= 33
+                          if (!java.util.Arrays.asList("pause", "stop").contains(input.optString("action")) && Build.VERSION.SDK_INT >= 33
                               && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
                                   != android.content.pm.PackageManager.PERMISSION_GRANTED)
                             requestPermissions(
