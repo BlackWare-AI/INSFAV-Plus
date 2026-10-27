@@ -19,6 +19,7 @@ LEGACY_CERTIFICATE = "9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0d
 
 class PublishGuardTest(unittest.TestCase):
     def run_case(self, previous=None, multiple_pages=False, source_sha=None, release_changes=None, unsigned_payload=None, candidate_payload=None, icon_refresh=False, **changes):
+        if icon_refresh and source_sha is None:source_sha="f"*40
         prior = dict(package="com.instagram.insfav.plus", versionCode=1,
                      certificateSha256=["ab12"])
         prior.update(previous or {})
@@ -45,7 +46,7 @@ class PublishGuardTest(unittest.TestCase):
             (root / "artifacts").mkdir()
             (root / "artifacts/apk.json").write_text(json.dumps(current))
             (root / "prior.json").write_text(json.dumps(prior))
-            release = {"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
+            release = {"target_commitish":"0"*40,"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
             (root/'web/static').mkdir(parents=True)
             (root/'web/static/logo.jpg').write_bytes(b'new-icon')
             if prior.get('unsigned') or icon_refresh:
@@ -218,8 +219,8 @@ else:
         self.assertIn('versionCode cannot decrease',error)
 
     def icon_case(self, **overrides):
-        before={'AndroidManifest.xml':b'manifest','classes.dex':b'code',
-                'assets/logo.jpg':b'old-icon','res/ST.jpg':b'old-icon'}
+        before=overrides.pop('baseline_payload',{'AndroidManifest.xml':b'manifest','classes.dex':b'code',
+                'assets/logo.jpg':b'old-icon','res/ST.jpg':b'old-icon'})
         after={**before,'assets/logo.jpg':b'new-icon','res/ST.jpg':b'new-icon'}
         previous=dict(version='1.1.0',versionCode=2)
         previous.update(overrides.pop('previous',{}))
@@ -250,6 +251,17 @@ else:
     def test_icon_refresh_cannot_publish_without_a_same_build_baseline(self):
         code,published,error=self.icon_case(previous={'versionCode':1})
         self.assertNotEqual(0,code);self.assertFalse(published)
+
+    def test_icon_refresh_allows_only_the_exact_source_revision_metadata_change(self):
+        before={'AndroidManifest.xml':b'manifest','classes.dex':b'code','assets/logo.jpg':b'old-icon','res/ST.jpg':b'old-icon',
+            'META-INF/version-control-info.textproto':('revision: "'+'0'*40+'"').encode()}
+        after={**before,'assets/logo.jpg':b'new-icon','res/ST.jpg':b'new-icon',
+            'META-INF/version-control-info.textproto':('revision: "'+'f'*40+'"').encode()}
+        code,published,error=self.icon_case(baseline_payload=before,candidate_payload=after)
+        self.assertEqual(0,code,error);self.assertTrue(published)
+        for stamp in [('revision: "'+'a'*40+'"').encode(),after['META-INF/version-control-info.textproto']+b' extra changes']:
+            code,published,error=self.icon_case(baseline_payload=before,candidate_payload={**after,'META-INF/version-control-info.textproto':stamp})
+            self.assertNotEqual(0,code);self.assertFalse(published)
 
     def test_debug_artifact_is_rejected(self):
         code, published, _ = self.run_case(debuggable=True)

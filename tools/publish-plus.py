@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Publish a verified Plus APK. No key creation or uploads to the original project."""
-import hashlib, io, json, os, subprocess, tempfile, zipfile
+import hashlib, io, json, os, re, subprocess, tempfile, zipfile
 from pathlib import Path
 REPOSITORY='BlackWare-AI/INSFAV-Plus'
 assert os.environ['GITHUB_REPOSITORY']==REPOSITORY
@@ -34,7 +34,7 @@ def verify_same_build_unsigned(release, assets, prior):
     assert hashlib.sha256(result.stdout).hexdigest()==prior.get('sha256'),'Unsigned source SHA-256 mismatch'
     current=Path('app/build/outputs/apk/release/app-release.apk').read_bytes()
     assert apk_payload(result.stdout)==apk_payload(current),'Same-build signing must preserve the entire APK payload'
-def verify_icon_refresh(assets, prior):
+def verify_icon_refresh(release, assets, prior):
     global icon_verified
     assert prior.get('version')==meta['version'],'Icon refresh must preserve versionName'
     sources=[a for a in assets if a['name']==prior.get('file','app-release.apk')]
@@ -50,6 +50,14 @@ def verify_icon_refresh(assets, prior):
     allowed={'assets/logo.jpg',resources[0]}
     assert before.keys()==after.keys(),'Icon refresh must preserve APK entries'
     changed={n for n in before if before[n]!=after[n]}
+    provenance='META-INF/version-control-info.textproto'
+    if provenance in changed:
+        old=release.get('target_commitish','');new=os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']
+        assert re.fullmatch('[0-9a-f]{40}',old) and re.fullmatch('[0-9a-f]{40}',new),'Invalid source provenance'
+        old_revision=('revision: "'+old+'"').encode();new_revision=('revision: "'+new+'"').encode()
+        assert before[provenance].count(old_revision)==1,'Baseline source provenance mismatch'
+        assert before[provenance].replace(old_revision,new_revision)==after[provenance],'Only the exact reviewed source revision may change'
+        changed.remove(provenance)
     assert changed==allowed,'Icon refresh may change only both logo images; actual changes: '+','.join(sorted(changed))
     supplied=Path('web/static/logo.jpg').read_bytes()
     assert all(after[n]==supplied for n in allowed),'APK icon must match the supplied artwork exactly'
@@ -77,7 +85,7 @@ for release in [r for page in pages for r in page]:
             if prior['versionCode']==meta['versionCode']: verify_same_build_unsigned(release,assets,prior)
             continue  # Same-build signing is allowed only for identical, explicitly unsigned content.
         if ICON_REFRESH and prior['versionCode']==meta['versionCode']:
-            verify_icon_refresh(assets,prior)
+            verify_icon_refresh(release,assets,prior)
         else:
             assert prior['versionCode']<meta['versionCode'],'versionCode must increase for every published signed APK'
         assert prior.get('certificateSha256'),'Cannot verify the previous Plus signing certificate'
