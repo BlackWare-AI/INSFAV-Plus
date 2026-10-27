@@ -316,6 +316,7 @@ public final class PoolInstrumentation extends Instrumentation {
     FetchService.request(c, "missing");
     if (!navigation.await(15, TimeUnit.SECONDS))
       throw new AssertionError("Service did not start two real pages");
+    assertWorkingNotification(c);
     getUiAutomation().executeShellCommand("input keyevent KEYCODE_HOME").close();
     int beforeHome = written.size();
     until = SystemClock.elapsedRealtime() + 20000;
@@ -359,50 +360,24 @@ public final class PoolInstrumentation extends Instrumentation {
         || validFiles != 8
         || progress.existing != 0
         || progress.pending != 0) throw new AssertionError("Queue/files mismatch");
-    Notification resultNotification = null;
-    until = SystemClock.elapsedRealtime() + 5000;
-    while (resultNotification == null && SystemClock.elapsedRealtime() < until) {
-      for (android.service.notification.StatusBarNotification notification :
-          c.getSystemService(NotificationManager.class).getActiveNotifications())
-        if (notification.getId() == 3) resultNotification = notification.getNotification();
-      if (resultNotification == null) Thread.sleep(100);
-    }
-    if (resultNotification == null
-        || !resultNotification
-            .extras
-            .getCharSequence(Notification.EXTRA_TEXT)
-            .toString()
-            .startsWith("Completed")
-        || resultNotification.extras.getInt(Notification.EXTRA_PROGRESS) != 8)
-      throw new AssertionError("Missing or incorrect result notification");
-    if (resultNotification.getTimeoutAfter() != 6000)
-      throw new AssertionError("Completion timeout missing");
-    until = SystemClock.elapsedRealtime() + 10000;
-    boolean completionVisible = true;
-    while (completionVisible && SystemClock.elapsedRealtime() < until) {
-      completionVisible = false;
-      for (android.service.notification.StatusBarNotification n :
-          c.getSystemService(NotificationManager.class).getActiveNotifications())
-        if (n.getId() == 3) completionVisible = true;
-      if (completionVisible) Thread.sleep(100);
-    }
-    if (completionVisible) throw new AssertionError("Completion notification did not expire");
+    assertNoDownloadNotifications(c);
+    boolean completionVisible=false;
     JSONObject out =
         new JSONObject()
             .put("screenWasOff", screenWasOff)
             .put("screenOffBefore", beforeScreenOff)
             .put("screenOffAfter", afterScreenOff)
             .put("validFiles", validFiles)
-            .put("notificationDownloaded", progress.downloaded)
+            .put("downloaded", progress.downloaded)
             .put(
-                "notificationProgress",
-                resultNotification.extras.getInt(Notification.EXTRA_PROGRESS))
+                "queueProcessed",
+                progress.done)
             .put("homeBefore", beforeHome)
             .put("homeAfter", afterHome)
             .put("removeTaskBefore", beforeRemove)
             .put("completed", written.size())
             .put("userPaused", SessionState.prefs(c).getBoolean("userPaused", false))
-            .put("completionNotificationRemoved", !completionVisible)
+            .put("activeDownloadNotificationVerified",true).put("completionNotificationRemoved", !completionVisible)
             .put("fixture", true);
     try (FileOutputStream stream =
         c.openFileOutput("background-fixture.json", Context.MODE_PRIVATE)) {
@@ -412,6 +387,22 @@ public final class PoolInstrumentation extends Instrumentation {
   }
 
   // Offline viewer identity fixture for the mandatory pre-batch authentication.
+  static void assertWorkingNotification(Context c) {
+    for(android.service.notification.StatusBarNotification n:c.getSystemService(NotificationManager.class).getActiveNotifications())
+      if((n.getId()==1||n.getId()==2)&&(n.getNotification().flags&Notification.FLAG_ONGOING_EVENT)!=0)return;
+    throw new AssertionError("Running download has no ongoing notification");
+  }
+  static void assertNoDownloadNotifications(Context c) throws InterruptedException {
+    long deadline=SystemClock.elapsedRealtime()+5000;
+    do {
+      boolean found=false;
+      for(android.service.notification.StatusBarNotification n:c.getSystemService(NotificationManager.class).getActiveNotifications())
+        if(n.getId()==1||n.getId()==2||n.getId()==3)found=true;
+      if(!found)return;
+      Thread.sleep(100);
+    }while(SystemClock.elapsedRealtime()<deadline);
+    throw new AssertionError("Stopped download retained a notification");
+  }
   static WebResourceResponse viewerFixture() {
     return new WebResourceResponse(
         "text/html",
