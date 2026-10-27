@@ -448,6 +448,8 @@ public class LocalImagesTest {
     }
 
   public static final class FixtureProvider extends ContentProvider {
+        Store mustNotHold;
+        Runnable beforeOpen;
     volatile long delayMs;
     File directory;
     final Map<String, File> files = new LinkedHashMap<>();
@@ -551,6 +553,9 @@ public class LocalImagesTest {
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+            if(mustNotHold!=null)assertFalse("Provider IO must not hold Store monitor",Thread.holdsLock(mustNotHold));
+            Runnable hook=beforeOpen;if(hook!=null){beforeOpen=null;hook.run();}
+
       if (delayMs > 0)
         try {
           Thread.sleep(delayMs);

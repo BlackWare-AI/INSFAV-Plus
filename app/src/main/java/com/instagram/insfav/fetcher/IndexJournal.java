@@ -14,7 +14,7 @@ public final class IndexJournal implements AutoCloseable {
   private final QueueStore queue;
 
   public IndexJournal(Context context) {
-    queue = new QueueStore(context);
+    queue = new QueueStore(context, true);
   }
 
   public void record(String scope, String user, JSONObject profile, long revision)

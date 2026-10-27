@@ -42,13 +42,14 @@ final class FetcherCatalog {
             "UPDATE accounts SET status='PENDING',phase='PENDING',attempts=0,code='' WHERE status"
                 + " IN ('SUCCESS','EXISTING')");
       }
+      Map<String, QueueStore.Image> existing = q.images();
       Set<String> current = new HashSet<>();
       for (Iterator<String> it = profiles.keys(); it.hasNext(); ) {
         String user = it.next();
         if (!Identity.valid(user)) continue;
         JSONObject p = profiles.getJSONObject(user);
         current.add(user);
-        QueueStore.Image old = q.image(user);
+        QueueStore.Image old = existing.get(user);
         QueueStore.Image next =
             new QueueStore.Image(
                 user,
@@ -66,9 +67,8 @@ final class FetcherCatalog {
         }
       }
       List<String> old = new ArrayList<>();
-      try (Cursor c = db.rawQuery("SELECT username FROM fetch_images WHERE uri!=''", null)) {
-        while (c.moveToNext()) if (!current.contains(c.getString(0))) old.add(c.getString(0));
-      }
+      for (QueueStore.Image image : existing.values())
+        if (!image.uri.isEmpty() && !current.contains(image.user)) old.add(image.user);
       for (String user : old) {
         q.image(new QueueStore.Image(user, "", "", 0, 0, 0, 0, false));
         q.requeueLost(user);

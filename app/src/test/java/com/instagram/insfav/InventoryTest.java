@@ -93,8 +93,26 @@ public class InventoryTest {
     assertEquals(105, first.getInt("total"));
     assertEquals(100, first.getJSONArray("items").length());
     String token = first.getJSONArray("items").getJSONObject(0).getString("preview");
+    long passes = inventory.catalogPasses;
     assertEquals(5, inventory.query("orphan", 100, "orphan").getJSONArray("items").length());
+    assertEquals(passes, inventory.catalogPasses);
     assertThrows(IOException.class, () -> inventory.open(token));
+  }
+
+  @Test
+  public void pageCacheInvalidatesOnCatalogCollectionQueryAndPermissionChanges() throws Exception {
+    images.scan((e,v)->{});
+    JSONObject first=inventory.query("present",0,"");long passes=inventory.catalogPasses;
+    assertEquals(first.getInt("total"),inventory.query("present",100,"").getInt("total"));
+    assertEquals(passes,inventory.catalogPasses);
+    inventory.query("present",0,"example");assertEquals(++passes,inventory.catalogPasses);
+    store.importDocument("[{\"name\":\"New\",\"items\":[{\"pageId\":\"missing\"}]}]");
+    assertEquals(0,inventory.query("present",0,"example").getInt("total"));assertEquals(++passes,inventory.catalogPasses);
+    store.replaceIndex(new JSONObject());
+    inventory.query("present",0,"example");assertEquals(++passes,inventory.catalogPasses);
+    context.getContentResolver().releasePersistableUriPermission(Uri.parse("content://insfav.test/tree/root"),Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    assertEquals(1,inventory.query("missing",0,"").getInt("total"));
+    assertEquals(0,provider.writes);
   }
 
   @Test

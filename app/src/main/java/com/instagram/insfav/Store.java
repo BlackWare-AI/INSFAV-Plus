@@ -25,6 +25,8 @@ final class Store {
   private LinkedHashSet<String> cachedUsers;
   private int total;
   private final File diagnostic;
+  long indexGeneration;
+  private String savedSettings;
   private final Context context;
   private static final ScheduledExecutorService snapshots =
       Executors.newSingleThreadScheduledExecutor(
@@ -34,6 +36,18 @@ final class Store {
             return t;
           });
   private ScheduledFuture<?> pendingSnapshot;
+  private IndexJournal pendingJournal;
+  private long journalSessions;
+
+  // A batch owns one helper until its durable snapshot is acknowledged.
+  private IndexJournal journal() {
+    if (pendingJournal == null) { pendingJournal = new IndexJournal(context); journalSessions++; }
+    return pendingJournal;
+  }
+
+  private void closeJournal() {
+    if (pendingJournal != null) { pendingJournal.close(); pendingJournal = null; }
+  }
   private int dirtyChanges;
   private long snapshotWrites, snapshotBytes, snapshotNanos, deltaWrites, recoveredDeltas;
   final long sourceEpoch = System.currentTimeMillis();
@@ -237,7 +251,10 @@ final class Store {
   }
 
   synchronized void saveSettings() throws IOException {
-    write("image-settings.json", settings.toString());
+    String value = settings.toString();
+    if (value.equals(savedSettings)) return;
+    write("image-settings.json", value);
+    savedSettings = value;
   }
 
   private String scope() {
@@ -260,13 +277,18 @@ final class Store {
       } catch (JSONException error) {
         throw new IOException("INDEX_REVISION_FAILED", error);
       }
+    // In-place callers have already changed memory. Invalidate even if the disk write fails.
+    if (next == index) {
+      indexGeneration++;
+      profileChanges.clear();
+      deltaFloor = next.optLong("revision");
+    }
     writeIndex(next);
     index = next;
+    indexGeneration++;
     profileChanges.clear();
     deltaFloor = next.optLong("revision");
-    try (IndexJournal journal = new IndexJournal(context)) {
-      journal.clear();
-    }
+    try { journal().clear(); } finally { closeJournal(); }
     dirtyChanges = 0;
     if (pendingSnapshot != null) {
       pendingSnapshot.cancel(false);
@@ -278,8 +300,11 @@ final class Store {
     if (!tree.equals(settings.optString("treeUri"))) return;
     long revision = Math.max(System.currentTimeMillis(), index.optLong("revision") + 1);
     // Persist before acknowledging the image or updating the in-memory public catalog.
-    try (IndexJournal journal = new IndexJournal(context)) {
-      journal.record(scope(), user, profile, revision);
+    try {
+      journal().record(scope(), user, profile, revision);
+    } catch (Exception | Error failure) {
+      closeJournal();
+      throw failure;
     }
     deltaWrites++;
     applyProfile(user, profile, tree, revision);
@@ -320,6 +345,7 @@ final class Store {
     if (replacing && !old.optBoolean("readable") && profile.optBoolean("readable"))
       index.put("unreadable", Math.max(0, index.optInt("unreadable") - 1));
     profiles.put(user, new JSONObject(profile.toString()));
+    indexGeneration++;
     index
         .put("treeUri", tree)
         .put("revision", revision)
@@ -333,9 +359,7 @@ final class Store {
     if (dirtyChanges == 0) return;
     long revision = index.optLong("revision");
     writeIndex(index);
-    try (IndexJournal journal = new IndexJournal(context)) {
-      journal.acknowledge(scope(), revision);
-    }
+    try { journal().acknowledge(scope(), revision); } finally { closeJournal(); }
     dirtyChanges = 0;
     if (pendingSnapshot != null) {
       pendingSnapshot.cancel(false);
@@ -348,6 +372,7 @@ final class Store {
         .put("snapshotWrites", snapshotWrites)
         .put("snapshotSerializedBytes", snapshotBytes)
         .put("snapshotNanos", snapshotNanos)
+        .put("journalSessions", journalSessions)
         .put("deltaWrites", deltaWrites)
         .put("pendingChanges", dirtyChanges)
         .put("recoveredDeltas", recoveredDeltas);

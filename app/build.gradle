@@ -45,3 +45,27 @@ tasks.register('jacocoDebugReport', JacocoReport) {
 tasks.withType(Test).configureEach {
     jacoco { enabled = !project.hasProperty('benchmark'); includeNoLocationClasses = true; includes = ['com.instagram.insfav.*']; excludes = ['com.instagram.insfav.R', 'com.instagram.insfav.R$*', 'com.instagram.insfav.BuildConfig'] }
 }
+
+// Fail before packaging if generated WebView assets no longer match their web sources.
+tasks.register('verifyWebAssets') {
+    inputs.dir(rootProject.file('web'))
+    inputs.file(rootProject.file('tools/web-bundle.json'))
+    inputs.dir(file('src/main/assets'))
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(rootProject.file('tools/web-bundle.json'))
+        manifest.each { name, entry ->
+            def source = rootProject.file("web/${name}")
+            if (!source.isFile()) source = rootProject.file("web/static/${name}")
+            def asset = file("src/main/assets/${name}")
+            def digest = { file -> java.security.MessageDigest.getInstance('SHA-256').digest(file.bytes).encodeHex().toString() }
+            if (!source.isFile() || !asset.isFile() || digest(source) != entry.sourceSha256 || digest(asset) != entry.bundleSha256)
+                throw new GradleException("Web asset mismatch: ${name}. Run npm run web before building.")
+            entry.includedSources?.each { included, metadata ->
+                def part = rootProject.file("web/${included}")
+                if (!part.isFile() || digest(part) != metadata.sourceSha256)
+                    throw new GradleException("Web source mismatch: ${included}. Run npm run web before building.")
+            }
+        }
+    }
+}
+tasks.named('preBuild').configure { dependsOn('verifyWebAssets') }
