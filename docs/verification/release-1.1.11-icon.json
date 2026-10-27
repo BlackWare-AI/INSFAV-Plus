@@ -1,0 +1,47 @@
+{
+  "releaseUrl": "https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.11-build.14-icon-bfa8970",
+  "tag": "plus-v1.1.11-build.14-icon-bfa8970",
+  "appSourceCommit": "bfa897078306108e8584f955f3b7cfcd70951b31",
+  "workflow": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/40498731561",
+  "workflowConclusion": "success",
+  "publicationWorkflowCommit": "b63a86b16e69c3deac2f66f62534590fecc871e7",
+  "runAttempt": 1,
+  "baselineTag": "plus-v1.1.11-build.14",
+  "baselineApkSha256": "a2343d278c0bdba1ea36bf8add4cda98a3f31662929ee1e1810d4884947585a6",
+  "apk": {
+    "file": "app-release.apk",
+    "bytes": 1398661,
+    "sha256": "4bd836ed45b6507e9af5948047082fed7670fca345cbc32bc9c9538c0ad73ae4",
+    "package": "com.instagram.insfav.plus",
+    "version": "1.1.11",
+    "versionCode": 14,
+    "debuggable": false,
+    "signatureVerified": true,
+    "certificateSha256": [
+      "cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8"
+    ],
+    "officialRelease": true
+  },
+  "publicDownloadVerified": true,
+  "changedApkEntries": [
+    "META-INF/version-control-info.textproto",
+    "assets/logo.jpg",
+    "res/ST.jpg"
+  ],
+  "changedArtworkEntries": [
+    "assets/logo.jpg",
+    "res/ST.jpg"
+  ],
+  "sourceRevisionMetadataVerified": true,
+  "buildWorkflow": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/40496313062",
+  "checksPassed": [
+    "checks / verify",
+    "checks / emulator",
+    "checks / instagram-session / session-durability",
+    "checks / instagram-isolation / three-app-stores"
+  ],
+  "suppliedImageSha256": "fc8ff6c70505d1cc450a08f061f1607701691a85c23cca30dd01e43ba617c0a4",
+  "versionAndBuildUnchanged": true,
+  "signingCertificateUnchanged": true,
+  "physicalDeviceTested": false
+}

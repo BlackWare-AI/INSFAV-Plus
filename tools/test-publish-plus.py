@@ -18,8 +18,7 @@ LEGACY_CERTIFICATE = "9090544d4da9428880aa032a35e44de61a83dd46eca88e4cc04cf16a0d
 
 
 class PublishGuardTest(unittest.TestCase):
-    def run_case(self, previous=None, multiple_pages=False, source_sha=None, release_changes=None, unsigned_payload=None, candidate_payload=None, icon_refresh=False, **changes):
-        if icon_refresh and source_sha is None:source_sha="f"*40
+    def run_case(self, previous=None, multiple_pages=False, source_sha=None, release_changes=None, unsigned_payload=None, candidate_payload=None, **changes):
         prior = dict(package="com.instagram.insfav.plus", versionCode=1,
                      certificateSha256=["ab12"])
         prior.update(previous or {})
@@ -34,8 +33,8 @@ class PublishGuardTest(unittest.TestCase):
             return output.getvalue()
         source_apk=archive(unsigned_payload or {'AndroidManifest.xml':b'manifest','classes.dex':b'code'})
         signed_apk=archive(candidate_payload or {'AndroidManifest.xml':b'manifest','classes.dex':b'code','META-INF/CERT.SF':b'signature'})
-        if prior.get('unsigned') or icon_refresh:
-            prior.setdefault('file','source-unsigned.apk' if prior.get('unsigned') else 'app-release.apk')
+        if prior.get('unsigned'):
+            prior.setdefault('file','source-unsigned.apk')
             prior.setdefault('sha256',hashlib.sha256(source_apk).hexdigest())
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -46,10 +45,8 @@ class PublishGuardTest(unittest.TestCase):
             (root / "artifacts").mkdir()
             (root / "artifacts/apk.json").write_text(json.dumps(current))
             (root / "prior.json").write_text(json.dumps(prior))
-            release = {"target_commitish":"0"*40,"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
-            (root/'web/static').mkdir(parents=True)
-            (root/'web/static/logo.jpg').write_bytes(b'new-icon')
-            if prior.get('unsigned') or icon_refresh:
+            release = {"assets": [{"name": "app-release.apk"}, {"name": "apk.json", "id": 10, "size": 512}]}
+            if prior.get('unsigned'):
                 release['assets'][0]=dict(name=prior['file'],id=11,size=len(source_apk))
             release.update(release_changes or {})
             pages = ([{"assets": []}] * 100, [release]) if multiple_pages else ([release],)
@@ -68,7 +65,6 @@ if args[:1]==['api']:
         print(Path('prior.json').read_text())
 elif args[:2]==['release','create']:
     assert args[args.index('--target')+1]==(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA'])
-    if os.environ.get('PLUS_ICON_REFRESH')=='true': assert '-icon-' in args[2]
     Path('published').write_text('created')
 else:
     raise SystemExit('Unexpected fake gh command')
@@ -76,7 +72,6 @@ else:
             fake.chmod(0o700)
             env = {**os.environ, "GITHUB_REPOSITORY": REPO, "GITHUB_SHA": "fixture-commit",
                    "PATH": str(root / "bin") + os.pathsep + os.environ["PATH"]}
-            if icon_refresh:env["PLUS_ICON_REFRESH"]="true"
             if source_sha is not None:
                 env["PLUS_SOURCE_SHA"] = source_sha
             result = subprocess.run(["python3", str(SCRIPT)], cwd=root, env=env,
@@ -217,51 +212,6 @@ else:
         self.assertNotEqual(0,code)
         self.assertFalse(published)
         self.assertIn('versionCode cannot decrease',error)
-
-    def icon_case(self, **overrides):
-        before=overrides.pop('baseline_payload',{'AndroidManifest.xml':b'manifest','classes.dex':b'code',
-                'assets/logo.jpg':b'old-icon','res/ST.jpg':b'old-icon'})
-        after={**before,'assets/logo.jpg':b'new-icon','res/ST.jpg':b'new-icon'}
-        previous=dict(version='1.1.0',versionCode=2)
-        previous.update(overrides.pop('previous',{}))
-        return self.run_case(previous=previous,icon_refresh=True,unsigned_payload=before,
-            candidate_payload=overrides.pop('candidate_payload',after),**overrides)
-
-    def test_owner_requested_icon_only_same_build_is_allowed_under_a_distinct_tag(self):
-        code,published,error=self.icon_case()
-        self.assertEqual(0,code,error);self.assertTrue(published)
-
-    def test_icon_refresh_rejects_changed_code_or_missing_images(self):
-        for changed in ['classes.dex','AndroidManifest.xml','res/extra.xml']:
-            after={'AndroidManifest.xml':b'manifest','classes.dex':b'code',
-                   'assets/logo.jpg':b'new-icon','res/ST.jpg':b'new-icon',changed:b'changed'}
-            code,published,error=self.icon_case(candidate_payload=after)
-            self.assertNotEqual(0,code);self.assertFalse(published)
-        code,published,error=self.icon_case(candidate_payload={'AndroidManifest.xml':b'manifest','classes.dex':b'code'})
-        self.assertNotEqual(0,code);self.assertFalse(published)
-
-    def test_icon_refresh_rejects_wrong_image_version_digest_or_signer(self):
-        for options in [dict(previous={'version':'old'}),dict(previous={'sha256':'bad'}),dict(certificateSha256=['different'])]:
-            code,published,error=self.icon_case(**options)
-            self.assertNotEqual(0,code);self.assertFalse(published)
-        code,published,error=self.icon_case(candidate_payload={'AndroidManifest.xml':b'manifest','classes.dex':b'code',
-            'assets/logo.jpg':b'unapproved','res/ST.jpg':b'unapproved'})
-        self.assertNotEqual(0,code);self.assertFalse(published)
-
-    def test_icon_refresh_cannot_publish_without_a_same_build_baseline(self):
-        code,published,error=self.icon_case(previous={'versionCode':1})
-        self.assertNotEqual(0,code);self.assertFalse(published)
-
-    def test_icon_refresh_allows_only_the_exact_source_revision_metadata_change(self):
-        before={'AndroidManifest.xml':b'manifest','classes.dex':b'code','assets/logo.jpg':b'old-icon','res/ST.jpg':b'old-icon',
-            'META-INF/version-control-info.textproto':('revision: "'+'0'*40+'"').encode()}
-        after={**before,'assets/logo.jpg':b'new-icon','res/ST.jpg':b'new-icon',
-            'META-INF/version-control-info.textproto':('revision: "'+'f'*40+'"').encode()}
-        code,published,error=self.icon_case(baseline_payload=before,candidate_payload=after)
-        self.assertEqual(0,code,error);self.assertTrue(published)
-        for stamp in [('revision: "'+'a'*40+'"').encode(),after['META-INF/version-control-info.textproto']+b' extra changes']:
-            code,published,error=self.icon_case(baseline_payload=before,candidate_payload={**after,'META-INF/version-control-info.textproto':stamp})
-            self.assertNotEqual(0,code);self.assertFalse(published)
 
     def test_debug_artifact_is_rejected(self):
         code, published, _ = self.run_case(debuggable=True)

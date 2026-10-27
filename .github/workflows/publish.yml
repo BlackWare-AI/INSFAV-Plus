@@ -18,14 +18,6 @@ on:
         description: VERSION_CODE (must exceed every earlier published APK)
         default: '14'
         required: true
-      icon_refresh:
-        description: Owner-requested same-version/build rebuild; APK payload may change only the two icon images
-        type: boolean
-        default: false
-      built_icon_run:
-        description: Optional already-signed icon artifact run; its full app checks must have passed
-        required: false
-        default: ''
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata
         required: false
@@ -42,11 +34,11 @@ permissions:
   contents: read
 jobs:
   checks:
-    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && startsWith(github.ref, 'refs/heads/') && inputs.artifact_commit == '' && inputs.built_icon_run == ''
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && startsWith(github.ref, 'refs/heads/') && inputs.artifact_commit == ''
     uses: ./.github/workflows/ci.yml
   publish:
     needs: checks
-    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.artifact_commit == '' && inputs.built_icon_run == ''
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.artifact_commit == ''
     runs-on: ubuntu-latest
     environment: plus-release
     permissions:
@@ -124,8 +116,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version || '1.1.11' }}
           CODE: ${{ inputs.code || '14' }}
-          PLUS_ICON_REFRESH: ${{ inputs.icon_refresh && 'true' || 'false' }}
-          PLUS_RELEASE_NOTES_FILE: ${{ inputs.icon_refresh && 'ICON-REFRESH-RELEASE.md' || '' }}
         run: python3 tools/publish-plus.py
       - name: Remove temporary signing file
         if: always()
@@ -195,74 +185,4 @@ jobs:
       - name: Publish verified signed release
         env:
           PLUS_SOURCE_SHA: ${{ inputs.source_sha }}
-        run: python3 tools/publish-plus.py
-
-  publish-icon-artifact:
-    if: github.repository == 'BlackWare-AI/INSFAV-Plus' && inputs.icon_refresh && inputs.built_icon_run != ''
-    runs-on: ubuntu-latest
-    environment: plus-release
-    permissions:
-      contents: write
-      actions: read
-    env:
-      GH_TOKEN: ${{ github.token }}
-      BUILD_RUN: ${{ inputs.built_icon_run }}
-      REVIEWED_SOURCE: ${{ inputs.source_sha }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Verify the already-built app and its completed checks
-        run: |
-          python3 - <<'PYTHON'
-          import json,os,re,subprocess
-          source=os.environ['REVIEWED_SOURCE'];run=os.environ['BUILD_RUN']
-          assert re.fullmatch('[0-9a-f]{40}',source) and run.isdecimal()
-          api=lambda path:json.loads(subprocess.check_output(['gh','api',path],text=True))
-          record=api('repos/BlackWare-AI/INSFAV-Plus/actions/runs/'+run)
-          assert record['head_sha']==source and record['path']=='.github/workflows/publish.yml'
-          jobs=api('repos/BlackWare-AI/INSFAV-Plus/actions/runs/'+run+'/jobs')['jobs']
-          for required in ['checks / verify','checks / emulator','checks / instagram-session / session-durability','checks / instagram-isolation / three-app-stores']:
-              assert any(j['name']==required and j['conclusion']=='success' for j in jobs),required
-          built=next(j for j in jobs if j['name']=='publish')
-          for name in ['Build signed Plus APK','Verify APK','Run actions/upload-artifact@v4']:
-              assert any(s['name']==name and s['conclusion']=='success' for s in built['steps']),name
-          subprocess.run(['git','diff','--exit-code',source,'--','app/src/main','web','app/build.gradle','version.properties','build.gradle','settings.gradle','gradle','gradle.properties'],check=True)
-          PYTHON
-      - name: Download the previously verified signed APK
-        run: |
-          gh run download "$BUILD_RUN" --name INSFAV-Plus-release-1.1.11-14 --dir .private/icon-input
-          python3 - <<'PYTHON'
-          from pathlib import Path
-          import shutil
-          root=Path('.private/icon-input');apks=list(root.rglob('app-release.apk'));meta=list(root.rglob('apk.json'))
-          assert len(apks)==len(meta)==1
-          Path('app/build/outputs/apk/release').mkdir(parents=True,exist_ok=True)
-          Path('artifacts').mkdir(exist_ok=True)
-          shutil.copyfile(apks[0],'app/build/outputs/apk/release/app-release.apk')
-          shutil.copyfile(meta[0],'artifacts/built-apk.json')
-          PYTHON
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
-      - name: Verify signature and unchanged version and build
-        run: |
-          python3 tools/verify-apk.py app/build/outputs/apk/release/app-release.apk --release --version 1.1.11 --code 14 --output artifacts/apk.json
-          python3 - <<'PYTHON'
-          import json
-          a=json.load(open('artifacts/apk.json'));assert a==json.load(open('artifacts/built-apk.json'))
-          assert a['certificateSha256']==['cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8']
-          PYTHON
-      - name: Test the icon and source provenance guards
-        run: python3 tools/test-publish-plus.py
-      - name: Publish the verified same-build icon APK
-        env:
-          PLUS_ICON_REFRESH: 'true'
-          PLUS_SOURCE_SHA: ${{ inputs.source_sha }}
-          PLUS_ICON_DRAFT_ID: '425386081'
-          PLUS_RELEASE_NOTES_FILE: ICON-REFRESH-RELEASE.md
         run: python3 tools/publish-plus.py
