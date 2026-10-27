@@ -16,10 +16,15 @@ public class ThreeSessionEnginesTest {
     Context c; File file;
     @Before public void setup(){c=RuntimeEnvironment.getApplication();SessionState.prefs(c).edit().clear().putInt("startMinute",0).putInt("endMinute",1439).putInt("minimum",1).putInt("maximum",1).commit();QueueControl.lock.set(false);CookieManager.getInstance().removeAllCookies(null);file=new File(c.getApplicationInfo().dataDir,"app_webview/Default/Cookies");file.getParentFile().mkdirs();SQLiteDatabase.deleteDatabase(file);}
     @After public void cleanup(){SQLiteDatabase.deleteDatabase(file);QueueControl.lock.set(false);}
+    @Test public void removedHttpChoiceMigratesToLegacyWithoutErasingSession() {
+        assertEquals("legacy",InstagramSession.engine(c));
+        SessionState.prefs(c).edit().putString("browserEngine","native").commit();assertEquals("legacy",InstagramSession.engine(c));
+        try{InstagramSession.selectEngine(c,"native");fail();}catch(IllegalArgumentException expected){}
+    }
     @Test public void choicesPersistWithoutAlteringCookiesManualRecordQueueOrHold()throws Exception{
         CookieManager m=CookieManager.getInstance();m.setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_KEEP; Secure; HttpOnly");
         SessionState.prefs(c).edit().putString("manualSessionStatus","Saved").putBoolean("webSessionHold",true).putString("tree","unchanged").commit();
-        for(String engine:new String[]{"native","netscape","legacy"}) {
+        for(String engine:new String[]{"netscape","legacy"}) {
             InstagramSession.selectEngine(c,engine);
             assertEquals(engine,InstagramSession.engine(c.createPackageContext(c.getPackageName(),0)));
             assertFalse(InstagramSession.manual(c));assertTrue(m.getCookie(InstagramSession.ORIGIN).contains("OFFLINE_KEEP"));

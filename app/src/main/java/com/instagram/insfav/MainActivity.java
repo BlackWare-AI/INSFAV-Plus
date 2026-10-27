@@ -72,6 +72,9 @@ public final class MainActivity extends Activity {
             }
         }
 
+        public void thumbnailProgress(String user,boolean busy) {
+          try{send("hd-thumbnail-progress",new JSONObject().put("user",user).put("busy",busy));}catch(Exception ignored){}
+        }
         public void fullReady(String user, String token, int width, int height) {
           try {
             send(

@@ -11,16 +11,16 @@ public final class InstagramSession {
     static final String MANUAL_PROFILE = "instagram-manual";
     private InstagramSession() { }
     public static boolean manual(Context c) { return SessionState.prefs(c).getBoolean("manualSession", false); }
-    public static String engine(Context c) { return SessionState.prefs(c).getString("browserEngine", "native"); }
+    public static String engine(Context c) { return "netscape".equals(SessionState.prefs(c).getString("browserEngine", "legacy")) ? "netscape" : "legacy"; }
     public static String engineName(Context c) {
         switch(engine(c)) {
             case "netscape": return "YTDLnis-style Netscape extraction";
             case "legacy": return "Legacy engine · persistent WebView";
-            default: return "Persistent WebView · HTTP engine";
+            default: return "Legacy engine · persistent WebView";
         }
     }
     public static void selectEngine(Context c, String engine) {
-        if (!engine.equals("native") && !engine.equals("netscape") && !engine.equals("legacy")) throw new IllegalArgumentException("Unknown session engine");
+        if (!engine.equals("netscape") && !engine.equals("legacy")) throw new IllegalArgumentException("Unknown session engine");
         if (QueueControl.lock.get()) throw new IllegalStateException("Pause retrieval before changing the session method.");
         SessionState.prefs(c).edit().putString("browserEngine", engine).putBoolean("manualSession", false).commit();
         SessionState.changed(c);

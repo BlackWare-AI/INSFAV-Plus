@@ -46,6 +46,40 @@ public class ViewerThumbnailUpdateTest {
 
   @After public void close() { Fetcher.closeViewer(); }
 
+  @Test public void acceptedCacheRecordRecoversIntoExistingOutputOnNextInitialization() throws Exception {
+    Files.delete(target.toPath());
+    File cache=new File(context.getCacheDir(),"hd-thumbnail-jobs");cache.mkdirs();
+    File image=new File(cache,"recovery-fixture.image"),meta=new File(cache,"recovery-fixture.json");
+    Files.write(image.toPath(),CodecTest.png(640,480,Color.BLUE));
+    Files.write(meta.toPath(),new org.json.JSONObject().put("user","example").put("tree",harness.tree.toString()).put("directory","root/.thumbnails").toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    HdThumbnailJobs.recover(context,Fetcher.host());assertTrue(written.await(4,TimeUnit.SECONDS));
+    assertTrue(ThumbnailCodec.valid(Files.readAllBytes(target.toPath())));
+    java.util.concurrent.ExecutorService encoder=ReflectionHelpers.getStaticField(HdThumbnailJobs.class,"worker");encoder.submit(()->{}).get(3,TimeUnit.SECONDS);
+    assertFalse(image.exists());assertFalse(meta.exists());
+  }
+
+  @Test public void cachedConversionSurvivesViewerCloseBeforeEncodingStarts() throws Exception {
+    Files.delete(target.toPath());
+    SessionState.prefs(context).edit().putBoolean("manualSession",false).commit();
+    java.util.concurrent.ExecutorService encoder=ReflectionHelpers.getStaticField(HdThumbnailJobs.class,"worker");
+    CountDownLatch release=new CountDownLatch(1),blocked=new CountDownLatch(1),ready=new CountDownLatch(1);
+    encoder.execute(()->{blocked.countDown();try{release.await(5,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}});
+    assertTrue(blocked.await(3,TimeUnit.SECONDS));
+    Fetcher.Listener listener=new Fetcher.Listener(){
+      public void changed(){}public void fullFailed(String token,String code){fail(code);}
+      public void fullReady(String user,String token,int w,int h){Fetcher.closeViewer();ready.countDown();}
+    };
+    byte[] remote=CodecTest.png(640,480,Color.BLUE);
+    FetchBroker broker=new FetchBroker(context,full->new ProfileProvider(){public byte[] fetch(String user){return remote.clone();}public void cancel(){}},new TestTime());
+    ReflectionHelpers.setStaticField(FetchBroker.class,"instance",broker);Fetcher.addListener(listener);
+    try{
+      Fetcher.view("example","cacheclose");assertTrue(ready.await(4,TimeUnit.SECONDS));
+      assertEquals("Encoding must not block HD readiness",1,written.getCount());assertEquals(0,Fetcher.full("cacheclose").length);
+      File cache=new File(context.getCacheDir(),"hd-thumbnail-jobs");assertTrue(Arrays.stream(cache.listFiles()).anyMatch(f->f.getName().endsWith(".image")));
+      release.countDown();assertTrue(written.await(4,TimeUnit.SECONDS));assertTrue(ThumbnailCodec.valid(Files.readAllBytes(target.toPath())));
+    }finally{release.countDown();Fetcher.removeListener(listener);broker.cancelAll();}
+  }
+
   @Test public void successfulHdFetchUpdatesExistingWebpThroughVerifiedWritePath() throws Exception {
     updateFromBroker();
   }

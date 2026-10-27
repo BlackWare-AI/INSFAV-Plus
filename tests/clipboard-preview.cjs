@@ -23,6 +23,15 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   await page.evaluate(()=>Object.defineProperty(navigator.clipboard,'writeText',{value:async()=>{throw Error('fixture rejection');},configurable:true}));
   await page.locator('#copy-missing-users').click();await waitForValue(page,()=>document.getElementById('toast').textContent==='Clipboard unavailable. Try again.');
   await page.evaluate(()=>nativeEvent('status',{profiles:{},missing:0}));assert.equal(await page.locator('#copy-missing-users').isDisabled(),true);
+  assert.deepEqual(await page.locator('#instagram-engine option').evaluateAll(nodes=>nodes.map(n=>n.value)),['legacy','netscape']);
+  await page.evaluate(()=>{closeSettings();nativeEvent('status',{profiles:{fixture_one:{file:true,width:256,height:256}},missing:2});openViewer('fixture_two');nativeEvent('hd-thumbnail-progress',{user:'fixture_two',busy:true});});
+  assert.equal(await page.locator('#hd-thumbnail-spinner').isVisible(),true);
+  const indicator=await page.locator('#hd-thumbnail-spinner').boundingBox();assert.ok(indicator.x<40&&indicator.y>760);
+  await page.evaluate(()=>nativeEvent('hd-thumbnail-progress',{user:'fixture_three',busy:false}));assert.equal(await page.locator('#hd-thumbnail-spinner').isVisible(),true);
+  await page.evaluate(()=>nativeEvent('hd-thumbnail-progress',{user:'fixture_two',busy:false}));assert.equal(await page.locator('#hd-thumbnail-spinner').isVisible(),false);
+  await page.evaluate(()=>{openViewer('fixture_one');nativeEvent('hd-thumbnail-progress',{user:'fixture_one',busy:true});});assert.equal(await page.locator('#hd-thumbnail-spinner').isVisible(),false);
+  await page.evaluate(()=>{openViewer('fixture_two');nativeEvent('hd-thumbnail-progress',{user:'fixture_two',busy:true});closeViewer();});assert.equal(await page.locator('#hd-thumbnail-spinner').isVisible(),false);
+  console.log('PASS retained session choices and missing-thumbnail conversion indicator: visible only for current missing profile, lower left, clears on completion/navigation');
   console.log('PASS preview clipboard: unique missing usernames only, actual clipboard contents, rejection feedback, empty list; native Android tested separately');
  } finally {await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

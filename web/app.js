@@ -59,6 +59,7 @@ window.nativeEvent=(event,data)=>{
    const revision=[fetcherState.imageRevision||0,fetcherState.sourceRevision||0].join(':');fetcherState=data;updateFetcher();
    if((data.imageRevision||data.sourceRevision)&&[data.imageRevision||0,data.sourceRevision||0].join(':')!==revision)request('status');
   }
+  if(event==='hd-thumbnail-progress'&&viewerUser===data.user)$('hd-thumbnail-spinner').hidden=!data.busy||!!profiles[data.user]?.file;
   if(event==='remote-full'&&viewerToken===data.token&&viewerUser===data.user){
    if(remoteLoader){remoteLoader.onload=remoteLoader.onerror=null;remoteLoader.src='';}
    remoteLoader=new Image();remoteLoader.onload=()=>{if(viewerToken===data.token){remoteShown=true;$('full-image').src=remoteLoader.src;$('viewer-caption').textContent='@'+data.user+' · '+t('Instagram image')+' · '+data.width+' × '+data.height;applyTransform();}};
@@ -234,7 +235,7 @@ function outsideSchedule(f){return t('Outside working hours. Configured window: 
 function updateFetcher(){
  const f=fetcherState;if($('fetcher-screen').hidden)return;
  $('fetcher-disabled').checked=!!f.bulkDisabled;
- if(document.activeElement!==$('instagram-engine'))$('instagram-engine').value=f.browserEngine||'native';
+ if(document.activeElement!==$('instagram-engine'))$('instagram-engine').value=f.browserEngine||'legacy';
  changedText($('instagram-session-state'),f.instagramSession||'Persistent WebView Session · Not verified');
  changedText($('cookie-state'),f.manualCookiesSaved?t('Cookies saved · session checked during retrieval'):t('Not configured'));
  changedText($('fetcher-state'),(f.outsideScheduleMessage?outsideSchedule(f):(I.status(f.scheduleStatus||'')+' · '+I.status(f.state||'Idle')))+(f.blocked==='RATE_LIMITED'?' · '+(f.blockedHttp===429?'HTTP 429':'Instagram restriction')+(f.retryAt?' · Cooldown until '+new Date(f.retryAt).toLocaleTimeString(I.locale(),{hour12:false}):'')+(f.automaticResume?' · Automatic resume scheduled':' · Manual resume'):''));changedText($('fetcher-folder'),t(f.folder||'Not selected')+' · '+t(f.writable?'Write access granted':'Read only'));$('fetcher-write').hidden=!!f.writable;
@@ -278,7 +279,7 @@ function applyTransform(){
 }
 function resetTransform(){scale=1;tx=ty=0;applyTransform();}
 function openViewer(user){
- previousFocus=document.activeElement;viewerUser=user;viewerToken='v'+Date.now().toString(36)+Math.random().toString(36).slice(2);remoteShown=false;$('viewer').hidden=false;document.body.classList.add('overlay-open');
+ $('hd-thumbnail-spinner').hidden=true;previousFocus=document.activeElement;viewerUser=user;viewerToken='v'+Date.now().toString(36)+Math.random().toString(36).slice(2);remoteShown=false;$('viewer').hidden=false;document.body.classList.add('overlay-open');
  if(profiles[user]?.file)$('full-image').src='/thumb/'+encodeURIComponent(user)+'?v='+cacheVersion;else $('full-image').removeAttribute('src');
  const image=profiles[user]||{},dimensions=image.width&&image.height?` · ${image.width} × ${image.height}`:'';
  $('viewer-caption').textContent='@'+user+(image.file?' · '+t('Local image'):'')+dimensions+(Math.max(image.width||0,image.height||0)>2048?' · '+t('Preview up to 2048 px'):'');
@@ -289,7 +290,7 @@ function openViewer(user){
 }
 function closeViewer(){
  cancelTransform();
- viewerUser='';viewerToken='';remoteShown=false;request('view-closed');if(remoteLoader){remoteLoader.onload=remoteLoader.onerror=null;remoteLoader.src='';remoteLoader=null;}if(fullLoader){fullLoader.onload=fullLoader.onerror=null;fullLoader.src='';fullLoader=null;}
+ $('hd-thumbnail-spinner').hidden=true;viewerUser='';viewerToken='';remoteShown=false;request('view-closed');if(remoteLoader){remoteLoader.onload=remoteLoader.onerror=null;remoteLoader.src='';remoteLoader=null;}if(fullLoader){fullLoader.onload=fullLoader.onerror=null;fullLoader.src='';fullLoader=null;}
  pointers.clear();hideScreen($('viewer'),()=>{$('full-image').removeAttribute('src');if($('settings').hidden&&$('fetcher-screen').hidden)document.body.classList.remove('overlay-open');previousFocus?.focus?.();});
 }
 $('viewer-back').onclick=closeViewer;$('full-image').onload=applyTransform;

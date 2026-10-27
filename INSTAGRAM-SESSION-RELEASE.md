@@ -1,9 +1,9 @@
-Instagram oturumu ve HD indirme yolları:
+Instagram oturumu ve HD görüntüleyici:
 
-- Ayarlarda üç kalıcı WebView yöntemi: mevcut HTTP yolu, YTDLnis tarzı Netscape çerez çıkarma ve eski WebView profil motoru.
-- Elle çerez yapıştırma/kaydetme alternatifi ve mevcut kayıtlar korunur.
-- Otomatik oturum doğrulama döngüsü ve indirme öncesi zorunlu çerez testi kaldırıldı. Gerçek Instagram güvenlik yanıtları hâlâ işlemleri durdurur.
-- Eski motor, uygulamanın kalıcı WebView oturumunu çerezleri yeniden yüklemeden kullanır.
-- Yöntem değişikliği indirmeyi otomatik başlatmaz; oturum, kuyruk ve görseller korunur.
+- Legacy kalıcı WebView varsayılan yöntem oldu. Çalışmayan Current/HTTP seçeneği kaldırıldı; önceki bu seçim Legacy'ye taşınır. YTDLnis tarzı seçenek ve manuel çerez kayıtları korunur; YTDLnis yolu bu sürümde değiştirilmedi.
+- Tamamlanan HD indirmesi özel yerel önbelleğe devredilir. 256×256 WebP oluşturma ve klasöre yazım, görüntüleyiciden bağımsız tek işçide sürer. Ekran/profil değişimi tamamlanmış işi iptal etmez.
+- HD gösterilmeden önce yapılan gereksiz WebP dönüşümü kaldırıldı. Eksik küçük resim oluşturulurken HD ekranının sol altında dönen simge görünür.
+- Uygulama süreci kapanırsa özel önbellekte kalan işler sonraki açılışta uygun klasör için yeniden alınır. Android önbelleği temizlerse kaynak yeniden HD görüntülemeyle alınmalıdır; sürekli servis veya yeni izin eklenmedi.
+- Zorunlu çerez testi eklenmedi. Mevcut oturum, kuyruk ve veri biçimleri korunur.
 
-Otomatik kontroller kontrollü yanıtlarla çalışır. Canlı Instagram hesabıyla ve kullanıcının fiziksel cihazında başarı doğrulanmamıştır. Instagram'ın iptal ettiği veya süresi dolan oturumların korunması garanti edilmez.
+Otomatik testler kontrollü ağ yanıtları kullanır. Canlı Instagram hesabıyla başarı bu sürüm için test edilmemiştir.
