@@ -51,6 +51,14 @@ public class ThreeSessionEnginesTest {
             assertEquals("OFFLINE_KEEP",CookieJar.parse(m.getCookie(InstagramSession.ORIGIN),System.currentTimeMillis()).value("sessionid",0));
         }
     }
+    @Test public void actualSecurityResponseSurvivesEngineSwitchWithoutPreflight()throws Exception {
+        CookieJar jar=CookieJar.parse("sessionid=OFFLINE_STOP",System.currentTimeMillis());
+        try(BrowserProfileProvider p=new BrowserProfileProvider(c,jar,url->new ProviderTest.Stub(url,401,"expired"),()->{throw new AssertionError("No security fallback");})) {
+            try{p.fetch("example",true);fail();}catch(ProfileProvider.Failure e){assertEquals("COOKIE_INVALID_EXPIRED",e.code);}
+        }
+        InstagramSession.selectEngine(c,"legacy");
+        try{InstagramSession.open(c);fail("A method switch must not bypass an actual security response");}catch(ProfileProvider.Failure e){assertEquals("LOGIN_VERIFICATION_REQUIRED",e.code);}
+    }
     @Test public void browserProviderBulkSkipsAuthenticationAndFetchesRealTask()throws Exception {
         ProfileProvider p=new ProfileProvider(){public boolean requiresAuthentication(){return false;}public void authenticate(){throw new AssertionError("No mandatory cookie test");}public byte[] fetch(String user){return new byte[]{7};}public void cancel(){}};
         FetchBroker broker=new FetchBroker(c,full->p);SessionState.prefs(c).edit().putBoolean("bulkDisabled",false).commit();
