@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'adb logcat -d -b crash | tail -n 120' ERR
 mkdir -p session-evidence
 package=com.instagram.insfav.plus
 runner=com.instagram.insfav.plus.test/com.instagram.insfav.fetcher.PoolInstrumentation
