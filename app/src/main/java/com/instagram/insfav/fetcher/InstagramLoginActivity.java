@@ -109,7 +109,7 @@ public final class InstagramLoginActivity extends Activity {
                 else if (wall.equals("RATE_LIMITED")) status.setText("Instagram restricted requests. Wait before trying Check again.");
                 else if (data.optBoolean("authenticated") && wall.isEmpty()) {
                     InstagramSession.verified(this, false); verified = true;
-                    status.setText("Session verified · resume retrieval manually"); return;
+                    status.setText(InstagramSession.manual(this) ? "WebView session verified. Select Persistent WebView Session to use it." : "Session verified. HD does not require starting bulk retrieval; tap Done."); return;
                 }
             } catch (ProfileProvider.Failure ignored) { }
             if (resumed) handler.postDelayed(poll, 1000);

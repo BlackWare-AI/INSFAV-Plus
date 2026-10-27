@@ -1,5 +1,7 @@
 # INSFAV-Plus: davranışı koruyan optimizasyon incelemesi
 
+2026-10-27 birleştirme güncellemesi: `main` üzerindeki `026a631` (#25) pano yapıştırma ve bağımsız HD düzeltmeleri bu dala alındı. Pano komutunun ana iş parçacığında çalışması ve mevcut status görevlerini birleştirme birlikte korundu. Aşağıdaki ölçümler ve test sayıları belirtilen ilk teslim commit'lerine aittir; yeni birleşik kaynağın doğrulama sonuçları [PR #24 kontrollerinde](https://github.com/BlackWare-AI/INSFAV-Plus/pull/24/checks) izlenir.
+
 Başlangıç: `main` / `70911576b65e04de45dd6d98a7fed9a0d4820089`. Her uygulama kendi başlangıcıyla, ayrı `perf/preserve-behavior-optimization` dalında karşılaştırıldı. Native ölçüm kaynağı: `1f43a9c8432cd93edf05634d24e638bad0b18274`; tam içerik parmak izi ham JSON'dadır. Bu ölçümden sonraki değişiklikler row-pool kaynak bırakma düzeltmesi ve çalışma sırasında main'e gelen oturum doğrulama düzeltmelerinin birleştirilmesidir. Ölçülen native optimizasyon yolları korunur; sayılar belirtilen ölçüm commit'ine aittir. Son birleşik sürüm ayrıca bütün testlerden geçirilir.
 
 AGENTS/CONTRIBUTING incelendi. Plus'ın kendi repo sınırı bu iki repoyu açıkça isteyen görev kapsamında uygulandı; Plus kullanıcı özellikleri INSFAV'a eklenmedi. Uygulama kimlikleri, main'deki mevcut sürümler, release imzalama ayarları, JSON export/import, dosya adları, şifreleme, kaynak görsel boyutu/kalitesi ve indirme politikaları değiştirilmedi. Release yayımlanmadı. CSS, renk/font/ölçü/animasyon ve yerleşim kaynakları değiştirilmedi.

@@ -48,6 +48,12 @@ public final class InstagramSession {
         recordVerified(c, manual);
     }
     static void recordVerified(Context c, boolean manual) {
+        android.content.SharedPreferences prefs = SessionState.prefs(c);
+        if (security(prefs.getString("blocked", ""))) {
+            // Verification resolves the old session stop, without resuming bulk retrieval.
+            prefs.edit().putString("blocked", "").putInt("blockedHttp", 0)
+                .putBoolean("armed", false).putBoolean("userPaused", true).commit();
+        }
         SessionState.prefs(c).edit().putBoolean("instagramSecurityHold", false).putBoolean(key(manual), false)
             .putString(manual ? "manualSessionStatus" : "webSessionStatus", "Verified")
             .putLong(manual ? "manualSessionCheckedAt" : "webSessionCheckedAt", System.currentTimeMillis()).putString("sessionEvidence", "VERIFIED").commit();
@@ -100,7 +106,7 @@ public final class InstagramSession {
         new Thread(() -> {
             String result;
             try (WebViewProfileProvider provider = new WebViewProfileProvider(activity, testingManual ? new CookieVault(activity).load() : null)) {
-                provider.authenticate(); result = "Session verified. Resume retrieval manually.";
+                provider.authenticate(); result = "Session verified. HD viewing does not require Start; bulk retrieval stays paused.";
             } catch (ProfileProvider.Failure error) {
                 SessionState.prefs(activity).edit().putString(testingManual ? "manualSessionStatus" : "webSessionStatus", "Not verified").commit();
                 result = error.code.equals("COOKIE_WEBVIEW_UPDATE_REQUIRED") ? "Update Android System WebView to use isolated Manual Cookies." : "Session test: " + error.code; }

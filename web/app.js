@@ -53,6 +53,8 @@ window.nativeEvent=(event,data)=>{
   if(event==='scan-progress'){state.scan=data;state.scanState=data.state;updateSettings();}
   if(event==='cleared'){doc=null;stats.clear++;opened.clear();rebuild();message('Collections cleared. Local photos are unchanged.');request('status');}
   if(event==='cookie-paste'&&!$('fetcher-screen').hidden)$('cookie-text').value=data;
+  if(event==='cookie-saved'){$('cookie-text').value='';for(const id of ['cookie-text','cookie-save','cookie-paste'])$(id).disabled=false;}
+  if(event==='cookie-save-failed')for(const id of ['cookie-text','cookie-save','cookie-paste'])$(id).disabled=false;
   if(event==='fetcher-status'){
    const revision=[fetcherState.imageRevision||0,fetcherState.sourceRevision||0].join(':');fetcherState=data;updateFetcher();
    if((data.imageRevision||data.sourceRevision)&&[data.imageRevision||0,data.sourceRevision||0].join(':')!==revision)request('status');
@@ -256,7 +258,7 @@ $('instagram-manual').onclick=()=>request('instagram-session-method',{manual:tru
 $('instagram-login').onclick=()=>request('instagram-session-open');
 $('instagram-test').onclick=()=>request('instagram-session-test');
 $('cookie-paste').onclick=async()=>{if(native){request('fetcher-paste');return;}try{$('cookie-text').value=await navigator.clipboard.readText();}catch(error){$('cookie-text').focus();message('Use the Android Paste command in the cookie field.');}};
-$('cookie-save').onclick=()=>{const text=$('cookie-text').value;$('cookie-text').value='';request('fetcher-cookies-save',{text});};
+$('cookie-save').onclick=()=>{const text=$('cookie-text').value;for(const id of ['cookie-text','cookie-save','cookie-paste'])$(id).disabled=true;request('fetcher-cookies-save',{text});};
 $('cookie-remove').onclick=()=>{$('cookie-text').value='';confirmAction('Remove Instagram Cookies?','Retrieval stops. Collections and local photos stay unchanged.',()=>request('fetcher-cookies-remove'));};
 $('fetcher-save').onclick=()=>{request('fetcher-config',{minimum:Number($('fetcher-min').value),maximum:Number($('fetcher-max').value),start:$('fetcher-start').value,end:$('fetcher-end').value,background:$('fetcher-background').checked,concurrentWebViews:Number($('fetcher-concurrency').value)});for(const input of $('fetcher-screen').querySelectorAll('input'))delete input.dataset.edited;};
 $('fetcher-write').onclick=()=>request('fetcher-write-access');
