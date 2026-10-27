@@ -100,20 +100,6 @@ public final class InstagramSession {
     public static void show(android.app.Activity activity) {
         activity.startActivity(new Intent(activity, InstagramLoginActivity.class));
     }
-    public static void test(android.app.Activity activity) {
-        if (QueueControl.lock.get()) { android.widget.Toast.makeText(activity, "Pause retrieval before testing the session.", android.widget.Toast.LENGTH_LONG).show(); return; }
-        final boolean testingManual = manual(activity);
-        new Thread(() -> {
-            String result;
-            try (WebViewProfileProvider provider = new WebViewProfileProvider(activity, testingManual ? new CookieVault(activity).load() : null)) {
-                provider.authenticate(); result = "Session verified. HD viewing does not require Start; bulk retrieval stays paused.";
-            } catch (ProfileProvider.Failure error) {
-                SessionState.prefs(activity).edit().putString(testingManual ? "manualSessionStatus" : "webSessionStatus", "Not verified").commit();
-                result = error.code.equals("COOKIE_WEBVIEW_UPDATE_REQUIRED") ? "Update Android System WebView to use isolated Manual Cookies." : "Session test: " + error.code; }
-            final String message = result;
-            activity.runOnUiThread(() -> android.widget.Toast.makeText(activity, message, android.widget.Toast.LENGTH_LONG).show());
-        }, "instagram-session-test").start();
-    }
     static void logout(Context c, Runnable completed) {
         // The default browser is restricted to Instagram by the login Activity and fetcher.
         // Expire Instagram cookies only; preserve other origins, the manual profile and all app files.

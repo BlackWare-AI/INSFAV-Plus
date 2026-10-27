@@ -205,6 +205,8 @@ final class DownloadNotification {
   }
 
   static synchronized void publish(Context c, int id, String phase) {
+        if (BulkControl.disabled(c) || !QueueControl.lock.get() || phase.equals("Completed") || phase.startsWith("Finished:") || phase.startsWith("Paused") || phase.startsWith("Stopped") || phase.startsWith("Interrupted") || phase.equals("Rate Limited")) { clear(c); return; }
+
     long now = android.os.SystemClock.elapsedRealtime();
     if (now - lastAt < 1000 && phase.equals(lastPhase)) return;
     // Changing between busy/waiting on each account must not flood NotificationManager.
@@ -224,20 +226,9 @@ final class DownloadNotification {
     }
   }
 
-  static void finish(Context c) {
-    try {
-      c.getSystemService(NotificationManager.class)
-          .notify(
-              3,
-              Notification.Builder.recoverBuilder(
-                      c,
-                      create(
-                          c,
-                          SessionState.prefs(c).getString("state", "Interrupted; queue preserved")))
-                  .setOngoing(false)
-                  .setAutoCancel(true)
-                  .build());
-    } catch (RuntimeException ignored) {
+    static void clear(Context c) {
+        android.app.NotificationManager manager = c.getSystemService(android.app.NotificationManager.class);
+        manager.cancel(1); manager.cancel(2); manager.cancel(3);
     }
-  }
+    static void finish(Context c) { if (!QueueControl.lock.get()) clear(c); }
 }

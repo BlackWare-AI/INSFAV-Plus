@@ -56,6 +56,14 @@ public class ViewerThumbnailUpdateTest {
     updateFromBroker();
   }
 
+  @Test public void disabledBulkStillFetchesPersistentHdAndWrites256Webp() throws Exception {
+    Fetcher.setBulkDisabled(true);
+    SessionState.prefs(context).edit().putBoolean("manualSession",false).commit();
+    updateFromBroker();
+    assertTrue(Fetcher.bulkDisabled());
+    assertFalse(SessionState.prefs(context).getBoolean("armed",true));
+  }
+
   private void updateFromBroker() throws Exception {
     byte[] remote = CodecTest.png(640, 480, Color.BLUE);
     CountDownLatch fetched = new CountDownLatch(1);

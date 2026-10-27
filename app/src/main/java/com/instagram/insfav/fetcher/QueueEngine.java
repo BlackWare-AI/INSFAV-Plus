@@ -61,13 +61,14 @@ final class QueueEngine {
   }
 
   boolean interrupted() {
-    return cancelled
+    return BulkControl.disabled(context) || cancelled
         || stopped.getAsBoolean()
         || QueueControl.requested
         || Thread.currentThread().isInterrupted();
   }
 
   void state(String value) {
+    if (BulkControl.disabled(context)) value = "Thumbnail Fetcher disabled";
     long now = android.os.SystemClock.elapsedRealtime();
     boolean critical =
         value.startsWith("Paused")
@@ -89,6 +90,7 @@ final class QueueEngine {
   }
 
   void run(String action, boolean bounded) {
+    if (BulkControl.disabled(context)) return;
     long started = System.currentTimeMillis(),
         generation = settings.getLong("datasetGeneration", 0);
     int finished = 0, cached = 0;

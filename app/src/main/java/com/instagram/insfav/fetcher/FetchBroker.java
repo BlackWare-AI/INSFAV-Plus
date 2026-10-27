@@ -158,6 +158,8 @@ final class FetchBroker {
 
   CompletableFuture<byte[]> submit(String user, boolean full) {
     Request r = new Request(user, full, sequence.incrementAndGet());
+    if (!full && BulkControl.disabled(context)) { r.result.completeExceptionally(new ProfileProvider.Failure("FETCHER_DISABLED")); return r.result; }
+
     tasks.add(r);
     wakeup();
     QueueControl.queuedAccounts = tasks.size();
@@ -313,6 +315,7 @@ final class FetchBroker {
           tasks.remove(request);
           continue;
         }
+        if (!request.full && BulkControl.disabled(context)) { tasks.remove(request); request.result.completeExceptionally(new ProfileProvider.Failure("FETCHER_DISABLED")); continue; }
         String blocked = prefs.getString("blocked", "");
         if (!blocked.isEmpty() && (!request.full || InstagramSession.security(blocked) || (blocked.equals("RATE_LIMITED") && (prefs.getLong("retryAt", 0) <= 0 || time.now() < prefs.getLong("retryAt", 0))))) {
           tasks.remove(request);
@@ -423,6 +426,7 @@ final class FetchBroker {
                       .atZone(java.time.ZoneId.systemDefault())))
         throw new ProfileProvider.Failure("OUTSIDE_WORKING_HOURS");
       ProfileProvider p = provider;
+      if (!r.full && BulkControl.disabled(context)) throw new ProfileProvider.Failure("FETCHER_DISABLED");
       bytes = p.fetch(r.user, r.full);
       if (!r.result.complete(bytes)) Arrays.fill(bytes, (byte) 0);
     } catch (ProfileProvider.Failure e) {

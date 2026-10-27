@@ -16,7 +16,7 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 34)
 public class ServiceTimeoutTest {
   @Test
-  public void timeoutPersistsClaimsAndPublishesNonDownloadingResult() {
+  public void timeoutPersistsClaimsAndRemovesDownloadNotification() {
     FetchService service = Robolectric.buildService(FetchService.class).create().get();
     Context c = service.getApplicationContext();
     SessionState.prefs(c).edit().clear().commit();
@@ -34,9 +34,7 @@ public class ServiceTimeoutTest {
     }
     Notification n =
         Shadows.shadowOf(c.getSystemService(NotificationManager.class)).getNotification(3);
-    assertNotNull(n);
-    assertTrue(n.extras.getCharSequence(Notification.EXTRA_TEXT).toString().startsWith("Paused"));
-    assertEquals(0, n.flags & Notification.FLAG_ONGOING_EVENT);
+    assertNull("A stopped service must not leave a download notification", n);
   }
 
   @Test

@@ -18,6 +18,7 @@ public final class DownloadWorker extends Worker {
   @Override
   public Result doWork() {
     Context c = getApplicationContext();
+    if (BulkControl.disabled(c)) return Result.success();
     if (!SessionState.userStarted(c) || !WorkScheduler.enabled(SessionState.prefs(c)))
       return Result.success();
     if (!QueueControl.lock.compareAndSet(false, true)) return Result.success();

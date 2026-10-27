@@ -22,6 +22,7 @@ public final class FetchService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int id) {
+    if (BulkControl.disabled(this)) { stopSelf(id); return START_NOT_STICKY; }
     if (intent == null) {
       stopSelf(id);
       return START_NOT_STICKY;

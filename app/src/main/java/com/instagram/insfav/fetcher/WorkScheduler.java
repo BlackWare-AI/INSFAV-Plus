@@ -9,7 +9,7 @@ final class WorkScheduler {
   static final String NEXT = "insfav-next-profile", RECOVERY = "insfav-queue-recovery";
 
   static boolean enabled(SharedPreferences p) {
-    return p.getBoolean("background", false)
+    return !p.getBoolean("bulkDisabled", false) && p.getBoolean("background", false)
         && p.getBoolean("armed", false)
         && !p.getBoolean("userPaused", true)
         && (p.getString("blocked", "").isEmpty()
