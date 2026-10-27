@@ -108,8 +108,15 @@ final class BrowserProfileProvider implements ProfileProvider {
     }
     private static void walls(String body) throws Failure {
         PublicProfileProvider.rejectWall(body,true);
+        String visible=body.replaceAll("(?s)<script\\b.*?</script>","").toLowerCase(Locale.ROOT);
+        if(!body.trim().startsWith("{")&&(visible.contains("please wait a few minutes before you try again")||visible.contains("we restrict certain activity")))
+            throw new Failure("RATE_LIMITED",0,System.currentTimeMillis()+60000,true);
         if(body.trim().startsWith("{"))try {
             JSONObject json=new JSONObject(body);
+            String message=json.optString("message").toLowerCase(Locale.ROOT);
+            if(message.contains("please wait a few minutes before you try again")||message.contains("we restrict certain activity"))throw new Failure("RATE_LIMITED",0,System.currentTimeMillis()+60000,true);
+            if(message.equals("feedback_required"))throw new Failure("ACCESS_BLOCKED",0,0,true);
+            if(message.equals("checkpoint_required")||!json.optString("checkpoint_url").isEmpty())throw new Failure("CHALLENGE_REQUIRED",0,0,true);
             if(json.optBoolean("challenge_required")||json.optBoolean("checkpoint_required")||json.optJSONObject("challenge")!=null||json.optString("message").contains("challenge_required"))throw new Failure("CHALLENGE_REQUIRED",0,0,true);
             if(json.optBoolean("login_required")||"login_required".equals(json.optString("message")))throw new Failure("COOKIE_INVALID_EXPIRED",0,0,true);
         }catch(JSONException ignored) { }

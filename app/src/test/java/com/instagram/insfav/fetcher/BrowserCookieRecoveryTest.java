@@ -61,6 +61,12 @@ public class BrowserCookieRecoveryTest {
             try{provider.fetch("example",true);fail();}catch(ProfileProvider.Failure e){assertTrue(FailurePolicy.pause(e));assertEquals(status,e.http);}finally{provider.close();}
         }
     }
+    @Test public void status200SecurityAndRateMessagesStopWithoutProfileOrWebViewFallback()throws Exception {
+        for(String message:new String[]{"feedback_required","checkpoint_required","Please wait a few minutes before you try again."}) {
+            AtomicInteger calls=new AtomicInteger();BrowserProfileProvider p=new BrowserProfileProvider(c,browser(),url->{calls.incrementAndGet();return new ProviderTest.Stub(url,200,"{\"status\":\"fail\",\"message\":\""+message+"\"}");},()->{throw new AssertionError("Explicit security message must stop all fallbacks");});
+            try{p.fetch("example",true);fail();}catch(ProfileProvider.Failure e){assertTrue(FailurePolicy.pause(e));assertEquals(1,calls.get());}finally{p.close();}
+        }
+    }
     @Test public void sameCookieJarCanAuthenticateActualCurrentUserResponse()throws Exception{
         BrowserProfileProvider p=new BrowserProfileProvider(c,browser(),url->new ProviderTest.Stub(url,200,"{\"status\":\"ok\",\"user\":{\"pk\":123,\"username\":\"owner\"}}"),()->{throw new AssertionError();});
         try{p.authenticate();assertEquals("Verified",SessionState.prefs(c).getString("webSessionStatus",""));assertFalse(SessionState.prefs(c).getBoolean("armed",false));}finally{p.close();}
