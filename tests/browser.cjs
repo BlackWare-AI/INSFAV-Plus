@@ -176,7 +176,13 @@ async function waitForValue(page,predicate){const deadline=Date.now()+10000;whil
   check(await page.locator('#cookie-state').innerText()==='Cookies saved · session checked during retrieval','cookie status does not claim verified authentication');
   await page.locator('#cookie-paste').click();check(await page.evaluate(()=>commands.at(-1).command==='fetcher-paste'),'Paste uses the Android foreground clipboard adapter');
   await page.evaluate(()=>nativeEvent('cookie-paste','sessionid=FAKE_FOR_TEST; ds_user_id=1'));check((await page.locator('#cookie-text').inputValue()).startsWith('sessionid='),'native paste fills only the transient cookie editor');await page.locator('#cookie-save').click();
-  check(await page.locator('#cookie-text').inputValue()==='','cookie editor clears immediately after Save');check(await page.evaluate(()=>commands.at(-1).command==='fetcher-cookies-save'),'cookie saving is sent only to native private storage');
+  check((await page.locator('#cookie-text').inputValue()).includes('FAKE_FOR_TEST'),'Save retains the editor until private storage confirms success');
+  await page.evaluate(()=>{nativeEvent('cookie-save-failed',{});nativeEvent('error','Cookie fixture rejected');});
+  check((await page.locator('#cookie-text').inputValue()).includes('FAKE_FOR_TEST'),'failed Save preserves pasted text');
+  await page.locator('#cookie-save').click();
+  await page.evaluate(()=>nativeEvent('cookie-saved',{}));
+  check(await page.locator('#cookie-text').inputValue()==='','confirmed Save clears the cookie editor');
+  check(await page.evaluate(()=>!commands.some(c=>c.command==='fetcher-action')),'opening settings and saving cookies never starts bulk retrieval');check(await page.evaluate(()=>commands.at(-1).command==='fetcher-cookies-save'),'cookie saving is sent only to native private storage');
   check(await page.locator('#fetcher-capacity').innerText().then(t=>t.includes('Requested WebViews: 5')&&t.includes('Effective WebViews: 3')&&t.includes('Active WebViews: 2')),'requested, memory-limited effective and active Chromium counts are distinct');
   await page.evaluate(()=>{clearInterval(fetcherPoll);fetcherPoll=0;window.liveFetcher={...fetcherState,total:16910,existing:14572,success:0,failed:0,skipped:0,retry:5,pending:2333,processed:14572,held:5,running:true,elapsedSeconds:52,process:{phase:'Waiting for configured worker delay',active:0,queued:5,handledThisRun:5,waitSeconds:18,lastResult:'WEBVIEW_TIMEOUT'}};nativeEvent('fetcher-status',liveFetcher);});
   check(await page.locator('#fetcher-process-phase').innerText()==='Waiting for configured worker delay','five deferred profiles show a real wait reason');

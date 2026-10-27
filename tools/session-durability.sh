@@ -35,5 +35,7 @@ adb shell input keyevent 82
 check reboot
 adb shell am instrument -w -e scenario authenticate "$runner" | tee session-evidence/authenticate.txt
 grep -q OFFLINE_SESSION_AUTHENTICATED session-evidence/authenticate.txt
+adb shell am instrument -w -e scenario clipboard "$runner" | tee session-evidence/clipboard.txt
+grep -q OFFLINE_COOKIE_PASTE_VERIFIED session-evidence/clipboard.txt
 adb shell am instrument -w -e scenario logout "$runner" | tee session-evidence/scoped-logout.txt
 grep -q OFFLINE_SESSION_LOGOUT_SCOPED session-evidence/scoped-logout.txt

@@ -57,10 +57,11 @@ public final class UiDeviceChecks {
       if (!expected.equals(actual.get()))
         throw new AssertionError(
             "Clipboard must contain exactly three unique usernames and no folders");
-      JSONObject proof =
+      CookiePasteDeviceCheck.run(instrumentation,c,web);
+      JSONObject proof=
           new JSONObject()
               .put("sdk", Build.VERSION.SDK_INT)
-              .put("nativeBridgeClipboardVerified", true)
+              .put("nativeBridgeClipboardVerified", true).put("manualCookiePasteVerified", true)
               .put("copiedUsernames", 3)
               .put("folderNamesExcluded", true)
               .put("duplicatesRemoved", true)

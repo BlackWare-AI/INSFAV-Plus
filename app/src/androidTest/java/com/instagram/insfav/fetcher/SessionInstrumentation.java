@@ -14,6 +14,10 @@ final class SessionInstrumentation {
         try {
             Context c=host.getTargetContext(); boolean seed="seed".equals(arguments.getString("scenario"));
             String value="OFFLINE_"+c.getPackageName().replace('.','_');
+            if ("clipboard".equals(arguments.getString("scenario"))) {
+                com.instagram.insfav.UiDeviceChecks.run(host);
+                result.putString("stream", "OFFLINE_COOKIE_PASTE_VERIFIED\n");host.finish(Activity.RESULT_OK,result);return;
+            }
             if ("authenticate".equals(arguments.getString("scenario"))) {
                 // Real Android WebView/JS and the production provider, offline first-party responses.
                 SessionState.prefs(c).edit().putString("webSessionStatus", "Not verified").commit();

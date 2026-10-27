@@ -475,10 +475,29 @@ public final class MainActivity extends Activity {
         .put("build", Build.VERSION.SDK_INT >= 28 ? info.getLongVersionCode() : info.versionCode);
   }
 
+    private void pasteCookieText() {
+        if (isFinishing() || isDestroyed()) return;
+        if (!hasWindowFocus()) { send("error", "Return to the app and tap Paste again, or long-press the cookie field to paste."); return; }
+        try {
+            android.content.ClipboardManager manager = getSystemService(android.content.ClipboardManager.class);
+            android.content.ClipData clip = manager == null ? null : manager.getPrimaryClip();
+            CharSequence text = clip == null || clip.getItemCount() == 0 ? null : clip.getItemAt(0).getText();
+            if (text == null || text.length() == 0) { send("error", "Copy the cookies.txt contents or HTTP Cookie header as plain text first."); return; }
+            if (text.length() > 65536) { send("error", "Cookie text exceeds the 64 KiB limit."); return; }
+            send("cookie-paste", text.toString());
+        } catch (RuntimeException ignored) { send("error", "Clipboard unavailable. Long-press the cookie field and choose Paste."); }
+    }
   public final class Bridge {
     @JavascriptInterface
     public void request(String raw) {
       if (io.isShutdown()) return;
+      try {
+        if ("fetcher-paste".equals(new JSONObject(raw).optString("command"))) {
+          runOnUiThread(MainActivity.this::pasteCookieText);
+          return;
+        }
+      } catch (org.json.JSONException | RuntimeException ignored) { /* Normal bridge error handling below. */ }
+
       try {
         io.execute(
             () -> {
@@ -548,23 +567,8 @@ public final class MainActivity extends Activity {
                     if (!Fetcher.running()) Fetcher.sync();
                     send("fetcher-status", Fetcher.snapshot());
                     break;
-                  case "fetcher-paste":
-                    {
-                      android.content.ClipboardManager clipboard =
-                          getSystemService(android.content.ClipboardManager.class);
-                      android.content.ClipData clip = clipboard.getPrimaryClip();
-                      CharSequence text =
-                          clip == null || clip.getItemCount() == 0
-                              ? null
-                              : clip.getItemAt(0).getText();
-                      if (text == null)
-                        throw new IOException("No plain text is available in the clipboard.");
-                      if (text.length() > 131072)
-                        throw new IOException("Cookie text is too large.");
-                      send("cookie-paste", text.toString());
-                      break;
-                    }
-                  case "instagram-session-method":
+                  case "fetcher-paste": runOnUiThread(MainActivity.this::pasteCookieText); break;
+                        case "instagram-session-method":
                             Fetcher.closeViewer();
                             com.instagram.insfav.fetcher.InstagramSession.select(MainActivity.this, input.optBoolean("manual"));
                             send("fetcher-status", Fetcher.snapshot()); break;
@@ -573,12 +577,15 @@ public final class MainActivity extends Activity {
                             runOnUiThread(() -> com.instagram.insfav.fetcher.InstagramSession.show(MainActivity.this)); break;
                         case "instagram-session-test":
                             runOnUiThread(() -> com.instagram.insfav.fetcher.InstagramSession.test(MainActivity.this)); break;
-                        case "fetcher-cookies-save":
-                    Fetcher.saveCookies(input.getString("text"));
-                    send("fetcher-status", Fetcher.snapshot());
-                    send("message", "Cookies saved securely.");
-                    break;
-                  case "fetcher-cookies-remove":
+                        case "fetcher-cookies-save": {
+                            try { Fetcher.saveCookies(input.getString("text")); }
+                            catch (Exception issue) { send("cookie-save-failed", new JSONObject()); throw issue; }
+                            send("cookie-saved", new JSONObject());
+                            send("fetcher-status", Fetcher.snapshot());
+                            send("message",com.instagram.insfav.fetcher.InstagramSession.manual(MainActivity.this) ? "Manual cookies saved securely. Tap Test Session to verify them. Retrieval remains paused." : "Manual cookies saved securely. Select Manual Cookies and tap Test Session. Retrieval remains paused.");
+                            break;
+                        }
+                        case "fetcher-cookies-remove":
                     Fetcher.removeCookies();
                     send("fetcher-status", Fetcher.snapshot());
                     break;
