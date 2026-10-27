@@ -57,6 +57,7 @@ final class NativeCookieHdDeviceCheck {
                 try {
                 if(url.endsWith("/favicon.ico"))return new android.webkit.WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));
                 calls.incrementAndGet();
+                if(url.equals("https://fixture.cdninstagram.com/hd.png"))return new android.webkit.WebResourceResponse("image/png",null,new ByteArrayInputStream(png.toByteArray()));
                 if(!url.equals(InstagramSession.ORIGIN+user+"/"))throw new AssertionError("Legacy HD must open profile directly without authentication preflight");
                 String html="<html><body><script type='application/json'>{\"viewerId\":\"123\",\"user\":{\"username\":\""+user+"\",\"id\":\"456\",\"has_anonymous_profile_picture\":false,\"hd_profile_pic_url_info\":{\"url\":\"https://fixture.cdninstagram.com/hd.png\"}}}</script></body></html>";
                 return new android.webkit.WebResourceResponse("text/html","UTF-8",new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8)));
@@ -71,7 +72,7 @@ final class NativeCookieHdDeviceCheck {
             if(!written.await(25,TimeUnit.SECONDS))throw new AssertionError("Cookie -> HD -> 256 WebP write did not complete",fixtureFailure.get());
             if(fixtureFailure.get()!=null)throw new AssertionError("Unexpected browser fixture request",fixtureFailure.get());
             host.runOnMainSync(()->{String header=CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);if(header==null||!header.contains("OFFLINE_NATIVE_HD%3AFIXTURE"))throw new AssertionError("Browser did not retain its session");});
-            if(calls.get()!=2||!new OutputFolder(c,FixtureDocuments.tree().toString()).valid(user+".webp"))throw new AssertionError("Wrong HD transport or invalid 256 WebP");
+            if(calls.get()!=(engine.equals("legacy")?3:2)||!new OutputFolder(c,FixtureDocuments.tree().toString()).valid(user+".webp"))throw new AssertionError("Wrong HD transport or invalid 256 WebP");
             if(!Fetcher.bulkDisabled()||SessionState.prefs(c).getBoolean("armed",true))throw new AssertionError("HD started the bulk queue");
             File snapshot=new File(c.getFilesDir(),engine.equals("netscape") ? "instagram-netscape-cookies.enc" : "instagram-webview-cookies.enc");
             if(!engine.equals("legacy") && (!snapshot.isFile()||new String(java.nio.file.Files.readAllBytes(snapshot.toPath()),StandardCharsets.ISO_8859_1).contains("OFFLINE_NATIVE_HD")))throw new AssertionError("Browser snapshot was not encrypted");
