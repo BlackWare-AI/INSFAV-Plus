@@ -107,9 +107,9 @@
     "bundleSha256": "4ac363dd4e58cabdc124b5bfcde895276593e7835fbb6c5fb259b51808187170"
   },
   "logo.jpg": {
-    "sourceBytes": 32554,
-    "bundleBytes": 32554,
-    "sourceSha256": "8278e111c0727c9efa46ec832b681a44b0d381fa92cb0866ce1205dc07e236c4",
-    "bundleSha256": "8278e111c0727c9efa46ec832b681a44b0d381fa92cb0866ce1205dc07e236c4"
+    "sourceBytes": 15165,
+    "bundleBytes": 15165,
+    "sourceSha256": "9599735730a89df08c64cba305abbaf880804d1f712665ff102c83e7d253dae5",
+    "bundleSha256": "9599735730a89df08c64cba305abbaf880804d1f712665ff102c83e7d253dae5"
   }
 }
