@@ -14,7 +14,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class) @Config(sdk=28,manifest=Config.NONE)
 public class ThreeSessionEnginesTest {
     Context c; File file;
-    @Before public void setup(){c=RuntimeEnvironment.getApplication();SessionState.prefs(c).edit().clear().commit();QueueControl.lock.set(false);CookieManager.getInstance().removeAllCookies(null);file=new File(c.getApplicationInfo().dataDir,"app_webview/Default/Cookies");file.getParentFile().mkdirs();SQLiteDatabase.deleteDatabase(file);}
+    @Before public void setup(){c=RuntimeEnvironment.getApplication();SessionState.prefs(c).edit().clear().putInt("startMinute",0).putInt("endMinute",1439).putInt("minimum",1).putInt("maximum",1).commit();QueueControl.lock.set(false);CookieManager.getInstance().removeAllCookies(null);file=new File(c.getApplicationInfo().dataDir,"app_webview/Default/Cookies");file.getParentFile().mkdirs();SQLiteDatabase.deleteDatabase(file);}
     @After public void cleanup(){SQLiteDatabase.deleteDatabase(file);QueueControl.lock.set(false);}
     @Test public void choicesPersistWithoutAlteringCookiesManualRecordQueueOrHold()throws Exception{
         CookieManager m=CookieManager.getInstance();m.setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_KEEP; Secure; HttpOnly");
