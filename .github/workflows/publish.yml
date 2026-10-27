@@ -263,5 +263,6 @@ jobs:
         env:
           PLUS_ICON_REFRESH: 'true'
           PLUS_SOURCE_SHA: ${{ inputs.source_sha }}
+          PLUS_ICON_DRAFT_ID: '425386081'
           PLUS_RELEASE_NOTES_FILE: ICON-REFRESH-RELEASE.md
         run: python3 tools/publish-plus.py

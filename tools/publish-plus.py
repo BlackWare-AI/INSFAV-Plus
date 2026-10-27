@@ -97,6 +97,15 @@ assert not ICON_REFRESH or icon_verified,'Icon refresh requires an existing iden
 tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
 if ICON_REFRESH:tag+='-icon-'+(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA'])[:7]
 notes=Path(os.environ['PLUS_RELEASE_NOTES_FILE']).read_text() if os.environ.get('PLUS_RELEASE_NOTES_FILE') else Path('INSTAGRAM-SESSION-RELEASE.md').read_text() if Path('INSTAGRAM-SESSION-RELEASE.md').exists() else 'Instagram session management update.\n'
+draft_id=os.environ.get('PLUS_ICON_DRAFT_ID','')
+if draft_id:
+    assert ICON_REFRESH and draft_id.isdecimal(),'Draft upload is restricted to the verified icon refresh'
+    draft=json.loads(gh('api','repos/'+REPOSITORY+'/releases/'+draft_id))
+    assert draft['draft'] is True and draft['tag_name']==tag and not draft['assets'],'Draft must be empty and match the icon tag'
+    assert draft['target_commitish']==(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']),'Draft source mismatch'
+    subprocess.run(['gh','release','upload',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY],check=True)
+    print('Verified signed icon APK uploaded to the owner-created draft; owner publication remains explicit.')
+    raise SystemExit(0)
 with tempfile.NamedTemporaryFile(mode='w',suffix='.md') as f:
     f.write(notes);f.flush()
     subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']),'--title','INSFAV Plus '+meta['version'],'--notes-file',f.name]+(['--latest=false'] if os.environ.get('PLUS_RELEASE_LATEST')=='false' else []),check=True)
