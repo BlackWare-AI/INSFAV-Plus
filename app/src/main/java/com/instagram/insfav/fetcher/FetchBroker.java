@@ -314,7 +314,7 @@ final class FetchBroker {
           continue;
         }
         String blocked = prefs.getString("blocked", "");
-        if (!blocked.isEmpty()) {
+        if (!blocked.isEmpty() && (!request.full || InstagramSession.security(blocked) || (blocked.equals("RATE_LIMITED") && (prefs.getLong("retryAt", 0) <= 0 || time.now() < prefs.getLong("retryAt", 0))))) {
           tasks.remove(request);
           request.result.completeExceptionally(
               new ProfileProvider.Failure(blocked, 0, prefs.getLong("retryAt", 0), true));
@@ -331,7 +331,7 @@ final class FetchBroker {
           continue;
         }
         long now = time.now(),
-            gate = Math.max(prefs.getLong("nextRequestAt", 0), prefs.getLong("retryAt", 0));
+            gate = request.full ? prefs.getLong("retryAt", 0) : Math.max(prefs.getLong("nextRequestAt", 0), prefs.getLong("retryAt", 0));
         if (now < gate) {
           awaitPacing(observed, boundedWait(gate - now, !request.full));
           continue;
@@ -342,7 +342,7 @@ final class FetchBroker {
         long earliest = Long.MAX_VALUE;
         for (int i = 0; i < limit; i++)
           if (!busy[i]) {
-            long ready = WorkerPacing.ready(prefs, i);
+            long ready = request.full ? 0 : WorkerPacing.ready(prefs, i);
             if (ready <= now) {
               slot = i;
               break;
@@ -360,7 +360,7 @@ final class FetchBroker {
         }
         tasks.remove(request);
         request.slot = slot;
-        WorkerPacing.reserve(prefs, slot, now, RunPolicy.read(prefs));
+        if (!request.full) WorkerPacing.reserve(prefs, slot, now, RunPolicy.read(prefs));
         try {
           if (provider == null) {
             provider = factory.open(false);
