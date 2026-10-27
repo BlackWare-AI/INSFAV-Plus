@@ -41,10 +41,10 @@
     "bundleSha256": "557a5c7eb030c9f150884de9910a226a384f4c1c539feb6dc73e050592b4541d"
   },
   "profile-probe-hd.js": {
-    "sourceBytes": 10055,
-    "bundleBytes": 6618,
-    "sourceSha256": "44f03f6ba4f60614f41ebb081182405ec4b08d4d00927fe3839d4b93d36c8d96",
-    "bundleSha256": "91fd03620e00c89e5af308c8c6c0473747d0fac25fab9df4519743e57cc9f25b"
+    "sourceBytes": 11613,
+    "bundleBytes": 7572,
+    "sourceSha256": "860b2417cfc76c25b7d2a315343d7a6d19baff08d83f76f2ba80193a9de7c620",
+    "bundleSha256": "2d33f1c4cf0b0be6c263039f48d996c0fc6bd56b3262bc6089c911d0b8cf0a90"
   },
   "style.css": {
     "sourceBytes": 19720,

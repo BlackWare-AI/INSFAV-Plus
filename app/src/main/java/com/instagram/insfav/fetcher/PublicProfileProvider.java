@@ -196,7 +196,15 @@ final class PublicProfileProvider implements ProfileProvider {
     }
   }
 
+  String imageEtag="";
+  private String conditionalUrl="",conditionalEtag="",initialImageUrl="";
+  private byte[] conditionalBytes;
+  byte[] downloadConditional(URL url,String etag,byte[] cached)throws Failure {
+    conditionalUrl=url.toString();conditionalEtag=etag;conditionalBytes=cached;
+    try{return download(url);}finally{conditionalUrl="";conditionalEtag="";conditionalBytes=null;}
+  }
   byte[] download(URL url) throws Failure {
+    initialImageUrl=url.toString();imageEtag="";
     try {
       return get(url, true, null);
     } catch (Failure error) {
@@ -241,6 +249,7 @@ final class PublicProfileProvider implements ProfileProvider {
             "Accept", image ? "image/webp,image/jpeg,image/png" : "text/html");
         connection.setRequestProperty("Accept-Encoding", "identity");
         if (image) connection.setRequestProperty("Referer", "https://www.instagram.com/");
+        if(image&&url.toString().equals(conditionalUrl)&&HdImageCache.strongEtag(conditionalEtag))connection.setRequestProperty("If-None-Match",conditionalEtag);
         if (cancelled) throw new Failure("REQUEST_CANCELLED");
                 int status = connection.getResponseCode();
         if (cancelled) throw new Failure("REQUEST_CANCELLED");
@@ -264,7 +273,8 @@ final class PublicProfileProvider implements ProfileProvider {
         if (status == 404)
           throw new Failure(
               image ? "DOWNLOAD_FAILED" : "PROFILE_NOT_FOUND_OR_UNAVAILABLE", status, 0, false);
-        if (status >= 300 && status < 400) {
+        if(image&&status==304&&url.toString().equals(conditionalUrl)&&HdImageCache.strongEtag(conditionalEtag)&&conditionalBytes!=null){imageEtag=conditionalEtag;return conditionalBytes;}
+                if (status >= 300 && status < 400) {
           String location = connection.getHeaderField("Location");
           if (location == null) throw new Failure("REDIRECT_INVALID", status, 0, true);
           url = new URL(url, location);
@@ -272,6 +282,7 @@ final class PublicProfileProvider implements ProfileProvider {
         }
         if (status != 200)
           throw new Failure(image ? "DOWNLOAD_FAILED" : "HTTP_ERROR", status, 0, false);
+        if(image)imageEtag=url.toString().equals(initialImageUrl)?connection.getHeaderField("ETag"):"";
         String type = connection.getContentType();
         if (type == null
             || !(image

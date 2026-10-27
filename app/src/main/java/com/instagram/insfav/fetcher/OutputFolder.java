@@ -183,6 +183,15 @@ final class OutputFolder {
     return found;
   }
 
+  String verifiedDigest(String filename) throws IOException {
+    synchronized(WRITE_LOCK){
+      Uri file=lookup(filename);if(file==null)return null;
+      exactName(file,filename);
+      byte[] bytes=read(resolver.openInputStream(file));
+      return ThumbnailCodec.valid(bytes)?HdImageCache.digest(bytes):null;
+    }
+  }
+
   boolean valid(String filename) throws IOException {
     Uri file = lookup(filename);
     if (file == null) return false;

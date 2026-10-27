@@ -17,6 +17,7 @@ final class HdThumbnailJobs {
     static boolean busy(Fetcher.Host h,String user){return active.contains(scope(h,user));}
     static void enqueue(Context c,Fetcher.Host h,String user,byte[] bytes)throws Exception {
         if(!Identity.valid(user))throw new IOException("INVALID_PROFILE");
+        if(HdThumbnailVerification.matches(c,h,user,bytes))return;
         String key=scope(h,user);if(!active.add(key))return;
         File image=null,record=null;
         try {
