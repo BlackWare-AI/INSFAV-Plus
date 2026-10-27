@@ -33,6 +33,8 @@ public final class InstagramLoginActivity extends Activity {
             InstagramSession.logout(this, () -> { verified = false; refreshCookies(); status.setText("Signed out"); browser.loadUrl(InstagramSession.ORIGIN + "accounts/login/"); });
         });
         button(controls, "Done", this::finish);
+        LinearLayout extraction = new LinearLayout(this); layout.addView(extraction);
+        button(extraction, "Get cookies for downloads", () -> extractSession(true));
         TextView cookieTitle = new TextView(this); cookieTitle.setText("WebView cookies · instagram.com"); layout.addView(cookieTitle);
         cookies = new TextView(this); cookies.setTextIsSelectable(true); cookies.setSaveEnabled(false); cookies.setFreezesText(false);
         ScrollView cookieScroll = new ScrollView(this); cookieScroll.addView(cookies);
@@ -73,7 +75,7 @@ public final class InstagramLoginActivity extends Activity {
                     if (path != null && (path.contains("challenge") || path.contains("checkpoint") || path.contains("two_factor")))
                         blocked("CHALLENGE_REQUIRED");
                 }
-                @Override public void onPageFinished(WebView view, String url) { InstagramSession.flush(); refreshCookies(); check(); }
+                @Override public void onPageFinished(WebView view, String url) { InstagramSession.flush(); refreshCookies(); extractSession(false); check(); }
                 @Override public void onReceivedSslError(WebView view, SslErrorHandler h, SslError error) { h.cancel(); status.setText("Instagram connection could not be verified"); }
                 @Override public void onReceivedError(WebView v, WebResourceRequest request, WebResourceError error) {
                     if (request.isForMainFrame()) status.setText("Unable to check session; check your connection");
@@ -85,6 +87,25 @@ public final class InstagramLoginActivity extends Activity {
             // A restored session opens the signed-in home, never an unsolicited fresh login.
             browser.loadUrl(InstagramSession.ORIGIN);
         } catch (IOException | RuntimeException | LinkageError error) { status.setText("Instagram WebView unavailable"); }
+    }
+    private void extractSession(boolean explicit) {
+        if(browser==null)return;
+        String url=browser.getUrl();
+        if(url==null||!instagram(Uri.parse(url)))return;
+        String path=Uri.parse(url).getPath();
+        if(path!=null&&(path.contains("challenge")||path.contains("checkpoint")||path.contains("two_factor"))){if(explicit)status.setText("Complete Instagram verification first.");return;}
+        new Thread(()->{
+            try {
+                BrowserCookies.capture(this);
+                if(explicit) {
+                    SessionState.changed(this);
+                    SessionState.prefs(this).edit().putBoolean("manualSession",false).putBoolean("webSessionHold",false)
+                        .putBoolean("instagramSecurityHold",false).putBoolean("armed",false).putBoolean("userPaused",true)
+                        .putString("webSessionStatus","Cookies captured · checked on request").putString("blocked","").commit();
+                    runOnUiThread(()->{refreshCookies();status.setText("WebView cookies saved securely for HD and downloads. Bulk stays paused.");});
+                }
+            }catch(ProfileProvider.Failure e){if(explicit)runOnUiThread(()->status.setText("Sign in above first; no usable Instagram session cookies were extracted."));}
+        },"instagram-cookie-capture").start();
     }
     private void refreshPage() {
         if (browser == null) return;

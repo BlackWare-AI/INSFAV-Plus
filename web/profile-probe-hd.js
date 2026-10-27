@@ -18,8 +18,8 @@ function (expected, expectedId) {
     const structured = new Set();
     let viewer = false, anonymous = false, routedError = false, visits = 0;
     const normalize = x => typeof x === "string" ? x.trim().replace(/^@/, "").toLowerCase() : "";
-    const picture = x => x && (x.profile_pic_url_hd || x.profile_pic_url ||
-        (x.hd_profile_pic_url_info || x.profile_pic_url_info || {}).url);
+    const picture = x => x && (x.profile_pic_url_hd || (x.hd_profile_pic_url_info || {}).url ||
+        x.profile_pic_url || (x.profile_pic_url_info || {}).url);
     function walk(o, depth) {
         if (!o || typeof o !== "object" || depth > 32 || ++visits > 30000) return;
         if (o.rootView && o.rootView.resource && o.rootView.resource.__dr === "PolarisErrorRoot.react") routedError = true;

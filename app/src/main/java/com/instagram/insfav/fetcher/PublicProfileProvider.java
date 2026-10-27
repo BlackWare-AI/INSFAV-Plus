@@ -118,7 +118,7 @@ final class PublicProfileProvider implements ProfileProvider {
     return value;
   }
 
-  private static void rejectWall(String html, boolean configured) throws Failure {
+  static void rejectWall(String html, boolean configured) throws Failure {
     String wall = AccessWall.detect(html);
     if (wall.equals("CHALLENGE_REQUIRED")) throw new Failure(wall, 200, 0, true);
     if (wall.equals("LOGIN_REQUIRED"))
@@ -305,6 +305,13 @@ final class PublicProfileProvider implements ProfileProvider {
     throw new Failure("REDIRECT_LIMIT", 0, 0, true);
   }
 
+    static URL photoJson(JSONObject json,String user) throws Failure {
+        Set<String> found=new LinkedHashSet<>();boolean[] restricted={false};
+        find(json,user,found,0,new int[]{0},restricted);
+        if(found.size()!=1)throw new Failure(found.isEmpty()?"PROFILE_IMAGE_URL_MISSING":"PROFILE_DATA_AMBIGUOUS");
+        try{URL url=new URL(found.iterator().next());if(!trusted(url,true)||placeholder(url.toString()))throw new Failure("UNTRUSTED_SOURCE");return url;}
+        catch(MalformedURLException e){throw new Failure("INVALID_IMAGE_URL");}
+    }
   static URL photo(String html, String user) throws Failure {
     Matcher matcher = SCRIPT.matcher(html);
     LinkedHashSet<String> found = new LinkedHashSet<>();
@@ -375,12 +382,12 @@ final class PublicProfileProvider implements ProfileProvider {
           && !"true".equals(object.optString("has_anonymous_profile_picture"))
           && !Boolean.FALSE.equals(object.opt("has_profile_pic"))) {
         String picture = object.optString("profile_pic_url_hd");
-        if (picture.isEmpty()) picture = object.optString("profile_pic_url");
         if (picture.isEmpty()) {
           JSONObject info = object.optJSONObject("hd_profile_pic_url_info");
           if (info == null) info = object.optJSONObject("profile_pic_url_info");
           if (info != null) picture = info.optString("url");
         }
+        if (picture.isEmpty()) picture = object.optString("profile_pic_url");
         if (!picture.isEmpty() && !placeholder(picture)) found.add(picture);
       }
       Iterator<String> keys = object.keys();
