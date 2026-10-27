@@ -39,5 +39,9 @@ adb shell am instrument -w -e scenario clipboard "$runner" | tee session-evidenc
 grep -q OFFLINE_COOKIE_PASTE_VERIFIED session-evidence/clipboard.txt
 adb shell am instrument -w -e scenario native-hd "$runner" | tee session-evidence/native-hd.txt
 grep -q OFFLINE_NATIVE_COOKIE_HD_256_OK session-evidence/native-hd.txt
+adb shell am instrument -w -e scenario netscape-hd "$runner" | tee session-evidence/netscape-hd.txt
+grep -q OFFLINE_NETSCAPE_COOKIE_HD_256_OK session-evidence/netscape-hd.txt
+adb shell am instrument -w -e scenario legacy-hd "$runner" | tee session-evidence/legacy-hd.txt
+grep -q OFFLINE_LEGACY_HD_256_OK session-evidence/legacy-hd.txt
 adb shell am instrument -w -e scenario logout "$runner" | tee session-evidence/scoped-logout.txt
 grep -q OFFLINE_SESSION_LOGOUT_SCOPED session-evidence/scoped-logout.txt

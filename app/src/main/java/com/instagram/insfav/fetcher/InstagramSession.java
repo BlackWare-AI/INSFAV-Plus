@@ -11,10 +11,24 @@ public final class InstagramSession {
     static final String MANUAL_PROFILE = "instagram-manual";
     private InstagramSession() { }
     public static boolean manual(Context c) { return SessionState.prefs(c).getBoolean("manualSession", false); }
+    public static String engine(Context c) { return SessionState.prefs(c).getString("browserEngine", "native"); }
+    public static String engineName(Context c) {
+        switch(engine(c)) {
+            case "netscape": return "YTDLnis-style Netscape extraction";
+            case "legacy": return "Legacy engine · persistent WebView";
+            default: return "Persistent WebView · HTTP engine";
+        }
+    }
+    public static void selectEngine(Context c, String engine) {
+        if (!engine.equals("native") && !engine.equals("netscape") && !engine.equals("legacy")) throw new IllegalArgumentException("Unknown session engine");
+        if (QueueControl.lock.get()) throw new IllegalStateException("Pause retrieval before changing the session method.");
+        SessionState.prefs(c).edit().putString("browserEngine", engine).putBoolean("manualSession", false).commit();
+        SessionState.changed(c);
+    }
     static String key(boolean manual) { return manual ? "manualSessionHold" : "webSessionHold"; }
     public static String status(Context c) {
         android.content.SharedPreferences p = SessionState.prefs(c);
-        return (manual(c) ? "Manual cookies · " : "Persistent WebView Session · ") +
+        return (manual(c) ? "Manual cookies · " : engineName(c) + " · ") +
             ((p.getBoolean("instagramSecurityHold", false) || p.getBoolean(key(manual(c)), false)) ? "Verification required" : p.getString(manual(c) ? "manualSessionStatus" : "webSessionStatus", "Not verified"));
     }
     public static void select(Context c, boolean manual) {
@@ -23,10 +37,12 @@ public final class InstagramSession {
         SessionState.prefs(c).edit().putBoolean("manualSession", manual).commit();
         SessionState.changed(c);
     }
-    static boolean configured(Context c) { return manual(c) ? new CookieVault(c).configured() : (CookieVault.browser(c).configured() || "Verified".equals(SessionState.prefs(c).getString("webSessionStatus", ""))); }
+    static boolean configured(Context c) { return manual(c) ? new CookieVault(c).configured() : ((engine(c).equals("netscape") ? NetscapeBrowserCookies.vault(c).configured() : CookieVault.browser(c).configured()) || "Verified".equals(SessionState.prefs(c).getString("webSessionStatus", ""))); }
     static ProfileProvider open(Context c) throws ProfileProvider.Failure {
         requireReady(c);
-        return new BrowserProfileProvider(c, manual(c) ? new CookieVault(c).load() : BrowserCookies.forDownload(c), manual(c));
+        if (!manual(c) && engine(c).equals("legacy")) return new WebViewProfileProvider(c, null);
+        CookieJar jar = manual(c) ? new CookieVault(c).load() : engine(c).equals("netscape") ? NetscapeBrowserCookies.forDownload(c) : BrowserCookies.forDownload(c);
+        return new BrowserProfileProvider(c, jar, manual(c));
     }
     static void requireReady(Context c) throws ProfileProvider.Failure {
         if (SessionState.prefs(c).getBoolean("instagramSecurityHold", false) || SessionState.prefs(c).getBoolean(key(manual(c)), false))
@@ -135,6 +151,7 @@ public final class InstagramSession {
         synchronized(BrowserCookies.LOCK) {
             SessionState.prefs(c).edit().putLong("browserCookieEpoch",SessionState.prefs(c).getLong("browserCookieEpoch",0)+1).commit();
             CookieVault.browser(c).remove();
+            NetscapeBrowserCookies.vault(c).remove();
         }
         SessionState.prefs(c).edit().putString("webSessionStatus", "Signed out").putBoolean("webSessionHold", true).commit();
         SessionState.changed(c);

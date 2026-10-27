@@ -31,6 +31,7 @@ final class BrowserProfileProvider implements ProfileProvider {
         context=c.getApplicationContext();this.jar=jar;this.network=network;this.legacy=legacy;
         agent=WebSettings.getDefaultUserAgent(c);
     }
+    @Override public boolean requiresAuthentication() { return false; }
     @Override public void authenticate() throws Failure {
         try {
             JSONObject json=new JSONObject(new String(request(new URL(InstagramSession.ORIGIN+"api/v1/accounts/current_user/?edit=true"),""),StandardCharsets.UTF_8));
