@@ -1,0 +1,46 @@
+{
+  "release": "https://github.com/BlackWare-AI/INSFAV-Plus/releases/tag/plus-v1.1.16-build.19-icon-96d27c07fc",
+  "tag": "plus-v1.1.16-build.19-icon-96d27c07fc",
+  "workflowRun": "https://github.com/BlackWare-AI/INSFAV-Plus/actions/runs/40774267577",
+  "publicationSourceCommit": "ff63302a72c6d2281814157ab1fee226c7aa43b7",
+  "previousRelease": "plus-v1.1.16-build.19",
+  "version": "1.1.16",
+  "versionCode": 19,
+  "package": "com.instagram.insfav.plus",
+  "apk": {
+    "file": "app-release.apk",
+    "bytes": 848689,
+    "sha256": "1458816a4095981abe69488d796de8bf62d978847d92729b6a3c9eae74db0718",
+    "officialRelease": true,
+    "signatureVerified": true,
+    "certificateSha256": "cffc756bf3d517b02780093e7d0d80ae737ce9e3b035a86a094f5698ffab35c8"
+  },
+  "icon": {
+    "source": "web/static/logo.jpg",
+    "bytes": 16393,
+    "sha256": "96d27c07fcdca029aae8c0bbd2e54e5ea2c79b5ae88439114c7e86a8ab634ec5",
+    "sizeAdjustmentPercent": 6.7,
+    "matchesApkAssets": [
+      "assets/logo.jpg",
+      "res/ST.jpg"
+    ]
+  },
+  "onlyChangedApkPayloadEntries": [
+    "META-INF/version-control-info.textproto",
+    "assets/logo.jpg",
+    "res/ST.jpg"
+  ],
+  "validation": {
+    "webReproducibility": true,
+    "javascript": true,
+    "chromium": true,
+    "androidUnitTests": true,
+    "lint": true,
+    "debugBuild": true,
+    "api35Emulator": true,
+    "instagramSessionEmulator": true,
+    "instagramIsolationEmulator": true,
+    "officialSignedReleaseBuild": true,
+    "physicalDeviceTested": false
+  }
+}

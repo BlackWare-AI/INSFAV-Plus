@@ -31,25 +31,6 @@ def verify_same_build_unsigned(release, assets, prior):
     assert hashlib.sha256(result.stdout).hexdigest()==prior.get('sha256'),'Unsigned source SHA-256 mismatch'
     current=Path('app/build/outputs/apk/release/app-release.apk').read_bytes()
     assert apk_payload(result.stdout)==apk_payload(current),'Same-build signing must preserve the entire APK payload'
-def verify_same_build_icon_refresh(release, assets, prior):
-    assert prior.get('version')==meta['version'],'Icon refresh must preserve versionName'
-    assert prior.get('versionCode')==meta['versionCode'],'Icon refresh must preserve versionCode'
-    sources=[a for a in assets if a['name']==prior.get('file')]
-    assert len(sources)==1 and 0<sources[0]['size']<=32*1024*1024,'Missing previous signed APK'
-    result=subprocess.run(['gh','api','repos/'+REPOSITORY+'/releases/assets/'+str(sources[0]['id']),'-H','Accept: application/octet-stream'],capture_output=True)
-    assert result.returncode==0,'Cannot download previous signed APK'
-    assert hashlib.sha256(result.stdout).hexdigest()==prior.get('sha256'),'Previous signed APK SHA-256 mismatch'
-    old=apk_payload(result.stdout)
-    current=apk_payload(Path('app/build/outputs/apk/release/app-release.apk').read_bytes())
-    allowed={'assets/logo.jpg','res/ST.jpg','META-INF/version-control-info.textproto'}
-    changed={name for name in old.keys()|current.keys() if old.get(name)!=current.get(name)}
-    assert changed==allowed,'Same-build icon refresh may change only launcher artwork and source provenance'
-    image=Path('web/static/logo.jpg').read_bytes()
-    assert current['assets/logo.jpg']==image and current['res/ST.jpg']==image,'APK icon must match the reviewed source image'
-    old_source=release.get('target_commitish','')
-    new_source=os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']
-    assert len(old_source)==40 and len(new_source)==40,'Cannot verify source revision provenance'
-    assert old['META-INF/version-control-info.textproto'].replace(old_source.encode(),new_source.encode())==current['META-INF/version-control-info.textproto'],'Only source revision may change in APK provenance'
 # Older gh versions paginate as adjacent JSON arrays and lack --slurp.
 raw=gh('api','--paginate','repos/'+REPOSITORY+'/releases?per_page=100')
 pages=[];decoder=json.JSONDecoder()
@@ -72,21 +53,14 @@ for release in [r for page in pages for r in page]:
             assert prior['versionCode']<=meta['versionCode'],'versionCode cannot decrease'
             if prior['versionCode']==meta['versionCode']: verify_same_build_unsigned(release,assets,prior)
             continue  # Same-build signing is allowed only for identical, explicitly unsigned content.
-        if prior['versionCode']==meta['versionCode']:
-            if os.environ.get('PLUS_ICON_REFRESH')=='true':
-                verify_same_build_icon_refresh(release,assets,prior)
-                continue
-            raise AssertionError('versionCode must increase for every published signed APK')
         assert prior['versionCode']<meta['versionCode'],'versionCode must increase for every published signed APK'
         assert prior.get('certificateSha256'),'Cannot verify the previous Plus signing certificate'
         prior_certificates={v.lower() for v in prior['certificateSha256']}
         if meta['versionCode']>=10 and prior['versionCode']<10 and prior_certificates=={LEGACY_CERTIFICATE}:
             continue  # Explicitly approved migration; no in-place update from this legacy key.
         assert prior_certificates==current_certificates,'Plus signing certificate must match previous releases for in-place updates'
-icon_refresh=os.environ.get('PLUS_ICON_REFRESH')=='true'
-tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])+('-icon-'+hashlib.sha256(Path('web/static/logo.jpg').read_bytes()).hexdigest()[:10] if icon_refresh else '')
-notes=Path(os.environ['PLUS_RELEASE_NOTES_FILE']).read_text() if os.environ.get('PLUS_RELEASE_NOTES_FILE') else ('Launcher icon artwork enlarged by 6.7%. Version and build are unchanged.\n' if icon_refresh else Path('INSTAGRAM-SESSION-RELEASE.md').read_text() if Path('INSTAGRAM-SESSION-RELEASE.md').exists() else 'Instagram session management update.\n')
-title='INSFAV Plus '+meta['version']+(' — icon size update (build '+str(meta['versionCode'])+')' if icon_refresh else '')
+tag='plus-v'+meta['version']+'-build.'+str(meta['versionCode'])
+notes=Path(os.environ['PLUS_RELEASE_NOTES_FILE']).read_text() if os.environ.get('PLUS_RELEASE_NOTES_FILE') else Path('INSTAGRAM-SESSION-RELEASE.md').read_text() if Path('INSTAGRAM-SESSION-RELEASE.md').exists() else 'Instagram session management update.\n'
 with tempfile.NamedTemporaryFile(mode='w',suffix='.md') as f:
     f.write(notes);f.flush()
-    subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']),'--title',title,'--notes-file',f.name]+(['--latest=false'] if os.environ.get('PLUS_RELEASE_LATEST')=='false' else []),check=True)
+    subprocess.run(['gh','release','create',tag,'app/build/outputs/apk/release/app-release.apk','artifacts/apk.json','--repo',REPOSITORY,'--target',(os.environ.get('PLUS_SOURCE_SHA') or os.environ['GITHUB_SHA']),'--title','INSFAV Plus '+meta['version'],'--notes-file',f.name]+(['--latest=false'] if os.environ.get('PLUS_RELEASE_LATEST')=='false' else []),check=True)
