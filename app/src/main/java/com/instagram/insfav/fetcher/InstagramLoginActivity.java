@@ -18,7 +18,7 @@ public final class InstagramLoginActivity extends Activity {
     private TextView status, cookies, savedStatus;
     private Dialog details;
     private Button saveButton;
-    private boolean lease, destroyed, savedTab, turkish;
+    private boolean lease, destroyed, savedTab, turkish, foreground;
     private String engine;
     private int detailGeneration;
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -112,6 +112,7 @@ public final class InstagramLoginActivity extends Activity {
         BrowserCookieStore.capture(this,engine,true,(jar,error)->{
             if(destroyed)return;if(saveButton!=null)saveButton.setEnabled(true);
             if(!error.isEmpty()){status.setText(extractionError(error));if(savedStatus!=null)savedStatus.setText(extractionError(error));return;}
+            if(!safePage()){status.setText(t("Complete Instagram verification before continuing.","Devam etmeden önce Instagram doğrulamasını tamamlayın."));return;}
             SessionState.changed(this);
             SessionState.prefs(this).edit().putBoolean("manualSession",false).putBoolean("webSessionHold",false).putBoolean("instagramSecurityHold",false)
                 .putString("webSessionStatus","Cookies saved · checked on request").putBoolean("armed",false).putBoolean("userPaused",true).commit();
@@ -125,14 +126,14 @@ public final class InstagramLoginActivity extends Activity {
         return t("WebView cookies could not be read. Refresh and try again.","WebView çerezleri okunamadı. Sayfayı yenileyip tekrar deneyin.");
     }
     private void refreshCookies() {
-        if(cookies==null||savedStatus==null)return;
+        if(!foreground||cookies==null||savedStatus==null)return;
         int generation=++detailGeneration;
         if(!savedTab){String header;try{header=CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);}catch(RuntimeException e){header=null;}
             savedStatus.setText(t("Live WebView · instagram.com","Canlı WebView · instagram.com"));cookies.setText(header==null||header.isEmpty()?t("No Instagram cookies yet.","Henüz Instagram çerezi yok."):header);return;}
         cookies.setText("");savedStatus.setText(t("Reading encrypted saved copy…","Şifreli kayıt okunuyor…"));
         String revision=BrowserCookieStore.revision(this,engine);
         BrowserCookieStore.saved(this,engine,(jar,error)->{
-            if(destroyed||cookies==null||!savedTab||generation!=detailGeneration||!revision.equals(BrowserCookieStore.revision(this,engine)))return;
+            if(destroyed||!foreground||cookies==null||!savedTab||generation!=detailGeneration||!revision.equals(BrowserCookieStore.revision(this,engine)))return;
             if(!error.isEmpty()){savedStatus.setText(t("No readable saved copy. Live WebView is independent.","Okunabilir kayıt yok. Canlı WebView oturumu bundan bağımsızdır."));cookies.setText("");return;}
             long at=SessionState.prefs(this).getLong("cookieSnapshotSavedAt_"+engine,0);
             savedStatus.setText(t("Saved copy · ","Kaydedilen kopya · ")+engine+(at==0?"":" · "+android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(at))));
@@ -162,8 +163,8 @@ public final class InstagramLoginActivity extends Activity {
     private GradientDrawable background(int color,int radius){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(radius));g.setStroke(dp(1),0xff242424);return g;}
     private Button button(LinearLayout row,String label,Runnable action){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(12);b.setTextColor(Color.WHITE);b.setMinHeight(dp(44));b.setMinimumHeight(dp(44));b.setPadding(dp(10),0,dp(10),0);b.setBackground(background(0xff101010,16));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(row.getOrientation()==LinearLayout.VERTICAL?-1:0,dp(44),row.getOrientation()==LinearLayout.VERTICAL?0:1);p.setMargins(dp(4),dp(4),dp(4),dp(4));row.addView(b,p);b.setOnClickListener(v->action.run());return b;}
     @Override public void onBackPressed(){if(details!=null&&details.isShowing())details.dismiss();else if(browser!=null&&browser.canGoBack())browser.goBack();else super.onBackPressed();}
-    @Override protected void onResume(){super.onResume();refreshCookies();}
-    @Override protected void onPause(){detailGeneration++;if(cookies!=null)cookies.setText("");InstagramSession.flush();super.onPause();}
+    @Override protected void onResume(){super.onResume();foreground=true;refreshCookies();}
+    @Override protected void onPause(){foreground=false;detailGeneration++;if(cookies!=null)cookies.setText("");InstagramSession.flush();super.onPause();}
     @Override protected void onStop(){InstagramSession.flush();super.onStop();}
     @Override protected void onDestroy(){destroyed=true;main.removeCallbacks(capturePage);if(details!=null)details.dismiss();if(browser!=null){browser.stopLoading();browser.destroy();browser=null;}InstagramSession.flush();if(lease){lease=false;WebViewProfileProvider.SESSION_LEASE.release();}super.onDestroy();}
 }
