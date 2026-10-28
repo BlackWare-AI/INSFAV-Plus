@@ -38,7 +38,6 @@ final class NativeCookieHdDeviceCheck {
         try{DocumentsContract.deleteDocument(c.getContentResolver(),DocumentsContract.buildDocumentUriUsingTree(FixtureDocuments.tree(),"root/"+user+".webp"));}catch(Exception ignored){}
         Bitmap image=Bitmap.createBitmap(640,480,Bitmap.Config.ARGB_8888);image.eraseColor(engine.equals("legacy")?Color.RED:Color.BLUE);ByteArrayOutputStream png=new ByteArrayOutputStream();image.compress(Bitmap.CompressFormat.PNG,100,png);image.recycle();
         InstagramSession.selectEngine(c,engine);
-        ProfileProvider provider=InstagramSession.open(c);
         AtomicInteger calls=new AtomicInteger();
         java.util.concurrent.atomic.AtomicReference<Throwable> fixtureFailure=new java.util.concurrent.atomic.AtomicReference<>();
         PublicProfileProvider.Connections transport=url->{calls.incrementAndGet();boolean profile=url.getHost().equals("www.instagram.com");
@@ -49,6 +48,10 @@ final class NativeCookieHdDeviceCheck {
                 public void connect(){}public void disconnect(){}public boolean usingProxy(){return false;}public String getCipherSuite(){return "TLS";}public Certificate[] getLocalCertificates(){return null;}public Certificate[] getServerCertificates(){return null;}
             };
         };
+        java.util.Queue<ProfileProvider> providers=new java.util.concurrent.ConcurrentLinkedQueue<>();
+        FetchBroker broker=new FetchBroker(c,full->{
+            try {
+                ProfileProvider provider=InstagramSession.open(c);
         if(provider instanceof BrowserProfileProvider) {
             java.lang.reflect.Field network=BrowserProfileProvider.class.getDeclaredField("network");network.setAccessible(true);network.set(provider,transport);
         } else {
@@ -66,7 +69,10 @@ final class NativeCookieHdDeviceCheck {
             java.lang.reflect.Field downloads=WebViewProfileProvider.class.getDeclaredField("downloads");downloads.setAccessible(true);
             downloads.set(provider,(WebViewProfileProvider.Downloads)()->new PublicProfileProvider(transport,null,new File(c.getCacheDir(),"profile-downloads")));
         }
-        FetchBroker broker=new FetchBroker(c,full->provider);java.lang.reflect.Field instance=FetchBroker.class.getDeclaredField("instance");instance.setAccessible(true);instance.set(null,broker);
+                providers.add(provider);return provider;
+            }catch(Exception error){fixtureFailure.set(error);throw new ProfileProvider.Failure("OFFLINE_PROVIDER_SETUP_FAILED");}
+        });
+        java.lang.reflect.Field instance=FetchBroker.class.getDeclaredField("instance");instance.setAccessible(true);instance.set(null,broker);
         CountDownLatch allowEncoding=new CountDownLatch(1),hdReady=new CountDownLatch(1);
         java.lang.reflect.Field workerField=HdThumbnailJobs.class.getDeclaredField("worker");workerField.setAccessible(true);
         ((ExecutorService)workerField.get(null)).execute(()->{try{allowEncoding.await(20,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}});
@@ -91,6 +97,6 @@ final class NativeCookieHdDeviceCheck {
             if(!Fetcher.bulkDisabled()||SessionState.prefs(c).getBoolean("armed",true))throw new AssertionError("HD started the bulk queue");
             File snapshot=new File(c.getFilesDir(),engine.equals("netscape") ? "instagram-netscape-cookies.enc" : "instagram-webview-cookies.enc");
             if(!engine.equals("legacy") && (!snapshot.isFile()||new String(java.nio.file.Files.readAllBytes(snapshot.toPath()),StandardCharsets.ISO_8859_1).contains("OFFLINE_NATIVE_HD")))throw new AssertionError("Browser snapshot was not encrypted");
-        }finally{allowEncoding.countDown();Fetcher.removeListener(navigation);Fetcher.closeViewer();broker.cancelAll();provider.close();Fetcher.setBulkDisabled(false);}
+        }finally{allowEncoding.countDown();Fetcher.removeListener(navigation);Fetcher.closeViewer();broker.cancelAll();for(ProfileProvider provider:providers)provider.close();Fetcher.setBulkDisabled(false);}
     }
 }
