@@ -14,7 +14,7 @@ public final class InstagramSession {
     public static String engine(Context c) { return "netscape".equals(SessionState.prefs(c).getString("browserEngine", "legacy")) ? "netscape" : "legacy"; }
     public static String engineName(Context c) {
         switch(engine(c)) {
-            case "netscape": return "YTDLnis-style Netscape extraction";
+            case "netscape": return "YTDLnis · Netscape / persistent WebView";
             case "legacy": return "Legacy engine · persistent WebView";
             default: return "Legacy engine · persistent WebView";
         }
@@ -40,8 +40,8 @@ public final class InstagramSession {
     static boolean configured(Context c) { return manual(c) ? new CookieVault(c).configured() : ((engine(c).equals("netscape") ? NetscapeBrowserCookies.vault(c).configured() : CookieVault.browser(c).configured()) || "Verified".equals(SessionState.prefs(c).getString("webSessionStatus", ""))); }
     static ProfileProvider open(Context c) throws ProfileProvider.Failure {
         requireReady(c);
-        if (!manual(c) && engine(c).equals("legacy")) return new WebViewProfileProvider(c, null);
-        CookieJar jar = manual(c) ? new CookieVault(c).load() : engine(c).equals("netscape") ? NetscapeBrowserCookies.forDownload(c) : BrowserCookies.forDownload(c);
+        if (!manual(c)) return new WebViewProfileProvider(c, null);
+        CookieJar jar = new CookieVault(c).load();
         return new BrowserProfileProvider(c, jar, manual(c));
     }
     static void requireReady(Context c) throws ProfileProvider.Failure {

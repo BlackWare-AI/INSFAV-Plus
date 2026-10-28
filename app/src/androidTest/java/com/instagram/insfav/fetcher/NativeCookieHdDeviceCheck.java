@@ -88,7 +88,10 @@ final class NativeCookieHdDeviceCheck {
             if(!written.await(25,TimeUnit.SECONDS))throw new AssertionError("Cookie -> HD -> 256 WebP write did not complete",fixtureFailure.get());
             if(fixtureFailure.get()!=null)throw new AssertionError("Unexpected browser fixture request",fixtureFailure.get());
             host.runOnMainSync(()->{String header=CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);if(header==null||!header.contains("OFFLINE_NATIVE_HD%3AFIXTURE"))throw new AssertionError("Browser did not retain its session");});
-            if(calls.get()!=(engine.equals("legacy")?3:2)||!new OutputFolder(c,FixtureDocuments.tree().toString()).valid(user+".webp"))throw new AssertionError("Wrong HD transport or invalid 256 WebP");
+            if(calls.get()!=3||!new OutputFolder(c,FixtureDocuments.tree().toString()).valid(user+".webp"))throw new AssertionError("Wrong HD transport or invalid 256 WebP");
+            CountDownLatch rotated=new CountDownLatch(1);
+            host.runOnMainSync(()->CookieManager.getInstance().setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_ROTATED_HD%3AFIXTURE; Secure; HttpOnly",accepted->{CookieManager.getInstance().flush();rotated.countDown();}));
+            if(!rotated.await(10,TimeUnit.SECONDS))throw new AssertionError("Cookie rotation did not complete");
             int firstCalls=calls.get();String before=new OutputFolder(c,FixtureDocuments.tree().toString()).verifiedDigest(user+".webp");
             CountDownLatch repeated=new CountDownLatch(1);ready.set(repeated);Fetcher.view(user,"nativeCookieHDRepeat");
             if(!repeated.await(15,TimeUnit.SECONDS))throw new AssertionError("Repeated HD did not render");
@@ -96,7 +99,21 @@ final class NativeCookieHdDeviceCheck {
             if(calls.get()!=firstCalls+1||writes.get()!=1||before==null||!before.equals(after)||HdThumbnailJobs.busy(Fetcher.host(),user))throw new AssertionError("Repeated HD must refresh metadata without another image download, thumbnail job or write");
             if(!Fetcher.bulkDisabled()||SessionState.prefs(c).getBoolean("armed",true))throw new AssertionError("HD started the bulk queue");
             File snapshot=new File(c.getFilesDir(),engine.equals("netscape") ? "instagram-netscape-cookies.enc" : "instagram-webview-cookies.enc");
-            if(!engine.equals("legacy") && (!snapshot.isFile()||new String(java.nio.file.Files.readAllBytes(snapshot.toPath()),StandardCharsets.ISO_8859_1).contains("OFFLINE_NATIVE_HD")))throw new AssertionError("Browser snapshot was not encrypted");
+            long savedUntil=SystemClock.elapsedRealtime()+10000;boolean fresh=false;
+            while(!fresh&&SystemClock.elapsedRealtime()<savedUntil){
+                try{fresh="OFFLINE_ROTATED_HD%3AFIXTURE".equals(BrowserCookieStore.vault(c,engine).load().value("sessionid",System.currentTimeMillis()));}catch(ProfileProvider.Failure ignored){}
+                if(!fresh)Thread.sleep(50);
+            }
+            if(!fresh||new String(java.nio.file.Files.readAllBytes(snapshot.toPath()),StandardCharsets.ISO_8859_1).contains("OFFLINE_ROTATED_HD"))throw new AssertionError("HD cookie rotation was not persisted encrypted");
+            String other=engine.equals("netscape")?"legacy":"netscape";
+            BrowserCookieStore.vault(c,other).save(BrowserCookies.read(c));
+            BrowserCookieStore.remove(c,engine);
+            if(snapshot.exists()||!BrowserCookieStore.vault(c,other).configured())throw new AssertionError("Snapshot removal affected another engine");
+            host.runOnMainSync(()->{String header=CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);if(header==null||!header.contains("OFFLINE_ROTATED_HD"))throw new AssertionError("Removing snapshot signed out live browser");});
+            BrowserCookieStore.updated(c);Thread.sleep(150);
+            if(snapshot.exists())throw new AssertionError("Deleted snapshot was recreated automatically");
+            BrowserCookieStore.captureNow(c,engine);
+            if(!snapshot.isFile()||BrowserCookieStore.removed(c,engine))throw new AssertionError("Explicit save did not re-enable snapshot updates");
         }finally{allowEncoding.countDown();Fetcher.removeListener(navigation);Fetcher.closeViewer();broker.cancelAll();for(ProfileProvider provider:providers)provider.close();Fetcher.setBulkDisabled(false);}
     }
 }

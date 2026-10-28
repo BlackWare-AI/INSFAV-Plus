@@ -50,11 +50,11 @@
  // Replace the platform select with an AMOLED choice dialog at the existing control location.
  const select=document.getElementById('instagram-engine'),trigger=button('',()=>{
   const body=document.createElement('div');body.className='action-list session-engine-options';
-  for(const [value,en,turkish]of [['legacy','Legacy · Persistent WebView','Legacy · Kalıcı WebView'],['netscape','YTDLnis-style · Netscape / HTTP','YTDLnis tarzı · Netscape / HTTP']]){
+  for(const [value,en,turkish]of [['legacy','Legacy · Persistent WebView','Legacy · Kalıcı WebView'],['netscape','YTDLnis-style · Netscape / WebView','YTDLnis tarzı · Netscape / WebView']]){
    const b=button(label(en,turkish),()=>closeDialog(()=>{select.value=value;select.onchange();syncEngine();}));b.setAttribute('role','radio');b.setAttribute('aria-checked',String(select.value===value));body.append(b);
   }body.setAttribute('role','radiogroup');showDialog(label('WebView download method','WebView indirme yöntemi'),body,[{label:label('Close','Kapat')}]);
  },'instagram-engine-choice');
  trigger.className='engine-choice-trigger';trigger.setAttribute('aria-haspopup','dialog');select.hidden=true;select.after(trigger);select.parentElement.htmlFor='instagram-engine-choice';
- function syncEngine(){trigger.textContent=select.value==='netscape'?'YTDLnis · Netscape / HTTP':'Legacy · WebView';}
+ function syncEngine(){trigger.textContent=select.value==='netscape'?'YTDLnis · Netscape / WebView':'Legacy · WebView';}
  const engineEvent=window.nativeEvent;window.nativeEvent=(event,value)=>{engineEvent(event,value);if(event==='fetcher-status')syncEngine();};select.addEventListener('change',syncEngine);syncEngine();
 })();

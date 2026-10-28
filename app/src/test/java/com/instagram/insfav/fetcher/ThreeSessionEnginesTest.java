@@ -36,7 +36,7 @@ public class ThreeSessionEnginesTest {
     }
     @Test public void databaseNetscapePathIsDistinctAndKeepsExpiryScopeAndEncodedValues()throws Exception {
         long future=System.currentTimeMillis()/1000+3600;
-        CookieManager.getInstance().setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_API_VALUE; Secure; HttpOnly");
+        CookieManager.getInstance().setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_DB%3AVALUE; Secure; HttpOnly");
         try(SQLiteDatabase db=SQLiteDatabase.openOrCreateDatabase(file,null)) {
             db.execSQL("CREATE TABLE cookies(host_key TEXT,path TEXT,name TEXT,value TEXT,is_secure INTEGER,expires_utc INTEGER)");
             db.execSQL("INSERT INTO cookies VALUES(?,?,?,?,?,?)",new Object[]{".instagram.com","/","sessionid","OFFLINE_DB%3AVALUE",1,(future+11644473600L)*1000000L});
@@ -45,7 +45,7 @@ public class ThreeSessionEnginesTest {
         }
         CookieJar jar=NetscapeBrowserCookies.read(c);assertEquals("OFFLINE_DB%3AVALUE",jar.value("sessionid",System.currentTimeMillis()));
         assertEquals(1,jar.entries.size());assertEquals(future,jar.entries.get(0).expires);assertTrue(jar.entries.get(0).subdomains);
-        assertEquals("OFFLINE_API_VALUE",BrowserCookies.read(c).value("sessionid",System.currentTimeMillis()));
+        assertEquals("OFFLINE_DB%3AVALUE",BrowserCookies.read(c).value("sessionid",System.currentTimeMillis()));
     }
     @Test public void legacyProductionFactoryReusesDefaultBrowserWithoutInjectionOrTest()throws Exception {
         CookieManager m=CookieManager.getInstance();m.setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_KEEP; Secure; HttpOnly");

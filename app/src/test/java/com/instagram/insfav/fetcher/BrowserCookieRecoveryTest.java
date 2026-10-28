@@ -49,7 +49,7 @@ public class BrowserCookieRecoveryTest {
         long future=System.currentTimeMillis()/1000+3600;
         try(android.database.sqlite.SQLiteDatabase sql=android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(file,null)) {
             sql.execSQL("CREATE TABLE cookies (host_key TEXT,path TEXT,name TEXT,value TEXT,expires_utc INTEGER)");
-            sql.execSQL("INSERT INTO cookies VALUES (?,?,?,?,?)",new Object[]{".instagram.com","/","sessionid","OLD_DB_VALUE",(future+11644473600L)*1000000L});
+            sql.execSQL("INSERT INTO cookies VALUES (?,?,?,?,?)",new Object[]{".instagram.com","/","sessionid",current.value("sessionid",0),(future+11644473600L)*1000000L});
             sql.execSQL("INSERT INTO cookies VALUES (?,?,?,?,?)",new Object[]{".evilinstagram.com","/","foreign","NOT_OURS",0});
         }
         try{CookieJar read=BrowserCookies.read(c);assertEquals(current.value("sessionid",0),read.value("sessionid",System.currentTimeMillis()));assertEquals(future,read.entries.stream().filter(e->e.name.equals("sessionid")).findFirst().get().expires);assertFalse(read.entries.stream().anyMatch(e->e.name.equals("foreign")));}

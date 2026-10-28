@@ -26,7 +26,7 @@ INSFAV Plus, InstaPro’dan dışa aktarılmış Instagram Favoriler koleksiyonl
 ## Instagram oturumu
 
 - **Legacy · Kalıcı WebView:** Uygulamanın kendi kalıcı WebView oturumunu kullanır; varsayılan yöntemdir.
-- **YTDLnis tarzı · Netscape / HTTP:** Aynı uygulamanın WebView çerezlerini Netscape biçimine dönüştürerek HTTP sağlayıcısına aktarır. YTDLnis’ten bağımsız uygulanmıştır; Instagram’ın tüm hesaplar için bu yolu kabul edeceği garanti edilmez.
+- **YTDLnis tarzı · Netscape / WebView:** Canlı WebView çerezlerini Netscape biçiminde şifreli kaydeder; HD mevcut kalıcı WebView oturumunu kullanır. Eksik çerez veritabanında desteklenen CookieManager API’siyle devam edilir. YTDLnis yaklaşımı Android API’leriyle bağımsız uygulanmıştır.
 - **Manuel çerezler:** `cookies.txt` veya HTTP Cookie Header yapıştırma, kaydetme ve kaldırma korunur. Alternatif yöntemler birbirlerinin kayıtlarını silmez.
 
 Giriş ekranında yenileme, çerezi görüntüleme ve çıkış seçenekleri bulunur. Zorunlu **Test Session** adımı yoktur. Çerezler tanılama raporlarına eklenmez; başka uygulamalarla paylaşılmaz. Uygulama açılışında WebView verileri temizlenmez. Instagram sunucusunda iptal edilmiş veya süresi dolmuş bir oturum uygulama tarafından korunamaz. Güvenlik doğrulaması gerektiğinde yeni istekler durur; kullanıcı tamamlamadan otomatik devam edilmez.
@@ -59,3 +59,7 @@ npm test
 Arayüz kaynakları `web/` içindedir; `npm run web` paketlenmiş varlıkları yeniden üretir. Paket kimliği `com.instagram.insfav.plus` olarak korunur. Release APK’ları mevcut GitHub Actions imzalama akışıyla üretilir. Yeni sürüm yayımlanmadan sürüm numarası/build değiştirilmez ve imzasız paket dağıtılmaz.
 
 Gerçek Instagram erişimi, hesap kısıtları, Android WebView sürümü ve ağ koşullarına bağlıdır. Kontrollü otomatik testlerin geçmesi her hesapta canlı erişimin doğrulandığı anlamına gelmez.
+
+### Instagram çerez ekranı
+
+Instagram ekranındaki **Çerezler** düğmesi, canlı tarayıcı başlığını ve seçili yöntemin gerçekten kaydedilmiş Netscape kopyasını ayrı gösterir. **Çerezleri kaydet** ağ testi gerektirmez. HD gezinmesinde yenilenen çerezler kayda aktarılır; aynı kayıt yeniden yazılmaz. **Kaydı sil** yalnızca seçili yöntemin şifreli kopyasını kaldırır, otomatik kaydı yeniden Kaydet diyene kadar kapatır; diğer yöntem, manuel çerezler ve canlı giriş korunur. **Çıkış yap** bu uygulamanın Instagram oturumunu ve iki tarayıcı kopyasını temizler.

@@ -55,6 +55,9 @@ public class SessionControlsTest {
         CookieManager manager=CookieManager.getInstance();manager.setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_PANEL%3AFIXTURE; Secure; HttpOnly");
         org.robolectric.android.controller.ActivityController<InstagramLoginActivity> controller=Robolectric.buildActivity(InstagramLoginActivity.class).create().start().resume();
         try{
+            ReflectionHelpers.callInstanceMethod(controller.get(),"showCookies");
+            ReflectionHelpers.setField(controller.get(),"savedTab",false);
+            ReflectionHelpers.callInstanceMethod(controller.get(),"refreshCookies");
             TextView cookies=ReflectionHelpers.getField(controller.get(),"cookies");
             assertTrue(cookies.getText().toString().contains("OFFLINE_PANEL%3AFIXTURE"));assertFalse(cookies.isSaveEnabled());
             for(java.lang.reflect.Method method:InstagramSession.class.getDeclaredMethods())assertNotEquals("test",method.getName());
