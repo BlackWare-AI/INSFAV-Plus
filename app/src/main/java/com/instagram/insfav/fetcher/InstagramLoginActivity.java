@@ -28,7 +28,8 @@ public final class InstagramLoginActivity extends Activity {
     @Override @SuppressLint("SetJavaScriptEnabled") public void onCreate(Bundle saved) {
         setTheme(android.R.style.Theme_Material_NoActionBar);
         super.onCreate(saved);
-        turkish = "tr".equals(com.instagram.insfav.UiPreferences.language(this));
+        String language = getSharedPreferences(getPackageName().endsWith(".plus") ? "plus-ui" : "insfav-ui",0).getString("language",getPackageName().endsWith(".plus") ? "system" : "en");
+        turkish = language.equals("tr") || language.equals("system") && getResources().getConfiguration().getLocales().get(0).getLanguage().equals("tr");
         engine = InstagramSession.engine(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         getWindow().setStatusBarColor(Color.BLACK); getWindow().setNavigationBarColor(Color.BLACK);
