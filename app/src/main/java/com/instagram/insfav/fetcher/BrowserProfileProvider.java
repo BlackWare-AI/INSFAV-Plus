@@ -53,7 +53,7 @@ final class BrowserProfileProvider implements ProfileProvider {
         catch(Failure e){if(FailurePolicy.pause(e)){stop(e);throw e;}return legacy().fetch(user,full);}
         PublicProfileProvider transfer=new PublicProfileProvider(network,null,new File(context.getCacheDir(),"profile-downloads"));
         transfer.userAgent=agent;images.put(user,transfer);
-        try {if(cancelled)throw new Failure("REQUEST_CANCELLED");return transfer.download(picture);}
+        try {if(cancelled)throw new Failure("REQUEST_CANCELLED");return full ? HdImageCache.fetch(context,user,picture,transfer) : transfer.download(picture);}
         finally {images.remove(user,transfer);}
     }
     private URL resolveNative(String user) throws Failure {
@@ -73,6 +73,7 @@ final class BrowserProfileProvider implements ProfileProvider {
             HttpsURLConnection connection=null;
             try {
                 connection=network.open(url);active.add(connection);pages.computeIfAbsent(user,key->ConcurrentHashMap.newKeySet()).add(connection);
+                connection.setUseCaches(false);connection.setRequestProperty("Cache-Control","no-cache");
                 connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(15000);
                 connection.setRequestProperty("User-Agent",agent);
                 connection.setRequestProperty("Cookie",jar.header(url,System.currentTimeMillis()));

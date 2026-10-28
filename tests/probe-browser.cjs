@@ -13,5 +13,20 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
  await page.evaluate(({small,hd})=>{document.querySelector('script[type="application/json"]').textContent=JSON.stringify({username:'example',id:'1',profile_pic_url:small,hd_profile_pic_url_info:{url:hd}});},{small,hd});
  const withInfo=JSON.parse(await page.evaluate(source=>eval('('+source+')')("example","1"),probe('profile-probe-hd.js')));assert.equal(withInfo.url,hd);console.log('PASS explicit HD info wins over the small profile URL');
  const wrong=JSON.parse(await page.evaluate(source=>eval('('+source+')')("different","1"),probe('profile-probe-hd.js')));assert.equal(wrong.url,undefined);console.log('PASS HD adapter rejects another account and never uses post images');
+ const fresh='https://scontent.cdninstagram.com/v/t51.2885-19/123_456_789_n.jpg?oh=new&oe=2',changed=fresh.replace('123_456_789','987_654_321');
+ let hdBodies=0;
+ await page.unroute('**/*');await page.route('**/*',route=>{
+  const url=route.request().url();if(url===origin)return route.fulfill({contentType:'text/html',body:'<html><head><link rel="canonical" href="'+origin+'"></head><body><script type="application/json">'+JSON.stringify({username:'example',id:'1',profile_pic_url_hd:fresh})+'</script></body></html>'});
+  if(url===fresh||url===changed){hdBodies++;return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480"><rect width="100%" height="100%" fill="#888"/></svg>'});}escaped++;return route.abort();
+ });
+ await page.goto(origin);const hint={user:'example',url:fresh.replace('oh=new&oe=2','oh=old&oe=1'),immutable:true,path:new URL(fresh).pathname,query:[],width:640,height:480};
+ const cached=JSON.parse(await page.evaluate(({source,hint})=>eval('('+source+')')('example','1',hint),{source:probe('profile-probe-hd.js'),hint}));
+ assert.equal(cached.url,fresh);await page.waitForTimeout(100);assert.equal(hdBodies,0);
+ await page.evaluate(changed=>document.querySelector('script[type="application/json"]').textContent=JSON.stringify({username:'example',id:'1',profile_pic_url_hd:changed}),changed);
+ await page.evaluate(({source,hint})=>eval('('+source+')')('example','1',hint),{source:probe('profile-probe-hd.js'),hint});
+ await page.waitForFunction(url=>window.__insfavHD?.get(url)?.complete,changed);const updated=JSON.parse(await page.evaluate(({source,hint})=>eval('('+source+')')('example','1',hint),{source:probe('profile-probe-hd.js'),hint}));assert.equal(updated.url,changed);assert.equal(hdBodies,1);
+ await page.evaluate(fresh=>{document.querySelector('script[type="application/json"]').textContent=JSON.stringify({username:'example',id:'1',profile_pic_url_hd:fresh});document.body.insertAdjacentHTML('beforeend','<form id="loginForm" action="/accounts/login/"><input></form>');},fresh);
+ const login=JSON.parse(await page.evaluate(({source,hint})=>eval('('+source+')')('example','1',hint),{source:probe('profile-probe-hd.js'),hint}));assert.equal(login.wall,'COOKIE_INVALID_EXPIRED');assert.equal(login.url,undefined);
+ console.log('PASS verified HD cache hint avoids duplicate browser image load, refreshes changed photo and preserves login walls');
  assert.equal(escaped,0);console.log('PASS all probe fixtures are intercepted; no live requests');
  }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

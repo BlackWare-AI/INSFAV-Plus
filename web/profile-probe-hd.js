@@ -1,4 +1,4 @@
-function (expected, expectedId) {
+function (expected, expectedId, cachedHd) {
     "use strict";
     const result = {page: location.href, username: expected, pageReady: document.readyState === "complete", candidateFound: false, searchCompleted: false};
     const wall = (code, reason = "UNKNOWN_RESPONSE") => JSON.stringify(Object.assign(result, {wall: code, reason}));
@@ -123,6 +123,22 @@ function (expected, expectedId) {
     } catch (_) {}
     if (canonicalUser !== expected) return JSON.stringify(result);
     if(candidates.size>1)return wall("PROFILE_DATA_AMBIGUOUS");
+    // Cached dimensions are only a hint: Java validates the cached bytes and current image identity.
+    // No Image() body download is needed for a matching, fresh identity-bound JSON candidate.
+    if(cachedHd && typeof cachedHd === "object" && cachedHd.user===expected && cachedHd.width>=32 && cachedHd.height>=32){
+        const ignored=new Set(["oh","oe","ccb","_nc_ohc","_nc_ht","_nc_cat","_nc_sid","_nc_gid","_nc_oc","_nc_ad","_nc_zt"]);
+        const matching=Array.from(structured).filter(safe).filter(raw=>{
+            if(raw===cachedHd.url)return true;
+            try{const u=new URL(raw),query=Array.from(u.searchParams).filter(([k])=>!ignored.has(k)).sort((a,b)=>a[0]===b[0]?(a[1]<b[1]?-1:a[1]>b[1]?1:0):a[0]<b[0]?-1:1);
+                return cachedHd.immutable && /\/[0-9]+(?:_[0-9]+){1,4}_n\.(jpg|jpeg|png|webp)$/.test(u.pathname) && u.pathname===cachedHd.path && JSON.stringify(query)===JSON.stringify(cachedHd.query);
+            }catch(_){return false;}
+        });
+        const compatibleHeader=matching.length===1 && Array.from(candidates.keys()).every(raw=>{
+            if(raw===matching[0])return true;
+            try{const a=new URL(raw),b=new URL(matching[0]);return /\/[0-9]+(?:_[0-9]+){1,4}_n\.(jpg|jpeg|png|webp)$/.test(a.pathname)&&a.pathname===b.pathname;}catch(_){return false;}
+        });
+        if(structured.size===1 && matching.length===1 && compatibleHeader)return JSON.stringify(Object.assign(result,{url:matching[0],kind:"profile_json",loaded:true,width:cachedHd.width,height:cachedHd.height}));
+    }
     const pool=[];
     for(const [url,img] of candidates)pool.push({url,img,kind:"profile_header"});
     if(!window.__insfavHD)window.__insfavHD=new Map();

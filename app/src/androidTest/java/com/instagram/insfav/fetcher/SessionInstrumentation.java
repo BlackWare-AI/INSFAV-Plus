@@ -140,6 +140,6 @@ final class SessionInstrumentation {
                 android.os.Process.killProcess(android.os.Process.myPid()); return;
             }
             result.putString("stream","OFFLINE_SESSION_"+(seed?"SEEDED":"PRESERVED")+"\n");host.finish(Activity.RESULT_OK,result);
-        } catch(Throwable error) { result.putString("stream","OFFLINE_SESSION_FAILED: "+error.getClass().getSimpleName()+"\n"); host.finish(Activity.RESULT_CANCELED,result); }
+        } catch(Throwable error) { StackTraceElement frame=error.getStackTrace().length==0?null:error.getStackTrace()[0]; result.putString("stream","OFFLINE_SESSION_FAILED: "+error.getClass().getSimpleName()+(frame==null?"":" @ "+frame.getClassName()+":"+frame.getLineNumber())+"\n"); host.finish(Activity.RESULT_CANCELED,result); }
     }
 }

@@ -20,6 +20,7 @@ final class WebViewProfileProvider implements ProfileProvider {
 
   interface Pages {
     void load(WebView view, String url);
+    default void loadHd(WebView view,String url){load(view,url);}
   }
 
   interface Resources {
@@ -69,7 +70,7 @@ final class WebViewProfileProvider implements ProfileProvider {
       new java.util.concurrent.atomic.AtomicBoolean();
 
   WebViewProfileProvider(Context context, CookieJar cookies) throws Failure {
-    this(context, cookies, (view, url) -> view.loadUrl(url), url -> null);
+    this(context, cookies, new Pages(){public void load(WebView view,String url){view.loadUrl(url);}public void loadHd(WebView view,String url){view.loadUrl(url,java.util.Collections.singletonMap("Cache-Control","no-cache"));}}, url -> null);
         isolatedManual = cookies != null;
   }
 
@@ -158,7 +159,7 @@ final class WebViewProfileProvider implements ProfileProvider {
         userTransfers.put(user, transfer);
         if (cancelled || barrier != null) { transfer.cancel(); throw new Failure("REQUEST_CANCELLED"); }
         transfer.userAgent = browserAgent;
-        return transfer.download(image);
+        return highResolution ? HdImageCache.fetch(context,user,image,transfer) : transfer.download(image);
       } finally {
         transfers.remove(transfer);
         userTransfers.remove(user, transfer);
@@ -378,6 +379,8 @@ final class WebViewProfileProvider implements ProfileProvider {
     final String user, expectedId;
     final boolean highResolution;
     final long profileDeadlineMs;
+    final JSONObject cachedHd;
+    final HdImageCache.Entry cachedImage;
     final CountDownLatch done = new CountDownLatch(1);
     final Object token = new Object();
     volatile Failure failure;
@@ -405,9 +408,15 @@ final class WebViewProfileProvider implements ProfileProvider {
       this.user = user;
       this.expectedId = expectedId;
       this.highResolution = highResolution;
+      this.cachedImage=highResolution?HdImageCache.load(context,user):null;
+      this.cachedHd=cachedImage==null?new JSONObject():cachedImage.meta;
       sessionEvidence = verifiedSession ? "VERIFIED" : "UNKNOWN";
     }
 
+    WebResourceResponse resourceResponse(String url) {
+        WebResourceResponse cached=HdImageCache.resource(cachedImage,user,url);
+        return cached!=null?cached:resources.intercept(url);
+    }
     void later(Runnable action, long delay) {
       main.postAtTime(action, token, SystemClock.uptimeMillis() + delay);
     }
@@ -484,7 +493,7 @@ final class WebViewProfileProvider implements ProfileProvider {
                 ServiceWorkerController.getInstance().setServiceWorkerClient(new ServiceWorkerClient() {
                     @Override public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
                         String url = request.getUrl().toString();
-                        return WebProfilePolicy.resource(url) ? resources.intercept(url)
+                        return WebProfilePolicy.resource(url) ? resourceResponse(url)
                             : new WebResourceResponse("text/plain", "UTF-8", new ByteArrayInputStream(new byte[0]));
                     }
                 });
@@ -548,7 +557,7 @@ final class WebViewProfileProvider implements ProfileProvider {
           fail(new Failure("WEBVIEW_TIMEOUT"));
           return;
         }
-        pages.load(view, "https://www.instagram.com/" + (user.isEmpty() ? "" : user + "/"));
+        if(highResolution)pages.loadHd(view,"https://www.instagram.com/"+user+"/");else pages.load(view,"https://www.instagram.com/"+(user.isEmpty()?"":user+"/"));
         later(this::poll, 500);
       } catch (OutOfMemoryError error) {
         fail(new Failure("IMAGE_MEMORY_LIMIT", 0, 0, true));
@@ -602,7 +611,7 @@ final class WebViewProfileProvider implements ProfileProvider {
                 "text/plain", "UTF-8", new ByteArrayInputStream(new byte[0]));
           }
           return WebProfilePolicy.resource(request.getUrl().toString())
-              ? resources.intercept(request.getUrl().toString())
+              ? resourceResponse(request.getUrl().toString())
               : new WebResourceResponse(
                   "text/plain",
                   "UTF-8",
@@ -705,7 +714,7 @@ final class WebViewProfileProvider implements ProfileProvider {
                 + ","
                 + JSONObject.quote(expectedId)
                 + ","
-                + highResolution
+                + (highResolution?cachedHd.toString():"false")
                 + ")",
             encoded -> {
               if (finishing) return;

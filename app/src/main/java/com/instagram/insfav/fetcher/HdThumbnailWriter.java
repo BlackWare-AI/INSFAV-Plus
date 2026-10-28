@@ -23,18 +23,20 @@ final class HdThumbnailWriter {
             acquired = true;
             OutputFolder folder = new OutputFolder(context, tree);
             String filename = Identity.outputFilename(user);
+            if(HdThumbnailVerification.matches(context,host,user,source,folder))return false;
             Uri uri;
             if (folder.valid(filename)) {
                 byte[] thumbnail = encode(source);
                 if (thumbnail == null) return false;
                 uri = folder.commit(filename, thumbnail, true);
-                if (!folder.lastWriteCreated) return false;
+                if (!folder.lastWriteCreated) { HdThumbnailVerification.record(context,host,user,source,folder);return false; }
             } else {
                 uri = folder.commitMissingHd(filename, source);
             }
             if (uri == null) return false;
             host.imageWritten(user, uri, tree);
             host.flushImages();
+            HdThumbnailVerification.record(context,host,user,source,folder);
             return true;
         } catch (Exception | OutOfMemoryError ignored) {
             // Permission, provider and encoding failures must never affect the viewer or fetcher.

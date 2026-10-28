@@ -48,6 +48,7 @@ public final class MainActivity extends Activity {
   }
 
   private SettingsBackupUi settingsBackup;
+  private com.instagram.insfav.updates.UpdateUi updates;
   private final DoubleBackExit exitBack = new DoubleBackExit();
   private volatile android.os.CancellationSignal scanCancellation;
   private final java.util.concurrent.atomic.AtomicBoolean scanPending =
@@ -111,6 +112,28 @@ public final class MainActivity extends Activity {
     store = Store.get(this);
     images = new LocalImages(this, store);
     inventory = new ThumbnailInventory(this, store, images);
+    updates = new com.instagram.insfav.updates.UpdateUi(
+        this,
+        new com.instagram.insfav.updates.UpdateUi.Host() {
+          public void send(String event, Object value) { MainActivity.this.send(event, value); }
+          public void idle() throws Exception {
+            if (images.scanning() || scanPending.get()) throw new IOException("Wait for scan");
+            Fetcher.requireBackupIdle();
+          }
+          public JSONObject backup(char[] pin) throws Exception {
+            idle();
+            synchronized (store) {
+              store.flushIndex();
+              JSONObject extra = new JSONObject().put("language", UiLanguage.choice(MainActivity.this));
+              for (String key : new String[] {"treeUri", "directoryId", "folderLabel"}) {
+                if (store.settings.has(key)) extra.put(key, store.settings.getString(key));
+              }
+              return new JSONObject()
+                  .put("settingsArchive", new JSONObject(Fetcher.exportSettings(pin, extra)))
+                  .put("sessionVaults", Fetcher.exportSessionBackup());
+            }
+          }
+        });
     settingsBackup =
         new SettingsBackupUi(
             this,
@@ -513,6 +536,8 @@ public final class MainActivity extends Activity {
               try {
                 JSONObject input = new JSONObject(raw);
                 String command = input.getString("command");
+                if(com.instagram.insfav.updates.UpdateBackup.busy()&&!java.util.Arrays.asList("bootstrap","status","updates-status","fetcher-status","main-scroll-controls").contains(command)){send("error","Backup in progress. Wait before changing app data.");return;}
+                if(updates != null && updates.command(command,input)) return;
                 switch (command) {
                   case "bootstrap":
                     {
@@ -887,6 +912,7 @@ public final class MainActivity extends Activity {
   @Override
   protected void onActivityResult(int request, int result, Intent intent) {
     super.onActivityResult(request, result, intent);
+    if(updates != null && updates.result(request,result,intent)) return;
     if (settingsBackup != null && settingsBackup.result(request, result, intent)) return;
     if (result != RESULT_OK || intent == null || intent.getData() == null) {
       if (request == EXPORT) pendingExport = null;
@@ -1007,6 +1033,7 @@ public final class MainActivity extends Activity {
 
   @Override
   protected void onDestroy() {
+    if(updates != null) updates.close();
     Fetcher.removeListener(fetchListener);
     Fetcher.closeViewer();
     if (scanCancellation != null) scanCancellation.cancel();

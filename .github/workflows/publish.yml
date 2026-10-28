@@ -12,11 +12,11 @@ on:
         default: release
       version:
         description: VERSION_NAME in the reviewed source
-        default: '1.1.15'
+        default: '1.1.16'
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '18'
+        default: '19'
         required: true
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata
@@ -55,8 +55,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Check reviewed version
         env:
-          EXPECTED_VERSION: ${{ inputs.version || '1.1.15' }}
-          EXPECTED_CODE: ${{ inputs.code || '18' }}
+          EXPECTED_VERSION: ${{ inputs.version || '1.1.16' }}
+          EXPECTED_CODE: ${{ inputs.code || '19' }}
         run: |
           python3 - <<'PY'
           import os,re
@@ -96,8 +96,8 @@ jobs:
       - name: Verify APK
         env:
           KIND: ${{ inputs.kind || 'release' }}
-          VERSION: ${{ inputs.version || '1.1.15' }}
-          CODE: ${{ inputs.code || '18' }}
+          VERSION: ${{ inputs.version || '1.1.16' }}
+          CODE: ${{ inputs.code || '19' }}
         run: |
           if [ "$KIND" = release ]; then
             python3 tools/verify-apk.py app/build/outputs/apk/release/app-release.apk --release --version "$VERSION" --code "$CODE" --output artifacts/apk.json
@@ -106,7 +106,7 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: INSFAV-Plus-${{ inputs.kind || 'release' }}-${{ inputs.version || '1.1.15' }}-${{ inputs.code || '18' }}
+          name: INSFAV-Plus-${{ inputs.kind || 'release' }}-${{ inputs.version || '1.1.16' }}-${{ inputs.code || '19' }}
           path: |
             app/build/outputs/apk/**/*.apk
             artifacts/apk.json
@@ -114,8 +114,8 @@ jobs:
         if: inputs.kind != 'debug'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version || '1.1.15' }}
-          CODE: ${{ inputs.code || '18' }}
+          VERSION: ${{ inputs.version || '1.1.16' }}
+          CODE: ${{ inputs.code || '19' }}
         run: python3 tools/publish-plus.py
       - name: Remove temporary signing file
         if: always()
@@ -132,8 +132,8 @@ jobs:
       REVIEWED_SOURCE: ${{ inputs.source_sha }}
       ARTIFACT_COMMIT: ${{ inputs.artifact_commit }}
       VALIDATION_RUN: ${{ inputs.validation_run }}
-      EXPECTED_VERSION: ${{ inputs.version || '1.1.15' }}
-      EXPECTED_CODE: ${{ inputs.code || '18' }}
+      EXPECTED_VERSION: ${{ inputs.version || '1.1.16' }}
+      EXPECTED_CODE: ${{ inputs.code || '19' }}
     steps:
       - uses: actions/checkout@v4
         with:

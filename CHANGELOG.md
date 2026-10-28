@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.16 (build 19)
+
+- HD önbelleği ve gerçek thumbnail SHA-256 doğrulamasıyla tekrarlanan indirme/dönüşümleri atlama.
+- Uygulamaya özel GitHub Release kontrolü, kalıcı otomatik güncelleme tercihleri, incelenebilir yayın notları ve not geçmişi.
+- Kurulum öncesinde seçilen klasöre doğrulanan şifreli uygulama verisi yedeği; başarısız yedekte kurulumu durdurma.
+- Görünür dört rakamlı PIN kutuları ve eski uzun parolalı yedekleri açma desteği.
+- Aynı konumda AMOLED Legacy/YTDLnis seçim penceresi ve diğer INSFAV uygulamasının GitHub bağlantısı.
+
 ## 1.1.6 (build 8)
 
 Thumbnail Fetcher processes eligible missing profiles newest-first, from the
