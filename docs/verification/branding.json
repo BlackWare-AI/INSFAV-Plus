@@ -1,9 +1,9 @@
 {
-  "source": "User-supplied INSFAV Plus logo",
-  "bytes": 32554,
-  "sha256": "8278e111c0727c9efa46ec832b681a44b0d381fa92cb0866ce1205dc07e236c4",
-  "width": 1280,
-  "height": 1280,
+  "source": "User-supplied INSFAV Plus logo; existing artwork enlarged 6.7%",
+  "bytes": 16393,
+  "sha256": "96d27c07fcdca029aae8c0bbd2e54e5ea2c79b5ae88439114c7e86a8ab634ec5",
+  "width": 512,
+  "height": 512,
   "format": "JPEG",
   "exifPresent": false,
   "sourceOfTruth": "web/static/logo.jpg",
@@ -16,5 +16,5 @@
     "Web splash",
     "README"
   ],
-  "processing": "Original bytes preserved; display bounds retain aspect ratio; no image generation or re-encoding"
+  "processing": "Centered 480×480 crop from the existing 512×512 icon, resized to 512×512 (6.7% enlargement); artwork design, colors, proportions and black background retained; generated copies recreated with npm run web"
 }

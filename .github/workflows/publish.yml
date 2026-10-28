@@ -30,6 +30,11 @@ on:
         description: Successful current-source checks workflow run
         required: false
         default: ''
+      icon_refresh:
+        description: Publish a verified icon-only refresh at the existing build number
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: read
 jobs:
@@ -116,6 +121,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version || '1.1.16' }}
           CODE: ${{ inputs.code || '19' }}
+          PLUS_ICON_REFRESH: ${{ inputs.icon_refresh || false }}
         run: python3 tools/publish-plus.py
       - name: Remove temporary signing file
         if: always()
