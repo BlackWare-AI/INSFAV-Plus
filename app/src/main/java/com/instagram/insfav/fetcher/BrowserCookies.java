@@ -8,9 +8,9 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.*;
 
-/** Own-app default WebView only. Read-only Chromium metadata, supported CookieManager values. */
+/** CookieManager owns values/deletions. Chromium is optional, read-only metadata only. */
 final class BrowserCookies {
-    static final Object LOCK=new Object();
+    static final Object LOCK = new Object();
     static CookieJar read(Context context) throws ProfileProvider.Failure {
         try {
             android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -19,52 +19,51 @@ final class BrowserCookies {
                 return manager.getCookie(InstagramSession.ORIGIN);
             });
             if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) task.run(); else main.post(task);
-            String header = task.get(10, TimeUnit.SECONDS);
-            CookieJar api = CookieJar.parse(header, System.currentTimeMillis());
+            long now = System.currentTimeMillis();
+            CookieJar current = CookieJar.parse(task.get(10, TimeUnit.SECONDS), now);
+            Map<String, CookieJar.Entry> metadata = new HashMap<>();
+            ArrayList<CookieJar.Entry> scoped = new ArrayList<>();
             File base = new File(context.getApplicationInfo().dataDir, "app_webview/Default");
-            File db = new File(base,"Cookies"); if (!db.isFile()) db = new File(base,"Network/Cookies");
-            if (!db.isFile()) return api;
-            ArrayList<CookieJar.Entry> values = new ArrayList<>();
-            try (SQLiteDatabase sql=SQLiteDatabase.openDatabase(db.getPath(),null,SQLiteDatabase.OPEN_READONLY);
-                 Cursor rows=sql.query("cookies",new String[]{"host_key","path","name","value","expires_utc"},
-                     "host_key IN (?,?,?,?)",new String[]{"instagram.com",".instagram.com","www.instagram.com",".www.instagram.com"},null,null,null)) {
-                while(rows.moveToNext()) {
-                    String host=rows.getString(0),path=rows.getString(1),name=rows.getString(2),value=rows.getString(3);
-                    long chrome=rows.getLong(4), expiry=chrome==0?0:chrome/1000000L-11644473600L;
-                    if (expiry<0 || expiry!=0 && expiry<=System.currentTimeMillis()/1000) continue;
-                    if("/".equals(path)||value==null||value.isEmpty()) value=api.value(name,System.currentTimeMillis());
-                    if(value.isEmpty()) continue; // OS-encrypted values must come from CookieManager, never decrypt Chromium storage.
-                    CookieJar.parse((name.equals("sessionid")?"":"sessionid=VALIDATION_ONLY; ")+name+"="+value,System.currentTimeMillis());
-                    values.add(new CookieJar.Entry(name,value,host.replaceFirst("^\\.",""),path,host.startsWith("."),expiry));
+            File file = new File(base, "Cookies");
+            if (!file.isFile()) file = new File(base, "Network/Cookies");
+            // Unsupported/missing/locked Chromium schemas never make a live API cookie unusable.
+            if (file.isFile()) try (SQLiteDatabase db = SQLiteDatabase.openDatabase(file.getPath(), null, SQLiteDatabase.OPEN_READONLY);
+                Cursor rows = db.query("cookies", new String[]{"host_key","path","name","value","expires_utc"},
+                    "host_key IN (?,?,?,?)", new String[]{"instagram.com",".instagram.com","www.instagram.com",".www.instagram.com"}, null,null,null)) {
+                while (rows.moveToNext()) {
+                    String host = rows.getString(0), path = rows.getString(1), name = rows.getString(2), value = rows.getString(3);
+                    if (path == null || !path.matches("/[A-Za-z0-9_./%~\\-]*")) continue;
+                    CookieJar api = current;
+                    if (!path.equals("/")) {
+                        String url = "https://" + host.replaceFirst("^\\.", "") + path;
+                        FutureTask<String> scopedTask = new FutureTask<>(() -> CookieManager.getInstance().getCookie(url));
+                        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) scopedTask.run(); else main.post(scopedTask);
+                        try { api = CookieJar.parse(scopedTask.get(10, TimeUnit.SECONDS), now); }
+                        catch (ProfileProvider.Failure ignored) { continue; }
+                    }
+                    String live = api.value(name, now);
+                    // Metadata cannot revive a deleted cookie, replace a fresh value or guess encrypted-row expiry.
+                    if (live.isEmpty() || value == null || !live.equals(value)) continue;
+                    long chrome = rows.getLong(4), expiry = chrome == 0 ? 0 : chrome / 1000000L - 11644473600L;
+                    if (expiry < 0 || expiry != 0 && expiry <= now / 1000) continue;
+                    String domain = host.replaceFirst("^\\.", "");
+                    if (!domain.equals("www.instagram.com") && !host.startsWith(".")) continue;
+                    CookieJar.Entry candidate = new CookieJar.Entry(name, live, domain, path, host.startsWith("."), expiry);
+                    if (!path.equals("/")) { scoped.add(candidate); continue; }
+                    CookieJar.Entry old = metadata.get(name);
+                    if (old == null || candidate.domain.length() > old.domain.length()) metadata.put(name, candidate);
                 }
-            } catch (RuntimeException ignored) { return api; }
-            // CookieManager is authoritative for current root-path values and deletions.
-            if(values.isEmpty()) return api;
-            Set<String> currentNames=new HashSet<>();for(CookieJar.Entry e:api.entries)currentNames.add(e.name);
-            values.removeIf(e->"/".equals(e.path)&&!currentNames.contains(e.name));
-            for(CookieJar.Entry entry:api.entries)if(values.stream().noneMatch(e->e.name.equals(entry.name)&&"/".equals(e.path)))values.add(entry);
-            return new CookieJar(values);
+            } catch (RuntimeException ignored) { /* CookieManager remains authoritative. */ }
+            ArrayList<CookieJar.Entry> entries = new ArrayList<>();
+            Set<String> names = new HashSet<>();
+            for (CookieJar.Entry entry : current.entries) if (names.add(entry.name)) entries.add(metadata.getOrDefault(entry.name, entry));
+            entries.addAll(scoped);
+            return new CookieJar(entries);
         } catch (ProfileProvider.Failure e) { throw e; }
         catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new ProfileProvider.Failure("REQUEST_CANCELLED"); }
         catch (Exception e) { throw new ProfileProvider.Failure("COOKIE_EXTRACTION_FAILED"); }
     }
-    static CookieJar capture(Context c) throws ProfileProvider.Failure {
-        long epoch=SessionState.prefs(c).getLong("browserCookieEpoch",0);
-        CookieJar jar=read(c);
-        try { synchronized(LOCK) {
-            if(epoch!=SessionState.prefs(c).getLong("browserCookieEpoch",0))throw new ProfileProvider.Failure("REQUEST_CANCELLED");
-            CookieVault.browser(c).save(jar);
-        } }
-        catch (Exception e) { throw new ProfileProvider.Failure("COOKIE_STORAGE_FAILED"); }
-        return jar;
-    }
-    static CookieJar forDownload(Context c) throws ProfileProvider.Failure {
-        try { return capture(c); }
-        catch(ProfileProvider.Failure failure) {
-            if(failure.code.equals("COOKIE_STORAGE_FAILED"))return read(c);
-            if(!CookieVault.browser(c).configured())throw failure;
-            return CookieVault.browser(c).load();
-        }
-    }
+    static CookieJar capture(Context c) throws ProfileProvider.Failure { return BrowserCookieStore.captureNow(c, "legacy"); }
+    static CookieJar forDownload(Context c) throws ProfileProvider.Failure { return read(c); }
     private BrowserCookies() { }
 }
