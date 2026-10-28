@@ -31,9 +31,9 @@ INSFAV Plus, InstaPro’dan dışa aktarılmış Instagram Favoriler koleksiyonl
 
 Giriş ekranında yenileme, çerezi görüntüleme ve çıkış seçenekleri bulunur. Zorunlu **Test Session** adımı yoktur. Çerezler tanılama raporlarına eklenmez; başka uygulamalarla paylaşılmaz. Uygulama açılışında WebView verileri temizlenmez. Instagram sunucusunda iptal edilmiş veya süresi dolmuş bir oturum uygulama tarafından korunamaz. Güvenlik doğrulaması gerektiğinde yeni istekler durur; kullanıcı tamamlamadan otomatik devam edilmez.
 
-## Hazırlanan, henüz APK olarak yayımlanmamış değişiklikler
+## Bu güncellemedeki değişiklikler
 
-Bu bölüm kaynak daldaki hazırlıkları anlatır. Yukarıdaki son yayımlanan APK bu değişiklikleri henüz içermeyebilir; bu çalışma sürüm/build numarasını yükseltmez.
+Bu güncelleme, önceki HD doğrulama düzenlemesiyle birlikte aşağıdaki işlevleri içerir. En son yayımlanan APK yukarıdaki Release bağlantısındadır.
 
 - **Tekrarlanan HD işlemlerini doğrulama:** Her açılışta güncel profil kimliği kontrol edilir. Aynı fotoğrafın kimliği ve doğrulanmış HD önbelleği eşleşirse görsel gövdesi yeniden indirilmez. Thumbnail’ın gerçek SHA-256 değeri de eşleşiyorsa dönüşüm/yazma atlanır. Eksik/değiştirilmiş dosya onarılır; yeni fotoğraf eskisini günceller. Önbellek kaybında veya doğrulanamayan değişken URL’lerde yeni indirme gerekebilir.
 - **Uygulama içi güncelleme:** Ayarlar’ın en altında yalnızca bu uygulamanın [kendi GitHub Releases sayfası](https://github.com/BlackWare-AI/INSFAV-Plus/releases) kontrol edilir. Otomatik kontrol, indirme ve inceleme sonrası kurulum ekranını açma izinleri ayrı ve kalıcıdır; başlangıçta kapalıdır. Kontrol yaklaşık 12 saatte birdir; Android zamanlamayı geciktirebilir.

@@ -1,6 +1,6 @@
 # Uygulama içi güncelleme ve veri yedeği
 
-Henüz APK yayımlanmadan hazırlanmış kaynak değişiklikleridir. INSFAV ve Plus kendi paketlerini, Release kaynaklarını, tercihlerini ve oturumlarını kullanır. Otomatik kontrol/indirme/kurulum ekranı tercihleri varsayılan kapalıdır. Kontrol ve indirme WorkManager ile yapılır; sürekli çalışan servis eklenmez. Android zorla durdurulmuş uygulamada arka plan işleri için yeniden açılış bekleyebilir.
+Bu kaynak sürümündeki uygulama içi güncelleme ve yedekleme mekanizmasıdır. INSFAV ve Plus kendi paketlerini, Release kaynaklarını, tercihlerini ve oturumlarını kullanır. Otomatik kontrol/indirme/kurulum ekranı tercihleri varsayılan kapalıdır. Kontrol ve indirme WorkManager ile yapılır; sürekli çalışan servis eklenmez. Android zorla durdurulmuş uygulamada arka plan işleri için yeniden açılış bekleyebilir.
 
 ## Güncelleme sırası
 

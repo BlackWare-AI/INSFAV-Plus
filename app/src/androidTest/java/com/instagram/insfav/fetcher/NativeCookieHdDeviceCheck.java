@@ -20,7 +20,7 @@ import javax.net.ssl.HttpsURLConnection;
 final class NativeCookieHdDeviceCheck {
     static void run(Instrumentation host) throws Exception { run(host, "legacy"); }
     static void run(Instrumentation host, String engine) throws Exception {
-        Context c=host.getTargetContext();String user="native_cookie_hd";
+        Context c=host.getTargetContext();String user="native_cookie_hd";String hdUrl="https://fixture.cdninstagram.com/"+(engine.equals("legacy")?"234_567_890_n.png":"123_456_789_n.png");
         c.sendBroadcast(new Intent().setClassName(c.getPackageName()+".test",FixtureDocuments.Grant.class.getName()));
         long until=SystemClock.elapsedRealtime()+10000;boolean granted=false;
         while(!granted&&SystemClock.elapsedRealtime()<until)try{c.getContentResolver().takePersistableUriPermission(FixtureDocuments.tree(),Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);granted=true;}catch(SecurityException e){Thread.sleep(100);}
@@ -31,18 +31,18 @@ final class NativeCookieHdDeviceCheck {
             m.setCookie(InstagramSession.ORIGIN,"ds_user_id=123; Secure",ignored->m.setCookie(InstagramSession.ORIGIN,"sessionid=OFFLINE_NATIVE_HD%3AFIXTURE; Secure; HttpOnly",accepted->{m.flush();cookies.countDown();}));
         });
         if(!cookies.await(10,TimeUnit.SECONDS))throw new AssertionError("Offline browser cookie setup timed out");
-        CountDownLatch written=new CountDownLatch(1);
-        Fetcher.initialize(c,new Fetcher.Host(){public Collection<String> users(){return Arrays.asList(user);}public String tree(){return FixtureDocuments.tree().toString();}public String directory(){return "root";}public long revision(){return 0;}public boolean hasImage(String name){return false;}public void imageWritten(String name,Uri uri,String tree){written.countDown();}});
+        CountDownLatch written=new CountDownLatch(1);AtomicInteger writes=new AtomicInteger();
+        Fetcher.initialize(c,new Fetcher.Host(){public Collection<String> users(){return Arrays.asList(user);}public String tree(){return FixtureDocuments.tree().toString();}public String directory(){return "root";}public long revision(){return 0;}public boolean hasImage(String name){return false;}public void imageWritten(String name,Uri uri,String tree){writes.incrementAndGet();written.countDown();}});
         Fetcher.setBulkDisabled(true);
         SessionState.prefs(c).edit().putBoolean("manualSession",false).putBoolean("instagramSecurityHold",false).putBoolean("webSessionHold",false).putString("blocked","").putLong("retryAt",0).commit();
         try{DocumentsContract.deleteDocument(c.getContentResolver(),DocumentsContract.buildDocumentUriUsingTree(FixtureDocuments.tree(),"root/"+user+".webp"));}catch(Exception ignored){}
-        Bitmap image=Bitmap.createBitmap(640,480,Bitmap.Config.ARGB_8888);image.eraseColor(Color.BLUE);ByteArrayOutputStream png=new ByteArrayOutputStream();image.compress(Bitmap.CompressFormat.PNG,100,png);image.recycle();
+        Bitmap image=Bitmap.createBitmap(640,480,Bitmap.Config.ARGB_8888);image.eraseColor(engine.equals("legacy")?Color.RED:Color.BLUE);ByteArrayOutputStream png=new ByteArrayOutputStream();image.compress(Bitmap.CompressFormat.PNG,100,png);image.recycle();
         InstagramSession.selectEngine(c,engine);
         ProfileProvider provider=InstagramSession.open(c);
         AtomicInteger calls=new AtomicInteger();
         java.util.concurrent.atomic.AtomicReference<Throwable> fixtureFailure=new java.util.concurrent.atomic.AtomicReference<>();
         PublicProfileProvider.Connections transport=url->{calls.incrementAndGet();boolean profile=url.getHost().equals("www.instagram.com");
-            byte[] body=profile?("{\"status\":\"ok\",\"data\":{\"user\":{\"username\":\""+user+"\",\"id\":456,\"profile_pic_url\":\"https://fixture.cdninstagram.com/small.png\",\"hd_profile_pic_url_info\":{\"url\":\"https://fixture.cdninstagram.com/hd.png\"}}}}").getBytes(StandardCharsets.UTF_8):png.toByteArray();
+            byte[] body=profile?("{\"status\":\"ok\",\"data\":{\"user\":{\"username\":\""+user+"\",\"id\":456,\"profile_pic_url\":\"https://fixture.cdninstagram.com/small.png\",\"hd_profile_pic_url_info\":{\"url\":\""+hdUrl+"\"}}}}").getBytes(StandardCharsets.UTF_8):png.toByteArray();
             return new HttpsURLConnection(url){
                 public int getResponseCode(){if(profile){if(!url.getPath().endsWith("web_profile_info/")||!getRequestProperty("Cookie").contains("OFFLINE_NATIVE_HD%3AFIXTURE"))throw new AssertionError("Extracted cookies did not reach the profile request");}else if(getRequestProperty("Cookie")!=null)throw new AssertionError("Session cookies leaked to CDN");return 200;}
                 public InputStream getInputStream(){return new ByteArrayInputStream(body);}public String getContentType(){return profile?"application/json":"image/png";}public long getContentLengthLong(){return body.length;}
@@ -57,9 +57,9 @@ final class NativeCookieHdDeviceCheck {
                 try {
                 if(url.endsWith("/favicon.ico"))return new android.webkit.WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0]));
                 calls.incrementAndGet();
-                if(url.equals("https://fixture.cdninstagram.com/hd.png"))return new android.webkit.WebResourceResponse("image/png",null,new ByteArrayInputStream(png.toByteArray()));
+                if(url.equals(hdUrl))return new android.webkit.WebResourceResponse("image/png",null,new ByteArrayInputStream(png.toByteArray()));
                 if(!url.equals(InstagramSession.ORIGIN+user+"/"))throw new AssertionError("Legacy HD must open profile directly without authentication preflight");
-                String html="<html><body><script type='application/json'>{\"viewerId\":\"123\",\"user\":{\"username\":\""+user+"\",\"id\":\"456\",\"has_anonymous_profile_picture\":false,\"hd_profile_pic_url_info\":{\"url\":\"https://fixture.cdninstagram.com/hd.png\"}}}</script></body></html>";
+                String html="<html><body><script type='application/json'>{\"viewerId\":\"123\",\"user\":{\"username\":\""+user+"\",\"id\":\"456\",\"has_anonymous_profile_picture\":false,\"hd_profile_pic_url_info\":{\"url\":\""+hdUrl+"\"}}}</script></body></html>";
                 return new android.webkit.WebResourceResponse("text/html","UTF-8",new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8)));
                 } catch(Throwable failure) { fixtureFailure.set(failure);return new android.webkit.WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0])); }
             });
@@ -70,8 +70,9 @@ final class NativeCookieHdDeviceCheck {
         CountDownLatch allowEncoding=new CountDownLatch(1),hdReady=new CountDownLatch(1);
         java.lang.reflect.Field workerField=HdThumbnailJobs.class.getDeclaredField("worker");workerField.setAccessible(true);
         ((ExecutorService)workerField.get(null)).execute(()->{try{allowEncoding.await(20,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}});
+        java.util.concurrent.atomic.AtomicReference<CountDownLatch> ready=new java.util.concurrent.atomic.AtomicReference<>(hdReady);
         Fetcher.Listener navigation=new Fetcher.Listener(){public void changed(){}public void fullFailed(String token,String code){}
-            public void fullReady(String name,String token,int w,int h){Fetcher.closeViewer();hdReady.countDown();}};
+            public void fullReady(String name,String token,int w,int h){Fetcher.closeViewer();ready.get().countDown();}};
         Fetcher.addListener(navigation);
         try{
             Fetcher.view(user,"nativeCookieHD");
@@ -82,6 +83,11 @@ final class NativeCookieHdDeviceCheck {
             if(fixtureFailure.get()!=null)throw new AssertionError("Unexpected browser fixture request",fixtureFailure.get());
             host.runOnMainSync(()->{String header=CookieManager.getInstance().getCookie(InstagramSession.ORIGIN);if(header==null||!header.contains("OFFLINE_NATIVE_HD%3AFIXTURE"))throw new AssertionError("Browser did not retain its session");});
             if(calls.get()!=(engine.equals("legacy")?3:2)||!new OutputFolder(c,FixtureDocuments.tree().toString()).valid(user+".webp"))throw new AssertionError("Wrong HD transport or invalid 256 WebP");
+            int firstCalls=calls.get();String before=new OutputFolder(c,FixtureDocuments.tree().toString()).verifiedDigest(user+".webp");
+            CountDownLatch repeated=new CountDownLatch(1);ready.set(repeated);Fetcher.view(user,"nativeCookieHDRepeat");
+            if(!repeated.await(15,TimeUnit.SECONDS))throw new AssertionError("Repeated HD did not render");
+            String after=new OutputFolder(c,FixtureDocuments.tree().toString()).verifiedDigest(user+".webp");
+            if(calls.get()!=firstCalls+1||writes.get()!=1||before==null||!before.equals(after)||HdThumbnailJobs.busy(Fetcher.host(),user))throw new AssertionError("Repeated HD must refresh metadata without another image download, thumbnail job or write");
             if(!Fetcher.bulkDisabled()||SessionState.prefs(c).getBoolean("armed",true))throw new AssertionError("HD started the bulk queue");
             File snapshot=new File(c.getFilesDir(),engine.equals("netscape") ? "instagram-netscape-cookies.enc" : "instagram-webview-cookies.enc");
             if(!engine.equals("legacy") && (!snapshot.isFile()||new String(java.nio.file.Files.readAllBytes(snapshot.toPath()),StandardCharsets.ISO_8859_1).contains("OFFLINE_NATIVE_HD")))throw new AssertionError("Browser snapshot was not encrypted");
