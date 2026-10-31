@@ -22,7 +22,7 @@ public final class BackupPinUi {
         TextView note=new TextView(a);note.setText(legacy?(tr?"Eski yedeğinizin parolasını görünür olarak girin.":"Enter the visible password of your older backup."):(tr?"4 haneli PIN · Rakamlar görünür. Yedeği güvenli bir klasörde saklayın.":"4-digit PIN · Digits are visible. Keep the backup in a safe folder."));note.setTextColor(0xffaaaaaa);note.setPadding(0,dp(a,12),0,dp(a,14));body.addView(note);
         EditText[] first=legacy?new EditText[]{input(a,false)}:row(a,body,tr?"PIN":"PIN");if(legacy)body.addView(first[0]);
         EditText[] second=confirm?row(a,body,tr?"PIN tekrar":"Repeat PIN"):new EditText[0];
-        if(!confirm&&!legacy){Button old=new Button(a);old.setText(tr?"Eski parola ile aç (8+ karakter)":"Open with an older password (8+ characters)");body.addView(old);old.setOnClickListener(v->{ /* listener installed below */ });}
+        if(!confirm&&!legacy){Button old=new Button(a);old.setTextIsSelectable(false);old.setLongClickable(false);old.setText(tr?"Eski parola ile aç (8+ karakter)":"Open with an older password (8+ characters)");body.addView(old);old.setOnClickListener(v->{ /* listener installed below */ });}
         boolean secure=(a.getWindow().getAttributes().flags&WindowManager.LayoutParams.FLAG_SECURE)!=0;a.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         GradientDrawable bg=new GradientDrawable();bg.setColor(Color.BLACK);bg.setCornerRadius(dp(a,26));bg.setStroke(dp(a,1),0xff242424);body.setBackground(bg);
         AlertDialog dialog=new AlertDialog.Builder(a,android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK).setView(body).setPositiveButton(ok,null).setNegativeButton(cancel,null).create();
