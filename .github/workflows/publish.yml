@@ -16,7 +16,7 @@ on:
         required: true
       code:
         description: VERSION_CODE (must exceed every earlier published APK)
-        default: '20'
+        default: '21'
         required: true
       artifact_commit:
         description: Optional commit containing an owner-signed APK and public metadata
@@ -56,7 +56,7 @@ jobs:
       - name: Check reviewed version
         env:
           EXPECTED_VERSION: ${{ inputs.version || '1.1.16' }}
-          EXPECTED_CODE: ${{ inputs.code || '20' }}
+          EXPECTED_CODE: ${{ inputs.code || '21' }}
         run: |
           python3 - <<'PY'
           import os,re
@@ -97,7 +97,7 @@ jobs:
         env:
           KIND: ${{ inputs.kind || 'release' }}
           VERSION: ${{ inputs.version || '1.1.16' }}
-          CODE: ${{ inputs.code || '20' }}
+          CODE: ${{ inputs.code || '21' }}
         run: |
           if [ "$KIND" = release ]; then
             python3 tools/verify-apk.py app/build/outputs/apk/release/app-release.apk --release --version "$VERSION" --code "$CODE" --output artifacts/apk.json
@@ -106,7 +106,7 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: INSFAV-Plus-${{ inputs.kind || 'release' }}-${{ inputs.version || '1.1.16' }}-${{ inputs.code || '20' }}
+          name: INSFAV-Plus-${{ inputs.kind || 'release' }}-${{ inputs.version || '1.1.16' }}-${{ inputs.code || '21' }}
           path: |
             app/build/outputs/apk/**/*.apk
             artifacts/apk.json
@@ -115,7 +115,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version || '1.1.16' }}
-          CODE: ${{ inputs.code || '20' }}
+          CODE: ${{ inputs.code || '21' }}
         run: python3 tools/publish-plus.py
       - name: Remove temporary signing file
         if: always()
@@ -133,7 +133,7 @@ jobs:
       ARTIFACT_COMMIT: ${{ inputs.artifact_commit }}
       VALIDATION_RUN: ${{ inputs.validation_run }}
       EXPECTED_VERSION: ${{ inputs.version || '1.1.16' }}
-      EXPECTED_CODE: ${{ inputs.code || '20' }}
+      EXPECTED_CODE: ${{ inputs.code || '21' }}
     steps:
       - uses: actions/checkout@v4
         with:
