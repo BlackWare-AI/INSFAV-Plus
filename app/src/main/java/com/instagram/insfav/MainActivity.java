@@ -547,6 +547,7 @@ public final class MainActivity extends Activity {
                       result
                           .put("language", UiLanguage.choice(MainActivity.this))
                           .put("columns", UiLayout.choice(MainActivity.this))
+                          .put("folderColumns", UiLayout.folderChoice(MainActivity.this))
                           .put("raw", store.original())
                           .put("app", appInfo())
                           .put(
@@ -567,6 +568,10 @@ public final class MainActivity extends Activity {
                   case "view-mode":
                     UiLayout.save(MainActivity.this, input.getInt("columns"));
                     send("view-mode", new JSONObject().put("columns", UiLayout.choice(MainActivity.this)));
+                    break;
+                  case "folder-view-mode":
+                    UiLayout.saveFolder(MainActivity.this, input.getInt("columns"));
+                    send("folder-view-mode", new JSONObject().put("folderColumns", UiLayout.folderChoice(MainActivity.this)));
                     break;
                   case "status":
                     send("status", imageSnapshot(false));
