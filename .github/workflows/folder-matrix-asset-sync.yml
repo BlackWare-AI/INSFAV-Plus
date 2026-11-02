@@ -1,0 +1,36 @@
+name: Temporary folder matrix asset regeneration
+on:
+  push:
+    branches:
+      - feature/folder-matrix-layout
+permissions:
+  contents: write
+jobs:
+  regenerate:
+    if: github.repository == 'BlackWare-AI/INSFAV-Plus'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/folder-matrix-layout
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run web
+      - run: npm test
+      - name: Commit deterministic generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- app/src/main/assets tools/web-bundle.json web/maps web/i18n-catalog.js app/src/main/res/values/strings.xml app/src/main/res/values-tr/strings.xml app/src/main/res/values/ui_catalog.xml
+          if git diff --cached --quiet; then
+            echo "Generated files already match sources."
+            exit 0
+          fi
+          git commit -m "chore: regenerate WebView assets for folder matrix"
+          git push origin HEAD:refs/heads/feature/folder-matrix-layout
