@@ -129,7 +129,7 @@ public final class MainActivity extends Activity {
                 if (store.settings.has(key)) extra.put(key, store.settings.getString(key));
               }
               return new JSONObject()
-                  .put("settingsArchive", new JSONObject(Fetcher.exportSettings(pin, extra)))
+                  .put("settingsArchive", new JSONObject(Fetcher.exportSettings(pin, FolderLayout.append(MainActivity.this,extra))))
                   .put("sessionVaults", Fetcher.exportSessionBackup());
             }
           }
@@ -146,7 +146,7 @@ public final class MainActivity extends Activity {
                   for (String k : new String[] {"treeUri", "directoryId", "folderLabel"})
                     if (store.settings.has(k)) extra.put(k, store.settings.getString(k));
                 }
-                return Fetcher.exportSettings(pass, extra);
+                return Fetcher.exportSettings(pass, FolderLayout.append(MainActivity.this,extra));
               }
 
               public JSONObject inspect(String raw, char[] pass) throws Exception {
@@ -161,6 +161,7 @@ public final class MainActivity extends Activity {
                 JSONObject extra = data.getJSONObject("extra");
                 for (java.util.Iterator<String> i = extra.keys(); i.hasNext(); ) {
                   String key = i.next();
+                  if(key.equals("folderColumns")){FolderLayout.validate(extra);continue;}
                   if (!java.util.Arrays.asList("treeUri", "directoryId", "folderLabel", "language")
                           .contains(key)
                       || !(extra.get(key) instanceof String))
@@ -177,6 +178,7 @@ public final class MainActivity extends Activity {
                 if (images.scanning() || scanPending.get())
                   throw new IOException("Wait for the scan to finish.");
                 final JSONObject beforeSettings, beforeIndex;
+                final int beforeFolder = FolderLayout.choice(MainActivity.this);
                 final String beforeLanguage = UiLanguage.choice(MainActivity.this);
                 synchronized (store) {
                   store.flushIndex();
@@ -193,6 +195,7 @@ public final class MainActivity extends Activity {
                     data,
                     new SettingsArchive.Extras() {
                       public void apply() throws Exception {
+                        FolderLayout.restore(MainActivity.this,extra);
                         if (extra.has("language"))
                           UiLanguage.save(MainActivity.this, extra.getString("language"));
                         restoreFolderSelection(store, extra);
@@ -205,8 +208,10 @@ public final class MainActivity extends Activity {
                           store.replaceIndex(beforeIndex);
                         }
                         UiLanguage.save(MainActivity.this, beforeLanguage);
+                        FolderLayout.save(MainActivity.this,beforeFolder);
                       }
                     });
+                send("folder-view-mode",new JSONObject().put("folderColumns",FolderLayout.choice(MainActivity.this)));
                 send(
                     "language",
                     new JSONObject().put("choice", UiLanguage.choice(MainActivity.this)));

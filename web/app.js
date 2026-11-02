@@ -78,15 +78,24 @@ window.nativeEvent=(event,data)=>{
 };
 
 function normalizeFolderColumns(value){const n=Number(value);return [2,3,4,5].includes(n)?n:0;}
+function toggleFolder(group,button){
+ const keepFocus=document.activeElement===button;
+ opened.has(group.key)?opened.delete(group.key):opened.add(group.key);rebuild(true);
+ if(!keepFocus)return;
+ const selector='[data-folder-key="'+group.key+'"]';let target=document.querySelector(selector);
+ if(!target){const index=rows.findIndex(r=>r.type==='folder'&&r.group.key===group.key||r.type==='folder-grid'&&r.groups.some(g=>g.key===group.key));
+  if(index>=0){const top=$('list').getBoundingClientRect().top+scrollY;window.scrollTo(0,top+positions[index]);renderVisible();target=document.querySelector(selector);}}
+ if(target){target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',inline:'nearest'});}
+}
 function createFolderGridTile(group){
  const tile=document.createElement('div');tile.className='folder-grid-cell';
- const btn=document.createElement('button');btn.type='button';btn.className='folder-header';btn.setAttribute('aria-expanded','false');
+ const btn=document.createElement('button');btn.type='button';btn.className='folder-header';btn.dataset.folderKey=group.key;btn.setAttribute('aria-expanded','false');
  btn.setAttribute('aria-label',group.name+', '+group.items.length);
  const title=document.createElement('span');title.className='folder-title';
  const name=document.createElement('span');name.textContent=group.name.toUpperCase();name.title=group.name;
  const count=document.createElement('span');count.className='folder-count';count.textContent=group.items.length;title.append(name,count);
  const arrow=document.createElement('span');arrow.className='folder-arrow';arrow.textContent='›';
- btn.append(title,arrow);btn.onclick=()=>{opened.add(group.key);rebuild(true);};tile.append(btn);return tile;
+ btn.append(title,arrow);btn.onclick=()=>toggleFolder(group,btn);tile.append(btn);return tile;
 }
 function applyFolderViewMode(columns){folderColumns=normalizeFolderColumns(columns);updateFolderViewChoice();rebuild();}
 
@@ -100,7 +109,7 @@ function rebuild(preserve=false){
  $('list').style.height=positions.at(-1)+'px';
  if(!preserve){for(const node of mounted.values()){releaseRow(node);node.remove();}mounted.clear();}
  $('empty').hidden=!!doc;$('search-info').classList.toggle('visible',!!query.trim()||!!resultFilter);
- $('search-info').textContent=groups.reduce((count,collection)=>count+collection.items.length,0)+' '+t('RESULTS');renderVisible();listScroll.contentChanged(rows.some(row=>row.type==='account'||row.type==='matrix'));
+ $('search-info').textContent=groups.reduce((count,collection)=>count+collection.items.length,0)+' '+t('RESULTS');renderVisible();listScroll.contentChanged(rows.some(row=>row.type==='account'||row.type==='matrix'||row.type==='folder-grid'));
 }
 function highlighted(el,text){el.replaceChildren();const q=query.trim();if(!q){el.textContent=text;return;}const displayName=el.classList.contains('card-name'),source=displayName?C.foldDisplay(text):text.toLocaleLowerCase('en'),needle=displayName?C.foldDisplay(q):q.toLocaleLowerCase('en');let p=0,i;while((i=source.indexOf(needle,p))!==-1){el.append(document.createTextNode(text.slice(p,i)));const mark=document.createElement('mark');mark.textContent=text.slice(i,i+q.length);el.append(mark);p=i+q.length;}el.append(document.createTextNode(text.slice(p)));}
 function notifyImageFailure(){clearTimeout(imageFailureTimer);imageFailureTimer=setTimeout(()=>request('image-failed'),180);}
@@ -117,7 +126,7 @@ function bindAccountDetails(link,item){
 function makeRow(r,index){const reused=r.type==='account'?rowPool.pop():null;const node=reused||document.createElement('div');node.className='virtual-row';node.style.top=positions[index]+'px';node.style.height=r.height+'px';node.dataset.key=r.key;
  if(r.type==='spacer'){node.setAttribute('aria-hidden','true');return node;}
  if(r.type==='folder-grid'){node.classList.add('folder-grid-row');node.style.setProperty('--folder-columns',r.columns);for(const group of r.groups)node.append(createFolderGridTile(group));return node;}
- if(r.type==='folder'){const open=!!query.trim()||opened.has(r.group.key);node.classList.add('folder-wrap');node.classList.toggle('open',open);const head=document.createElement('button');head.className='folder-header';head.setAttribute('aria-expanded',String(open));const title=document.createElement('span');title.className='folder-title';const name=document.createElement('span');name.textContent=r.group.name.toUpperCase();const count=document.createElement('span');count.className='folder-count';count.textContent=r.group.items.length;title.append(name,count);const arrow=document.createElement('span');arrow.className='folder-arrow';arrow.textContent='›';head.append(title,arrow);head.onclick=()=>{if(query.trim()){message('Clear search to collapse collections.');return;}opened.has(r.group.key)?opened.delete(r.group.key):opened.add(r.group.key);rebuild(true);};node.append(head);}
+ if(r.type==='folder'){const open=!!query.trim()||opened.has(r.group.key);node.classList.add('folder-wrap');node.classList.toggle('open',open);const head=document.createElement('button');head.className='folder-header';head.dataset.folderKey=r.group.key;head.setAttribute('aria-expanded',String(open));const title=document.createElement('span');title.className='folder-title';const name=document.createElement('span');name.textContent=r.group.name.toUpperCase();const count=document.createElement('span');count.className='folder-count';count.textContent=r.group.items.length;title.append(name,count);const arrow=document.createElement('span');arrow.className='folder-arrow';arrow.textContent='›';head.append(title,arrow);head.onclick=()=>{if(query.trim()){message('Clear search to collapse collections.');return;}toggleFolder(r.group,head);};node.append(head);}
  else if(r.type==='matrix'){
   node.classList.add('matrix-row');node.classList.toggle('last',r.last);
   for(const item of r.items){const cell=document.createElement('div');cell.className='matrix-account';const avatar=document.createElement('button');avatar.className='avatar';avatar.setAttribute('aria-label',t('View profile image for {name} (@{user})',{name:item.name,user:item.user}));avatarFor(avatar,item.user);avatar.onclick=()=>openViewer(item.user);const name=document.createElement('button');name.className='matrix-user';name.textContent='@'+item.source.pageId.replace(/^@/,'');name.title=name.textContent;name.setAttribute('aria-label',name.textContent);name.onclick=()=>request('open',{user:item.user});cell.append(avatar,name);node.append(cell);}

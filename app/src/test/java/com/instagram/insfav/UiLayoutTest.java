@@ -33,5 +33,6 @@ public class UiLayoutTest {
     }
     assertThrows(java.io.IOException.class, () -> UiLayout.saveFolder(c, 6));
     assertEquals(5, UiLayout.folderChoice(c));
+    UiLayout.save(c,2);assertEquals(5,UiLayout.folderChoice(c));
   }
 }
