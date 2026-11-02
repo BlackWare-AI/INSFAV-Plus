@@ -16,14 +16,7 @@ public final class UiLayout {
       throw new IOException("View mode could not be saved");
   }
 
-  public static int folderChoice(Context c) {
-    return c.getSharedPreferences("plus-ui", 0).getInt("folderColumns", 0);
-  }
-  public static void saveFolder(Context c, int columns) throws IOException {
-    if (columns != 0 && columns != 2 && columns != 3 && columns != 4 && columns != 5)
-      throw new IOException("Unsupported folder view mode");
-    if (!c.getSharedPreferences("plus-ui", 0).edit().putInt("folderColumns", columns).commit())
-      throw new IOException("Folder view mode could not be saved");
-  }
+  public static int folderChoice(Context c) {return FolderLayout.choice(c);}
+  public static void saveFolder(Context c,int columns)throws IOException {FolderLayout.save(c,columns);}
   private UiLayout() {}
 }

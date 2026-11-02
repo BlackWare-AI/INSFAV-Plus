@@ -63,3 +63,7 @@ Gerçek Instagram erişimi, hesap kısıtları, Android WebView sürümü ve ağ
 ### Instagram çerez ekranı
 
 Instagram ekranındaki **Çerezler** düğmesi, canlı tarayıcı başlığını ve seçili yöntemin gerçekten kaydedilmiş Netscape kopyasını ayrı gösterir. **Çerezleri kaydet** ağ testi gerektirmez. HD gezinmesinde yenilenen çerezler kayda aktarılır; aynı kayıt yeniden yazılmaz. **Kaydı sil** yalnızca seçili yöntemin şifreli kopyasını kaldırır, otomatik kaydı yeniden Kaydet diyene kadar kapatır; diğer yöntem, manuel çerezler ve canlı giriş korunur. **Çıkış yap** bu uygulamanın Instagram oturumunu ve iki tarayıcı kopyasını temizler.
+
+### Bağımsız klasör matrisi
+
+Ayarlar’da klasör görünümü ve hesap görünümü birbirinden bağımsızdır. Klasörler liste veya 2–5 sütunla gösterilir; açılan klasör başlığı ve içerikleri tam genişlikte kalır. Arama sonuçlarında tam genişlikte klasörler kullanılır. Enter ile açma/kapatma aynı klasörde klavye odağını korur. Klasör görünümü ayarı kalıcıdır ve yeni ayar yedeklerine dahil edilir; eski yedeklerde alan bulunmadığında mevcut tercih korunur.
