@@ -5,6 +5,7 @@ let choiceOpener=null;
 const listScroll=createListScroll();
 let viewMode=native?0:(()=>{try{return Number(localStorage.getItem('insfav-plus-columns'))||0;}catch(_){return 0;}})();
 if(![0,2,3,4,5].includes(viewMode))viewMode=0;
+let folderColumns=native?0:(()=>{try{return normalizeFolderColumns(localStorage.getItem('insfav-plus-folder-columns'));}catch(_){return 0;}})();
 function releaseRow(node){
  for(const button of node.querySelectorAll('.avatar')){releaseAvatar(button);button.onclick=null;button.removeAttribute('data-user');button._rowIndex=-1;button.replaceChildren();}
  const link=node.querySelector('.card-link');if(!link)return;
@@ -26,6 +27,7 @@ window.nativeEvent=(event,data)=>{
  try{
   if(event==='bootstrap'||event==='imported'){
    if(event==='bootstrap'&&data.columns!==undefined)viewMode=[0,2,3,4,5].includes(data.columns)?data.columns:0;
+    if(event==='bootstrap'&&data.folderColumns!==undefined){folderColumns=normalizeFolderColumns(data.folderColumns);updateFolderViewChoice();}
    if(data.language)I.choose(data.language);profiles=data.profiles||{};state=data;if(data.app)appInfo=data.app;if(data.stats)stats=data.stats;
    if(data.raw)setDocument(data.raw);else{doc=null;rebuild();}
    if(event==='imported'){stats.load++;message('JSON imported. All original fields preserved.');}
@@ -42,6 +44,7 @@ window.nativeEvent=(event,data)=>{
    updateSettings();
   }
   if(event==='view-mode')applyViewMode(data.columns);
+   if(event==='folder-view-mode')applyFolderViewMode(data.folderColumns);
   if(event==='app-background')listScroll.cancel();
   if(event==='inventory')renderInventory(data);
   if(event==='performance')renderPerformance(data);
@@ -73,13 +76,27 @@ window.nativeEvent=(event,data)=>{
   if(event==='language')I.choose(data.choice);if(event==='message'||event==='error')message(data);
  }catch(error){if(event==='bootstrap'||!bootstrapReady)showStartupFailure();else message(t('Unable to read data')+': '+error.message);}
 };
+
+function normalizeFolderColumns(value){const n=Number(value);return [2,3,4,5].includes(n)?n:0;}
+function createFolderGridTile(group){
+ const tile=document.createElement('div');tile.className='folder-grid-cell';
+ const btn=document.createElement('button');btn.type='button';btn.className='folder-header';btn.setAttribute('aria-expanded','false');
+ btn.setAttribute('aria-label',group.name+', '+group.items.length);
+ const title=document.createElement('span');title.className='folder-title';
+ const name=document.createElement('span');name.textContent=group.name.toUpperCase();name.title=group.name;
+ const count=document.createElement('span');count.className='folder-count';count.textContent=group.items.length;title.append(name,count);
+ const arrow=document.createElement('span');arrow.className='folder-arrow';arrow.textContent='›';
+ btn.append(title,arrow);btn.onclick=()=>{opened.add(group.key);rebuild(true);};tile.append(btn);return tile;
+}
+function applyFolderViewMode(columns){folderColumns=normalizeFolderColumns(columns);updateFolderViewChoice();rebuild();}
+
 function rebuild(preserve=false){
  listScroll.cancel();
  let groups=doc?C.filterCollections(doc,query):[];
  if(resultFilter)groups=groups.map(group=>({...group,items:group.items.filter(item=>resultUsers.has(item.user))})).filter(group=>group.items.length);
  $('filter-empty').hidden=!doc||groups.length>0;
  $('app').classList.toggle('matrix-mode',!!viewMode);
- rows=C.rowsFor(groups,opened,!!query.trim(),gridGeometry());positions=C.offsets(rows);
+ rows=C.folderGridRows(C.rowsFor(groups,opened,!!query.trim(),gridGeometry()),folderColumns,opened,!!query.trim());positions=C.offsets(rows);
  $('list').style.height=positions.at(-1)+'px';
  if(!preserve){for(const node of mounted.values()){releaseRow(node);node.remove();}mounted.clear();}
  $('empty').hidden=!!doc;$('search-info').classList.toggle('visible',!!query.trim()||!!resultFilter);
@@ -99,6 +116,7 @@ function bindAccountDetails(link,item){
 }
 function makeRow(r,index){const reused=r.type==='account'?rowPool.pop():null;const node=reused||document.createElement('div');node.className='virtual-row';node.style.top=positions[index]+'px';node.style.height=r.height+'px';node.dataset.key=r.key;
  if(r.type==='spacer'){node.setAttribute('aria-hidden','true');return node;}
+ if(r.type==='folder-grid'){node.classList.add('folder-grid-row');node.style.setProperty('--folder-columns',r.columns);for(const group of r.groups)node.append(createFolderGridTile(group));return node;}
  if(r.type==='folder'){const open=!!query.trim()||opened.has(r.group.key);node.classList.add('folder-wrap');node.classList.toggle('open',open);const head=document.createElement('button');head.className='folder-header';head.setAttribute('aria-expanded',String(open));const title=document.createElement('span');title.className='folder-title';const name=document.createElement('span');name.textContent=r.group.name.toUpperCase();const count=document.createElement('span');count.className='folder-count';count.textContent=r.group.items.length;title.append(name,count);const arrow=document.createElement('span');arrow.className='folder-arrow';arrow.textContent='›';head.append(title,arrow);head.onclick=()=>{if(query.trim()){message('Clear search to collapse collections.');return;}opened.has(r.group.key)?opened.delete(r.group.key):opened.add(r.group.key);rebuild(true);};node.append(head);}
  else if(r.type==='matrix'){
   node.classList.add('matrix-row');node.classList.toggle('last',r.last);
@@ -315,8 +333,10 @@ function updateChoiceLabels(){$('language-value').textContent=languageOptions().
 $('language-choice').onclick=()=>showChoice($('language-choice'),'Language',languageOptions(),I.choice(),choice=>{if(native)request('language',{choice});else{try{localStorage.setItem('insfav-plus-language',choice);}catch(_){}I.choose(choice);}});
 const viewOptions=[['List',0],['Matrix · 2 columns',2],['Matrix · 3 columns',3],['Matrix · 4 columns',4],['Matrix · 5 columns',5]];
 function updateViewChoice(){uiText($('view-value'),viewOptions.find(([,value])=>value===viewMode)[0]);}
+function updateFolderViewChoice(){uiText($('folder-view-value'),viewOptions.find(([,value])=>value===folderColumns)[0]);}
 $('view-choice').onclick=()=>showChoice($('view-choice'),'View mode',viewOptions.map(([label,value])=>[t(label),value]),viewMode,columns=>{if(native)request('view-mode',{columns});else{try{localStorage.setItem('insfav-plus-columns',columns);}catch(_){}applyViewMode(columns);}});
-I.onChange=()=>{listScroll.refresh();updateChoiceLabels();updateViewChoice();updateSettings();updateFetcher();for(const node of mounted.values()){const r=rows.find(row=>row.key===node.dataset.key);if(!r)continue;for(const button of node.querySelectorAll('.avatar')){const item=r.item||r.items?.find(item=>item.user===button.dataset.user);if(item){button.setAttribute('aria-label',t('View profile image for {name} (@{user})',{name:item.name,user:item.user}));const link=node.querySelector('.card-link');if(link)bindAccountDetails(link,item);}}}};
+$('folder-view-choice').onclick=()=>showChoice($('folder-view-choice'),'Folder view',viewOptions.map(([label,value])=>[t(label),value]),folderColumns,columns=>{if(native)request('folder-view-mode',{columns});else{try{localStorage.setItem('insfav-plus-folder-columns',columns);}catch(_){}applyFolderViewMode(columns);}});
+I.onChange=()=>{listScroll.refresh();updateChoiceLabels();updateViewChoice();updateFolderViewChoice();updateSettings();updateFetcher();for(const node of mounted.values()){const r=rows.find(row=>row.key===node.dataset.key);if(!r)continue;for(const button of node.querySelectorAll('.avatar')){const item=r.item||r.items?.find(item=>item.user===button.dataset.user);if(item){button.setAttribute('aria-label',t('View profile image for {name} (@{user})',{name:item.name,user:item.user}));const link=node.querySelector('.card-link');if(link)bindAccountDetails(link,item);}}}};
 I.choose(native?'system':(()=>{try{return localStorage.getItem('insfav-plus-language')||'system';}catch(_){return 'system';}})());
 function refreshResults(){if(resultFilter)request('fetcher-results',{status:resultFilter});}
 $('result-filter').onclick=()=>showChoice($('result-filter'),'Fetcher results',resultOptions.map(([label,code])=>[t(label),code]),resultFilter,code=>{resultFilter=code;resultUsers.clear();updateChoiceLabels();$('result-refresh').hidden=!resultFilter;refreshResults();rebuild();});$('result-refresh').onclick=refreshResults;

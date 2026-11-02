@@ -293,6 +293,7 @@
     <item>Matrix · 3 columns</item>
     <item>Matrix · 4 columns</item>
     <item>Matrix · 5 columns</item>
+    <item>Folder view</item>
   </string-array>
   <string-array name="ui_values">
     <item>@string/ui_74a883a037bc</item>
@@ -588,5 +589,6 @@
     <item>@string/ui_91c507c9e8d7</item>
     <item>@string/ui_102849e5319d</item>
     <item>@string/ui_0f598e5c8e2a</item>
+    <item>@string/ui_00fcbbe32533</item>
   </string-array>
 </resources>
