@@ -78,16 +78,6 @@ window.nativeEvent=(event,data)=>{
 };
 
 function normalizeFolderColumns(value){const n=Number(value);return [2,3,4,5].includes(n)?n:0;}
-function folderGridRows(source,columns){
- if(!columns||query.trim())return source;
- const output=[],pending=[];
- function flush(){for(let p=0;p<pending.length;p+=columns){
-  const part=pending.slice(p,p+columns);
-  output.push({type:'folder-grid',key:'fg'+columns+':'+part.map(r=>r.key).join(','),groups:part.map(r=>r.group),columns,height:112});
- }pending.length=0;}
- for(const r of source){if(r.type==='folder'&&!opened.has(r.group.key))pending.push(r);else{flush();output.push(r);}}
- flush();return output;
-}
 function createFolderGridTile(group){
  const tile=document.createElement('div');tile.className='folder-grid-cell';
  const btn=document.createElement('button');btn.type='button';btn.className='folder-header';btn.setAttribute('aria-expanded','false');
@@ -106,7 +96,7 @@ function rebuild(preserve=false){
  if(resultFilter)groups=groups.map(group=>({...group,items:group.items.filter(item=>resultUsers.has(item.user))})).filter(group=>group.items.length);
  $('filter-empty').hidden=!doc||groups.length>0;
  $('app').classList.toggle('matrix-mode',!!viewMode);
- rows=folderGridRows(C.rowsFor(groups,opened,!!query.trim(),gridGeometry()),folderColumns);positions=C.offsets(rows);
+ rows=C.folderGridRows(C.rowsFor(groups,opened,!!query.trim(),gridGeometry()),folderColumns,opened,!!query.trim());positions=C.offsets(rows);
  $('list').style.height=positions.at(-1)+'px';
  if(!preserve){for(const node of mounted.values()){releaseRow(node);node.remove();}mounted.clear();}
  $('empty').hidden=!!doc;$('search-info').classList.toggle('visible',!!query.trim()||!!resultFilter);
